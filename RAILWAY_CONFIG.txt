@@ -1,0 +1,129 @@
+# Railway 部署配置
+# 生成时间: 2026-02-16
+
+## ✅ 已完成
+- 代码已推送到 GitHub: https://github.com/hhchhchhchhc/web.git
+
+## 📋 Railway 部署步骤
+
+### 1. 创建 Railway 项目
+1. 访问 https://railway.app
+2. 点击 "Login" → 使用 GitHub 登录
+3. 点击 "New Project"
+4. 选择 "Deploy from GitHub repo"
+5. 选择仓库: **hhchhchhchhc/web**
+6. Railway 会自动开始部署
+
+### 2. 添加 PostgreSQL 数据库
+1. 在项目页面，点击 "New" 按钮
+2. 选择 "Database"
+3. 选择 "Add PostgreSQL"
+4. Railway 会自动创建数据库并注入 DATABASE_URL
+
+### 3. 配置环境变量
+在 Railway 项目中，点击你的服务 → "Variables" 标签，添加以下环境变量：
+
+```
+DJANGO_SETTINGS_MODULE=config.settings_prod
+SECRET_KEY=4=nd8p6753xy%l&&gwt-nz6&n=#7_we$9o1+4r4m2t@s09+_90
+ALLOWED_HOSTS=*.railway.app,你的域名.com
+DEBUG=False
+```
+
+**重要**: 将 `你的域名.com` 替换为你的实际域名
+
+### 4. 等待部署完成
+- Railway 会自动重新部署
+- 在 "Deployments" 标签查看部署日志
+- 部署成功后，会显示一个 Railway URL（如 xxx.railway.app）
+
+### 5. 创建超级用户
+部署成功后，需要创建管理员账号：
+
+**方法 1: 使用 Railway CLI**
+```bash
+# 安装 Railway CLI
+npm i -g @railway/cli
+
+# 登录
+railway login
+
+# 链接到项目
+railway link
+
+# 创建超级用户
+railway run python manage.py createsuperuser
+```
+
+**方法 2: 在 Railway 网页控制台**
+1. 进入项目 → 点击服务
+2. 点击 "Settings" 标签
+3. 找到 "Service" 部分的命令行工具
+4. 运行: `python manage.py createsuperuser`
+
+### 6. 配置自定义域名（可选）
+1. 在 Railway 项目中，点击你的服务
+2. 点击 "Settings" → "Domains"
+3. 点击 "Custom Domain"
+4. 输入你的域名
+5. 在域名提供商配置 CNAME 记录指向 Railway 提供的地址
+
+## 🔑 环境变量详细说明
+
+### DJANGO_SETTINGS_MODULE
+值: `config.settings_prod`
+说明: 指定使用生产环境配置
+
+### SECRET_KEY
+值: `4=nd8p6753xy%l&&gwt-nz6&n=#7_we$9o1+4r4m2t@s09+_90`
+说明: Django 加密密钥，已自动生成，请勿泄露
+
+### ALLOWED_HOSTS
+值: `*.railway.app,你的域名.com`
+说明: 允许访问的域名列表，用逗号分隔
+示例: `*.railway.app,tools.example.com`
+
+### DEBUG
+值: `False`
+说明: 生产环境必须关闭调试模式
+
+### DATABASE_URL
+说明: PostgreSQL 数据库连接 URL
+**注意**: 这个变量由 Railway 自动注入，不需要手动添加
+
+## 📝 验证清单
+
+部署完成后，请验证：
+- [ ] 访问 Railway URL，首页可以正常显示
+- [ ] 访问 /admin，管理后台可以登录
+- [ ] 可以添加分类和工具
+- [ ] 静态文件（CSS）正常加载
+- [ ] 如果配置了域名，域名可以正常访问
+
+## 🚀 快速开始
+
+1. 访问 https://railway.app 并登录
+2. 创建新项目，选择 GitHub 仓库: hhchhchhchhc/web
+3. 添加 PostgreSQL 数据库
+4. 配置上述环境变量
+5. 等待部署完成
+6. 创建超级用户
+7. 访问你的网站！
+
+## 💰 成本说明
+
+Railway 免费额度:
+- 500 小时/月（约 20 天运行时间）
+- 100GB 出站流量
+- 512MB RAM
+
+对于小规模应用（<1000 访问/天）完全免费。
+如需 24/7 运行，升级到 Hobby 计划（$5/月）。
+
+## 📞 需要帮助？
+
+如果遇到问题：
+1. 查看 Railway 部署日志
+2. 检查环境变量是否配置正确
+3. 确认 PostgreSQL 数据库已添加
+4. 查看 DEPLOYMENT.md 文件了解详细故障排查
