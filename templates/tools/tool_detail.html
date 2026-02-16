@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ tool.name }} - 工具资源聚合网站{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <a href="{% url 'tool_list' %}" style="color: #3498db; text-decoration: none; font-size: 0.9rem;">← 返回工具列表</a>
+</div>
+
+<div style="background: white; border-radius: 8px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="category">{{ tool.category.name }}</span>
+            {% if tool.is_featured %}
+            <span class="featured-badge">精选</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <h1 style="font-size: 2.5rem; color: #2c3e50; margin-bottom: 1rem;">{{ tool.name }}</h1>
+
+    <p style="font-size: 1.2rem; color: #666; margin-bottom: 2rem;">{{ tool.short_description }}</p>
+
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ tool.website_url }}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #3498db; color: white; padding: 0.75rem 2rem; border-radius: 4px; text-decoration: none; font-weight: 500; font-size: 1.1rem;">
+            访问官网 ↗
+        </a>
+    </div>
+
+    <div style="border-top: 2px solid #ecf0f1; padding-top: 2rem;">
+        <h2 style="color: #2c3e50; margin-bottom: 1rem; font-size: 1.5rem;">详细介绍</h2>
+        <div style="color: #555; line-height: 1.8; white-space: pre-wrap;">{{ tool.full_description }}</div>
+    </div>
+
+    <div style="border-top: 2px solid #ecf0f1; margin-top: 2rem; padding-top: 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; color: #666; font-size: 0.9rem;">
+            <div>
+                <strong style="color: #2c3e50;">分类：</strong>
+                <a href="{% url 'tool_list' %}?category={{ tool.category.slug }}" style="color: #3498db; text-decoration: none;">{{ tool.category.name }}</a>
+            </div>
+            <div>
+                <strong style="color: #2c3e50;">添加时间：</strong>
+                {{ tool.created_at|date:"Y年m月d日" }}
+            </div>
+            <div>
+                <strong style="color: #2c3e50;">更新时间：</strong>
+                {{ tool.updated_at|date:"Y年m月d日" }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if related_tools %}
+<div style="margin-top: 3rem;">
+    <h2 style="color: #2c3e50; margin-bottom: 1.5rem; font-size: 1.8rem;">相关工具</h2>
+    <div class="tool-grid">
+        {% for related in related_tools %}
+        <div class="tool-card">
+            <span class="category">{{ related.category.name }}</span>
+            <h3>{{ related.name }}</h3>
+            <p class="description">{{ related.short_description }}</p>
+            <a href="{% url 'tool_detail' related.slug %}" class="link">查看详情 →</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}首页 - 工具资源聚合网站{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 3rem;">
+    <h2 style="font-size: 2.5rem; color: #2c3e50; margin-bottom: 1rem;">发现优质工具资源</h2>
+    <p style="font-size: 1.2rem; color: #666;">精选最实用的工具，提升你的工作效率</p>
+</div>
+
+{% if featured_tools %}
+<section style="margin-bottom: 3rem;">
+    <h2 style="color: #2c3e50; margin-bottom: 1.5rem; font-size: 1.8rem;">
+        精选工具
+        <span class="featured-badge">推荐</span>
+    </h2>
+    <div class="tool-grid">
+        {% for tool in featured_tools %}
+        <div class="tool-card">
+            <span class="category">{{ tool.category.name }}</span>
+            <h3>{{ tool.name }}</h3>
+            <p class="description">{{ tool.short_description }}</p>
+            <a href="{% url 'tool_detail' tool.slug %}" class="link">查看详情 →</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section>
+    <h2 style="color: #2c3e50; margin-bottom: 1.5rem; font-size: 1.8rem;">最新工具</h2>
+    <div class="tool-grid">
+        {% for tool in recent_tools %}
+        <div class="tool-card">
+            <span class="category">{{ tool.category.name }}</span>
+            <h3>{{ tool.name }}</h3>
+            <p class="description">{{ tool.short_description }}</p>
+            <a href="{% url 'tool_detail' tool.slug %}" class="link">查看详情 →</a>
+        </div>
+        {% empty %}
+        <p style="color: #666; text-align: center; grid-column: 1 / -1;">暂无工具，请在管理后台添加。</p>
+        {% endfor %}
+    </div>
+</section>
+
+<div style="text-align: center; margin-top: 3rem;">
+    <a href="{% url 'tool_list' %}" style="display: inline-block; background-color: #3498db; color: white; padding: 0.75rem 2rem; border-radius: 4px; text-decoration: none; font-weight: 500;">
+        浏览所有工具 →
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}所有工具 - 工具资源聚合网站{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2 style="font-size: 2rem; color: #2c3e50; margin-bottom: 0.5rem;">所有工具</h2>
+    <p style="color: #666;">共 {{ tools.count }} 个工具</p>
+</div>
+
+{% if categories %}
+<div style="margin-bottom: 2rem;">
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+        <a href="{% url 'tool_list' %}" style="padding: 0.5rem 1rem; background-color: {% if not selected_category %}#3498db{% else %}#ecf0f1{% endif %}; color: {% if not selected_category %}white{% else %}#333{% endif %}; text-decoration: none; border-radius: 4px; font-size: 0.9rem;">
+            全部
+        </a>
+        {% for category in categories %}
+        <a href="?category={{ category.slug }}" style="padding: 0.5rem 1rem; background-color: {% if selected_category == category.slug %}#3498db{% else %}#ecf0f1{% endif %}; color: {% if selected_category == category.slug %}white{% else %}#333{% endif %}; text-decoration: none; border-radius: 4px; font-size: 0.9rem;">
+            {{ category.name }} ({{ category.tools.count }})
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="tool-grid">
+    {% for tool in tools %}
+    <div class="tool-card">
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <span class="category">{{ tool.category.name }}</span>
+            {% if tool.is_featured %}
+            <span class="featured-badge">精选</span>
+            {% endif %}
+        </div>
+        <h3>{{ tool.name }}</h3>
+        <p class="description">{{ tool.short_description }}</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+            <a href="{% url 'tool_detail' tool.slug %}" class="link">查看详情 →</a>
+            <a href="{{ tool.website_url }}" target="_blank" rel="noopener noreferrer" style="color: #95a5a6; font-size: 0.9rem; text-decoration: none;">访问网站 ↗</a>
+        </div>
+    </div>
+    {% empty %}
+    <p style="color: #666; text-align: center; grid-column: 1 / -1;">暂无工具。</p>
+    {% endfor %}
+</div>
+{% endblock %}
