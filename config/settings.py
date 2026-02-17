@@ -25,7 +25,14 @@ SECRET_KEY = 'django-insecure-pq47xv^nk6pk&h6bs29ll9j=u7&k)5%p2g3x3i=2=ph3$ii5^8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.trycloudflare.com', 'ai-tool.indevs.in', '.indevs.in']
+
+# CSRF trusted origins for tunnel access
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.trycloudflare.com',
+    'https://ai-tool.indevs.in',
+    'https://*.indevs.in',
+]
 
 
 # Application definition

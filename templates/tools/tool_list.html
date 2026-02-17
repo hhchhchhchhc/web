@@ -1,46 +1,68 @@
 {% extends 'base.html' %}
 
-{% block title %}所有工具 - 工具资源聚合网站{% endblock %}
+{% block title %}全部工具 | 效率工具库{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 2rem;">
-    <h2 style="font-size: 2rem; color: #2c3e50; margin-bottom: 0.5rem;">所有工具</h2>
-    <p style="color: #666;">共 {{ tools.count }} 个工具</p>
+<div style="margin-bottom: 32px;">
+    <h1 style="font-size: 2rem; font-weight: 700; color: var(--gray-900); margin-bottom: 8px;">
+        🛠️ 全部工具
+    </h1>
+    <p style="color: var(--gray-500); font-size: 1.1rem;">
+        共收录 <strong style="color: var(--primary);">{{ tools.count }}</strong> 个精选工具，助你提升工作效率
+    </p>
 </div>
 
 {% if categories %}
-<div style="margin-bottom: 2rem;">
-    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-        <a href="{% url 'tool_list' %}" style="padding: 0.5rem 1rem; background-color: {% if not selected_category %}#3498db{% else %}#ecf0f1{% endif %}; color: {% if not selected_category %}white{% else %}#333{% endif %}; text-decoration: none; border-radius: 4px; font-size: 0.9rem;">
-            全部
-        </a>
-        {% for category in categories %}
-        <a href="?category={{ category.slug }}" style="padding: 0.5rem 1rem; background-color: {% if selected_category == category.slug %}#3498db{% else %}#ecf0f1{% endif %}; color: {% if selected_category == category.slug %}white{% else %}#333{% endif %}; text-decoration: none; border-radius: 4px; font-size: 0.9rem;">
-            {{ category.name }} ({{ category.tools.count }})
-        </a>
-        {% endfor %}
-    </div>
+<div class="category-filter">
+    <a href="{% url 'tool_list' %}" class="filter-btn {% if not selected_category %}active{% endif %}">
+        全部
+        <span class="filter-count">{{ tools.count }}</span>
+    </a>
+    {% for category in categories %}
+    <a href="?category={{ category.slug }}" class="filter-btn {% if selected_category == category.slug %}active{% endif %}">
+        {{ category.name }}
+        <span class="filter-count">{{ category.tools.count }}</span>
+    </a>
+    {% endfor %}
 </div>
 {% endif %}
 
 <div class="tool-grid">
     {% for tool in tools %}
     <div class="tool-card">
-        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <span class="category">{{ tool.category.name }}</span>
-            {% if tool.is_featured %}
-            <span class="featured-badge">精选</span>
-            {% endif %}
+        <div class="card-header">
+            <div class="card-badges">
+                <span class="badge badge-category">{{ tool.category.name }}</span>
+                {% if tool.is_featured %}
+                <span class="badge badge-featured">精选</span>
+                {% endif %}
+            </div>
         </div>
         <h3>{{ tool.name }}</h3>
         <p class="description">{{ tool.short_description }}</p>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-            <a href="{% url 'tool_detail' tool.slug %}" class="link">查看详情 →</a>
-            <a href="{{ tool.website_url }}" target="_blank" rel="noopener noreferrer" style="color: #95a5a6; font-size: 0.9rem; text-decoration: none;">访问网站 ↗</a>
+        <div class="card-footer">
+            <a href="{% url 'tool_detail' tool.slug %}" class="card-link">
+                查看详情 <span>→</span>
+            </a>
+            <a href="{{ tool.website_url }}" target="_blank" rel="noopener" class="external-link">
+                访问 ↗
+            </a>
         </div>
     </div>
     {% empty %}
-    <p style="color: #666; text-align: center; grid-column: 1 / -1;">暂无工具。</p>
+    <div style="grid-column: 1 / -1; text-align: center; padding: 64px 24px; background: var(--white); border-radius: 16px;">
+        <p style="font-size: 3rem; margin-bottom: 16px;">🔍</p>
+        <p style="color: var(--gray-500); font-size: 1.1rem;">暂无工具</p>
+    </div>
     {% endfor %}
+</div>
+
+<!-- Bookmark Reminder -->
+<div class="bookmark-cta" style="margin-top: 48px;">
+    <h3>⭐ 工具太多记不住？</h3>
+    <p>按 Ctrl+D (Mac: Cmd+D) 收藏本页，下次直接打开</p>
+    <a href="javascript:void(0);" class="bookmark-btn" onclick="alert('按 Ctrl+D 或 Cmd+D 收藏本页！')">
+        📌 收藏本站
+    </a>
 </div>
 {% endblock %}

@@ -1,51 +1,138 @@
 {% extends 'base.html' %}
 
-{% block title %}首页 - 工具资源聚合网站{% endblock %}
+{% block title %}效率工具库 | 算法工程师、量化研究员必备工具{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1>🚀 算法工程师效率工具库</h1>
+            <p>精选 AI 工具、算力资源、数据 API 等优质资源<br>助你提升 10 倍工作效率，持续更新中</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number">{{ tool_count }}+</div>
+                    <div class="stat-label">精选工具</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ category_count }}</div>
+                    <div class="stat-label">工具分类</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24h</div>
+                    <div class="stat-label">持续更新</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
 
 {% block content %}
-<div style="text-align: center; margin-bottom: 3rem;">
-    <h2 style="font-size: 2.5rem; color: #2c3e50; margin-bottom: 1rem;">发现优质工具资源</h2>
-    <p style="font-size: 1.2rem; color: #666;">精选最实用的工具，提升你的工作效率</p>
+<!-- Bookmark CTA -->
+<div class="bookmark-cta">
+    <h3>⭐ 收藏本站，效率翻倍</h3>
+    <p>按 Ctrl+D (Mac: Cmd+D) 立即收藏，随时查阅最新工具</p>
+    <a href="javascript:void(0);" class="bookmark-btn" onclick="alert('按 Ctrl+D 或 Cmd+D 收藏本页！')">
+        📌 一键收藏
+    </a>
 </div>
 
 {% if featured_tools %}
-<section style="margin-bottom: 3rem;">
-    <h2 style="color: #2c3e50; margin-bottom: 1.5rem; font-size: 1.8rem;">
-        精选工具
-        <span class="featured-badge">推荐</span>
-    </h2>
+<section style="margin-bottom: 48px;">
+    <div class="section-header">
+        <h2 class="section-title">
+            <span class="icon">⭐</span>
+            精选推荐
+        </h2>
+        <a href="{% url 'tool_list' %}" class="view-all">查看全部 →</a>
+    </div>
     <div class="tool-grid">
         {% for tool in featured_tools %}
         <div class="tool-card">
-            <span class="category">{{ tool.category.name }}</span>
+            <div class="card-header">
+                <div class="card-badges">
+                    <span class="badge badge-category">{{ tool.category.name }}</span>
+                    {% if tool.is_featured %}
+                    <span class="badge badge-featured">精选</span>
+                    {% endif %}
+                </div>
+            </div>
             <h3>{{ tool.name }}</h3>
             <p class="description">{{ tool.short_description }}</p>
-            <a href="{% url 'tool_detail' tool.slug %}" class="link">查看详情 →</a>
+            <div class="card-footer">
+                <a href="{% url 'tool_detail' tool.slug %}" class="card-link">
+                    查看详情 <span>→</span>
+                </a>
+                <a href="{{ tool.website_url }}" target="_blank" rel="noopener" class="external-link">
+                    访问 ↗
+                </a>
+            </div>
         </div>
         {% endfor %}
     </div>
 </section>
 {% endif %}
 
-<section>
-    <h2 style="color: #2c3e50; margin-bottom: 1.5rem; font-size: 1.8rem;">最新工具</h2>
+<section style="margin-bottom: 48px;">
+    <div class="section-header">
+        <h2 class="section-title">
+            <span class="icon">🆕</span>
+            最新上架
+        </h2>
+        <a href="{% url 'tool_list' %}" class="view-all">查看全部 →</a>
+    </div>
     <div class="tool-grid">
         {% for tool in recent_tools %}
         <div class="tool-card">
-            <span class="category">{{ tool.category.name }}</span>
+            <div class="card-header">
+                <div class="card-badges">
+                    <span class="badge badge-category">{{ tool.category.name }}</span>
+                    <span class="badge badge-new">NEW</span>
+                </div>
+            </div>
             <h3>{{ tool.name }}</h3>
             <p class="description">{{ tool.short_description }}</p>
-            <a href="{% url 'tool_detail' tool.slug %}" class="link">查看详情 →</a>
+            <div class="card-footer">
+                <a href="{% url 'tool_detail' tool.slug %}" class="card-link">
+                    查看详情 <span>→</span>
+                </a>
+                <a href="{{ tool.website_url }}" target="_blank" rel="noopener" class="external-link">
+                    访问 ↗
+                </a>
+            </div>
         </div>
         {% empty %}
-        <p style="color: #666; text-align: center; grid-column: 1 / -1;">暂无工具，请在管理后台添加。</p>
+        <p style="color: var(--gray-500); text-align: center; grid-column: 1 / -1; padding: 48px;">
+            暂无工具，请在管理后台添加
+        </p>
         {% endfor %}
     </div>
 </section>
 
-<div style="text-align: center; margin-top: 3rem;">
-    <a href="{% url 'tool_list' %}" style="display: inline-block; background-color: #3498db; color: white; padding: 0.75rem 2rem; border-radius: 4px; text-decoration: none; font-weight: 500;">
-        浏览所有工具 →
+<!-- Category Overview -->
+<section>
+    <div class="section-header">
+        <h2 class="section-title">
+            <span class="icon">📂</span>
+            分类浏览
+        </h2>
+    </div>
+    <div class="category-filter">
+        {% for category in categories %}
+        <a href="{% url 'tool_list' %}?category={{ category.slug }}" class="filter-btn">
+            {{ category.name }}
+            <span class="filter-count">{{ category.tools.count }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Second Bookmark CTA -->
+<div class="bookmark-cta" style="margin-top: 48px;">
+    <h3>💡 发现更多宝藏工具</h3>
+    <p>我们每周更新精选工具，收藏本站不错过任何效率神器</p>
+    <a href="{% url 'tool_list' %}" class="bookmark-btn">
+        🔍 浏览全部工具
     </a>
 </div>
 {% endblock %}

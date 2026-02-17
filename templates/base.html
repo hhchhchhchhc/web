@@ -3,124 +3,548 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}工具资源聚合网站{% endblock %}</title>
+    <meta name="description" content="算法工程师、量化研究员必备效率工具库 - AI工具、算力资源、数据API等精选资源持续更新">
+    <meta name="keywords" content="AI工具,量化工具,算法工程师,效率工具,GPU算力,数据API">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    <title>{% block title %}效率工具库 | 算法工程师必备{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #818cf8;
+            --secondary: #0ea5e9;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --gray-900: #0f172a;
+            --gray-800: #1e293b;
+            --gray-700: #334155;
+            --gray-600: #475569;
+            --gray-500: #64748b;
+            --gray-400: #94a3b8;
+            --gray-300: #cbd5e1;
+            --gray-200: #e2e8f0;
+            --gray-100: #f1f5f9;
+            --gray-50: #f8fafc;
+            --white: #ffffff;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+            --gradient-3: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background-color: #f5f5f5;
+            color: var(--gray-700);
+            background: var(--gray-50);
+            min-height: 100vh;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 24px;
         }
+        
+        /* Header */
         header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 1rem 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: var(--white);
+            border-bottom: 1px solid var(--gray-200);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+            background: rgba(255,255,255,0.95);
         }
-        header h1 {
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
+        .header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        .logo-text span {
+            background: var(--gradient-2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         nav {
-            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         nav a {
-            color: white;
+            color: var(--gray-600);
             text-decoration: none;
-            margin-right: 1.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            transition: background-color 0.3s;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s;
         }
         nav a:hover {
-            background-color: #34495e;
+            color: var(--primary);
+            background: var(--gray-100);
         }
-        main {
-            padding: 2rem 0;
-            min-height: calc(100vh - 200px);
+        nav a.active {
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
         }
-        footer {
-            background-color: #2c3e50;
-            color: white;
+        .nav-cta {
+            background: var(--gradient-2) !important;
+            color: var(--white) !important;
+            padding: 8px 20px !important;
+        }
+        .nav-cta:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: var(--gradient-2);
+            padding: 80px 0;
             text-align: center;
-            padding: 1.5rem 0;
-            margin-top: 3rem;
+            position: relative;
+            overflow: hidden;
         }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 16px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .hero p {
+            font-size: 1.25rem;
+            color: rgba(255,255,255,0.9);
+            max-width: 600px;
+            margin: 0 auto 32px;
+        }
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            margin-top: 40px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--white);
+        }
+        .stat-label {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.8);
+        }
+        
+        /* Main Content */
+        main {
+            padding: 48px 0 80px;
+        }
+        
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .section-title .icon {
+            width: 32px;
+            height: 32px;
+            background: var(--gradient-2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .view-all {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: gap 0.2s;
+        }
+        .view-all:hover {
+            gap: 8px;
+        }
+        
+        /* Category Filter */
+        .category-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 32px;
+            padding: 16px;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+        .filter-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 1px solid var(--gray-200);
+            color: var(--gray-600);
+            background: var(--white);
+        }
+        .filter-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .filter-btn.active {
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+        }
+        .filter-count {
+            background: rgba(0,0,0,0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-left: 4px;
+        }
+        .filter-btn.active .filter-count {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        /* Tool Grid */
         .tool-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
         }
+        
+        /* Tool Card */
         .tool-card {
-            background: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+            background: var(--white);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border: 1px solid var(--gray-100);
+            position: relative;
+            overflow: hidden;
+        }
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-2);
+            opacity: 0;
+            transition: opacity 0.3s;
         }
         .tool-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--gray-200);
+        }
+        .tool-card:hover::before {
+            opacity: 1;
+        }
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .card-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-category {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            color: var(--primary);
+        }
+        .badge-featured {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%);
+            color: var(--accent);
+        }
+        .badge-new {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(14, 165, 233, 0.1) 100%);
+            color: var(--success);
         }
         .tool-card h3 {
-            color: #2c3e50;
-            margin-bottom: 0.5rem;
-        }
-        .tool-card .category {
-            display: inline-block;
-            background-color: #3498db;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            margin-bottom: 0.5rem;
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+            line-height: 1.4;
         }
         .tool-card .description {
-            color: #666;
-            margin-bottom: 1rem;
+            color: var(--gray-500);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
-        .tool-card .link {
-            display: inline-block;
-            color: #3498db;
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 16px;
+            border-top: 1px solid var(--gray-100);
+        }
+        .card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary);
             text-decoration: none;
             font-weight: 500;
+            font-size: 0.95rem;
+            transition: gap 0.2s;
         }
-        .tool-card .link:hover {
-            text-decoration: underline;
+        .card-link:hover {
+            gap: 10px;
         }
-        .featured-badge {
-            background-color: #e74c3c;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 4px;
+        .external-link {
+            color: var(--gray-400);
+            text-decoration: none;
             font-size: 0.85rem;
-            margin-left: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s;
         }
+        .external-link:hover {
+            color: var(--gray-600);
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--gray-900);
+            color: var(--gray-400);
+            padding: 48px 0 24px;
+        }
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 48px;
+            margin-bottom: 48px;
+        }
+        .footer-brand p {
+            margin-top: 16px;
+            line-height: 1.8;
+        }
+        .footer-section h4 {
+            color: var(--white);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .footer-section ul {
+            list-style: none;
+        }
+        .footer-section li {
+            margin-bottom: 8px;
+        }
+        .footer-section a {
+            color: var(--gray-400);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer-section a:hover {
+            color: var(--white);
+        }
+        .footer-bottom {
+            padding-top: 24px;
+            border-top: 1px solid var(--gray-800);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .social-links {
+            display: flex;
+            gap: 16px;
+        }
+        .social-links a {
+            color: var(--gray-400);
+            font-size: 1.25rem;
+            transition: color 0.2s;
+        }
+        .social-links a:hover {
+            color: var(--white);
+        }
+        
+        /* Bookmark CTA */
+        .bookmark-cta {
+            background: var(--gradient-3);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            margin: 48px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .bookmark-cta::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        .bookmark-cta h3 {
+            color: var(--white);
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        .bookmark-cta p {
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .bookmark-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--white);
+            color: var(--primary);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        .bookmark-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .hero p { font-size: 1rem; }
+            .hero-stats { flex-direction: column; gap: 24px; }
+            .tool-grid { grid-template-columns: 1fr; }
+            .footer-content { grid-template-columns: 1fr; gap: 32px; }
+            .header-inner { flex-direction: column; gap: 16px; }
+            nav { flex-wrap: wrap; justify-content: center; }
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tool-card {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        .tool-card:nth-child(1) { animation-delay: 0.1s; }
+        .tool-card:nth-child(2) { animation-delay: 0.15s; }
+        .tool-card:nth-child(3) { animation-delay: 0.2s; }
+        .tool-card:nth-child(4) { animation-delay: 0.25s; }
+        .tool-card:nth-child(5) { animation-delay: 0.3s; }
+        .tool-card:nth-child(6) { animation-delay: 0.35s; }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     <header>
         <div class="container">
-            <h1>工具资源聚合网站</h1>
-            <nav>
-                <a href="{% url 'home' %}">首页</a>
-                <a href="{% url 'tool_list' %}">所有工具</a>
-                <a href="/admin/">管理后台</a>
-            </nav>
+            <div class="header-inner">
+                <a href="{% url 'home' %}" class="logo">
+                    <div class="logo-icon">🚀</div>
+                    <div class="logo-text"><span>效率工具库</span></div>
+                </a>
+                <nav>
+                    <a href="{% url 'home' %}">首页</a>
+                    <a href="{% url 'tool_list' %}">全部工具</a>
+                    <a href="/admin/" class="nav-cta">⭐ 收藏本站</a>
+                </nav>
+            </div>
         </div>
     </header>
+
+    {% block hero %}{% endblock %}
 
     <main>
         <div class="container">
@@ -130,7 +554,44 @@
 
     <footer>
         <div class="container">
-            <p>&copy; 2024 工具资源聚合网站 | 由 Django 驱动</p>
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="{% url 'home' %}" class="logo">
+                        <div class="logo-icon">🚀</div>
+                        <div class="logo-text" style="color: white;"><span>效率工具库</span></div>
+                    </a>
+                    <p>算法工程师、量化研究员必备效率工具库<br>精选AI工具、算力资源、数据API等优质资源<br>持续更新中...</p>
+                </div>
+                <div class="footer-section">
+                    <h4>热门分类</h4>
+                    <ul>
+                        <li><a href="{% url 'tool_list' %}?category=ai工具">AI工具</a></li>
+                        <li><a href="{% url 'tool_list' %}?category=算力资源">算力资源</a></li>
+                        <li><a href="{% url 'tool_list' %}?category=数据api">数据API</a></li>
+                        <li><a href="{% url 'tool_list' %}?category=效率工具">效率工具</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>快速链接</h4>
+                    <ul>
+                        <li><a href="{% url 'tool_list' %}">全部工具</a></li>
+                        <li><a href="/admin/">管理后台</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>联系我们</h4>
+                    <ul>
+                        <li><a href="#">微信: dreamsjtuai</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 效率工具库 | 算法工程师必备</p>
+                <div class="social-links">
+                    <a href="#" title="GitHub">📦</a>
+                    <a href="#" title="微信">💬</a>
+                </div>
+            </div>
         </div>
     </footer>
 
