@@ -1,9 +1,465 @@
 {% extends 'base.html' %}
 
 {% block title %}OpenClaw 专栏 | 全民效率神器{% endblock %}
-{% block meta_description %}OpenClaw 专栏：聚合 OpenClaw 入门教程、部署方案、搜索配置、内容增长、交易投研、编码协同与变现实战。{% endblock %}
+{% block meta_description %}OpenClaw 专栏：聚合 OpenClaw 入门教程、部署方案、搜索配置、全球用例分类、内容增长、SEO 流量、交易投研、编码协同与变现实战。{% endblock %}
+
+{% block extra_css %}
+<style>
+  .openclaw-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: .94rem;
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  }
+  .openclaw-pill:hover {
+    transform: translateY(-1px);
+  }
+  .openclaw-pill.primary {
+    color: #fff7ed;
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    box-shadow: 0 16px 30px -22px rgba(249,115,22,.9);
+  }
+  .openclaw-pill.secondary {
+    color: #334155;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+  }
+  .openclaw-mini-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  .openclaw-mini-card {
+    background: rgba(255,255,255,.92);
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 18px 38px -30px rgba(15,23,42,.45);
+  }
+  .openclaw-mini-card h3 {
+    color: #0f172a;
+    margin: 8px 0;
+    font-size: 1.02rem;
+  }
+  .openclaw-mini-card p {
+    color: #475569;
+    margin: 0 0 14px;
+    line-height: 1.75;
+    font-size: .95rem;
+  }
+  .openclaw-filter-panel {
+    background: linear-gradient(135deg, #fff7ed 0%, #ffffff 55%, #eff6ff 100%);
+    border: 1px solid #fed7aa;
+    border-radius: 22px;
+    padding: 22px 24px;
+    box-shadow: var(--shadow-lg);
+  }
+  .openclaw-guide-shell {
+    background: linear-gradient(135deg, #fff7ed 0%, #ffffff 48%, #f8fafc 100%);
+    border: 1px solid #fed7aa;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+  }
+  .openclaw-guide-grid {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr);
+  }
+  .openclaw-guide-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 20px;
+  }
+  .openclaw-guide-card h3 {
+    color: #0f172a;
+    margin: 0 0 10px;
+  }
+  .openclaw-guide-card p {
+    color: #475569;
+    line-height: 1.8;
+    margin: 0 0 14px;
+  }
+  .openclaw-step-list {
+    display: grid;
+    gap: 12px;
+  }
+  .openclaw-step {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .openclaw-step-no {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f97316 0%, #fb7185 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+  .openclaw-step h4 {
+    color: #0f172a;
+    margin: 0 0 4px;
+    font-size: 1rem;
+  }
+  .openclaw-step p {
+    margin: 0;
+    font-size: .94rem;
+  }
+  .openclaw-quicknav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .openclaw-quicknav a {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+  }
+  .openclaw-note {
+    margin-top: 14px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    color: #9a3412;
+    line-height: 1.8;
+    font-size: .94rem;
+  }
+  .openclaw-risk-box {
+    margin-top: 16px;
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #fff1f2 0%, #fff7ed 100%);
+    border: 1px solid #fda4af;
+    color: #7f1d1d;
+  }
+  .openclaw-risk-box h4 {
+    margin: 0 0 10px;
+    color: #881337;
+    font-size: .98rem;
+  }
+  .openclaw-risk-box p {
+    margin: 0 0 10px;
+    line-height: 1.8;
+    font-size: .94rem;
+  }
+  .openclaw-risk-box ol {
+    margin: 0 0 10px 20px;
+    padding: 0;
+    line-height: 1.8;
+  }
+  .openclaw-risk-box li {
+    margin-bottom: 6px;
+  }
+  .openclaw-risk-box .risk-tail {
+    margin: 0;
+    font-weight: 600;
+  }
+  .openclaw-category-card .filter-btn {
+    padding: 6px 10px;
+    font-size: .82rem;
+  }
+  .openclaw-category-card .description {
+    min-height: 92px;
+  }
+  .openclaw-sidepromo {
+    position: fixed;
+    top: 160px;
+    width: 168px;
+    z-index: 40;
+  }
+  .openclaw-sidepromo.left {
+    left: 18px;
+    width: 220px;
+  }
+  .openclaw-sidepromo.right {
+    right: 18px;
+    width: 220px;
+  }
+  .openclaw-sidepromo-stack {
+    display: grid;
+    gap: 12px;
+  }
+  .openclaw-sidepromo-card {
+    display: block;
+    text-decoration: none;
+    border-radius: 22px;
+    padding: 18px 16px;
+    box-shadow: 0 20px 40px -28px rgba(15, 23, 42, 0.45);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    backdrop-filter: blur(10px);
+  }
+  .openclaw-sidepromo-card h3 {
+    margin: 10px 0 8px;
+    font-size: 1.05rem;
+    line-height: 1.3;
+  }
+  .openclaw-sidepromo-card p {
+    margin: 0 0 12px;
+    font-size: .88rem;
+    line-height: 1.7;
+  }
+  .openclaw-sidepromo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: .76rem;
+    font-weight: 700;
+  }
+  .openclaw-sidepromo-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .9rem;
+    font-weight: 700;
+  }
+  .openclaw-sidepromo-card.tardis {
+    background: linear-gradient(180deg, rgba(239,246,255,.96) 0%, rgba(224,231,255,.96) 100%);
+    color: #1e3a8a;
+    padding: 34px 24px;
+    border-radius: 28px;
+    min-height: 300px;
+    box-shadow: 0 28px 54px -24px rgba(29, 78, 216, 0.34);
+  }
+  .openclaw-sidepromo-card.tardis h3 {
+    color: #0f172a;
+    font-size: 1.58rem;
+    margin: 14px 0 12px;
+    line-height: 1.2;
+  }
+  .openclaw-sidepromo-card.tardis p {
+    color: #334155;
+    font-size: 1.06rem;
+    line-height: 1.85;
+    margin: 0 0 18px;
+  }
+  .openclaw-sidepromo-card.tardis .openclaw-sidepromo-badge {
+    background: #ffffff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    font-size: .92rem;
+    padding: 8px 13px;
+  }
+  .openclaw-sidepromo-card.tardis .openclaw-sidepromo-cta {
+    color: #1d4ed8;
+    font-size: 1.06rem;
+  }
+  .openclaw-sidepromo-card.hkm {
+    background: linear-gradient(180deg, rgba(255,247,237,.97) 0%, rgba(254,242,242,.97) 100%);
+    color: #9a3412;
+  }
+  .openclaw-sidepromo-card.hkm h3 {
+    color: #111827;
+  }
+  .openclaw-sidepromo-card.hkm p {
+    color: #7c2d12;
+  }
+  .openclaw-sidepromo-card.hkm .openclaw-sidepromo-badge {
+    background: #ffffff;
+    color: #c2410c;
+    border: 1px solid #fdba74;
+  }
+  .openclaw-sidepromo-card.hkm .openclaw-sidepromo-cta {
+    color: #c2410c;
+  }
+  .openclaw-sidepromo-card.tushare {
+    background: linear-gradient(180deg, rgba(239,246,255,.98) 0%, rgba(240,253,250,.98) 100%);
+    color: #0f172a;
+    padding: 20px 18px;
+    border-radius: 22px;
+    box-shadow: 0 24px 48px -24px rgba(29,78,216,.28);
+  }
+  .openclaw-sidepromo-card.qr {
+    background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(248,250,252,.98) 100%);
+    color: #0f172a;
+    padding: 20px 18px;
+    border-radius: 22px;
+    box-shadow: 0 24px 48px -24px rgba(15,23,42,.28);
+  }
+  .openclaw-sidepromo-card.tushare h3 {
+    color: #0f172a;
+    font-size: 1.26rem;
+    line-height: 1.32;
+    margin-bottom: 10px;
+  }
+  .openclaw-sidepromo-card.tushare p {
+    color: #334155;
+    font-size: .96rem;
+    line-height: 1.75;
+    margin-bottom: 12px;
+  }
+  .openclaw-sidepromo-card.tushare .openclaw-sidepromo-badge {
+    background: #ffffff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    font-size: .88rem;
+    padding: 8px 13px;
+  }
+  .openclaw-sidepromo-card.tushare .openclaw-sidepromo-cta {
+    color: #1d4ed8;
+    font-size: .96rem;
+  }
+  .openclaw-sidepromo-card.qr .openclaw-sidepromo-badge {
+    background: #f8fafc;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+    font-size: .88rem;
+    padding: 8px 13px;
+  }
+  .openclaw-sidepromo-card.qr h3 {
+    font-size: 1.34rem;
+    line-height: 1.3;
+    margin-bottom: 10px;
+  }
+  .openclaw-sidepromo-card.qr p {
+    font-size: .98rem;
+    line-height: 1.75;
+    margin-bottom: 14px;
+  }
+  .openclaw-sidepromo-card.qr .openclaw-sidepromo-cta {
+    margin-top: 10px;
+  }
+  .openclaw-sidepromo-card.qr .qr-link {
+    display: block;
+    text-decoration: none;
+  }
+  .openclaw-sidepromo-card.qr img {
+    display: block;
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    padding: 8px;
+  }
+  .openclaw-sidepromo-card.tencent {
+    background: linear-gradient(180deg, rgba(236,253,255,.98) 0%, rgba(239,246,255,.98) 100%);
+    color: #0f172a;
+  }
+  .openclaw-sidepromo-card.tencent h3 {
+    color: #0f172a;
+    font-size: .96rem;
+    margin: 8px 0 6px;
+  }
+  .openclaw-sidepromo-card.tencent p {
+    color: #334155;
+    font-size: .82rem;
+    line-height: 1.6;
+    margin: 0 0 10px;
+  }
+  .openclaw-sidepromo-card.tencent .openclaw-sidepromo-badge {
+    background: #ffffff;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+  }
+  .openclaw-sidepromo-card.tencent .openclaw-sidepromo-cta {
+    color: #0284c7;
+    font-size: .84rem;
+  }
+  .openclaw-sidepromo-card.tencent.compact {
+    padding: 14px 12px;
+    border-radius: 18px;
+  }
+  .openclaw-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .openclaw-tab {
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #475569;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+  .openclaw-tab:hover {
+    color: #0f172a;
+    border-color: #94a3b8;
+  }
+  .openclaw-tab.active {
+    background: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 16px 28px -22px rgba(249,115,22,.85);
+  }
+  .openclaw-category-card.is-hidden {
+    display: none;
+  }
+  @media (max-width: 900px) {
+    .openclaw-guide-grid {
+      grid-template-columns: 1fr;
+    }
+    .openclaw-sidepromo {
+      display: none;
+    }
+  }
+  @media (max-width: 1500px) {
+    .openclaw-sidepromo {
+      display: none;
+    }
+  }
+</style>
+{% endblock %}
 
 {% block content %}
+<aside class="openclaw-sidepromo left" aria-label="Tardis 与 Tushare Pro 推荐">
+  <a href="{% url 'quant_article_tardis' %}" class="openclaw-sidepromo-card tardis">
+    <span class="openclaw-sidepromo-badge">📈 量化数据</span>
+    <h3>Tardis 数据指南</h3>
+    <p>高频、逐笔、盘口与历史加密市场数据。适合接到 OpenClaw 的交易监控和研究链路里。</p>
+    <span class="openclaw-sidepromo-cta">去看 Tardis →</span>
+  </a>
+  <a href="https://m.tb.cn/h.igcmZ1Y?tk=TXkZUzbHkiB" target="_blank" rel="noopener noreferrer" class="openclaw-sidepromo-card tushare">
+    <span class="openclaw-sidepromo-badge">🧾 Tushare Pro</span>
+    <h3>199 甩卖：原价 8500 元的 Tushare Pro API</h3>
+    <p><strong>重点是 199。</strong> 发货 3 个 token。优先点击闲鱼链接直接打开；如果闲鱼链接失效，再联系微信。</p>
+    <span class="openclaw-sidepromo-cta">优先点击闲鱼链接 →</span>
+  </a>
+</aside>
+
+<aside class="openclaw-sidepromo right" aria-label="港美掘金与 Tushare Pro 推荐">
+  <div class="openclaw-sidepromo-stack">
+    <div class="openclaw-sidepromo-card qr">
+      <span class="openclaw-sidepromo-badge">💬 微信群聊二维码</span>
+      <h3>微信扫码进群</h3>
+      <p>直接用微信扫一扫。如果页面里看不清，点图可放大查看。</p>
+      <a href="/static/images/sidebar/ewm.jpg" target="_blank" rel="noopener noreferrer" class="qr-link">
+        <img src="/static/images/sidebar/ewm.jpg" alt="微信群聊二维码">
+      </a>
+      <span class="openclaw-sidepromo-cta">点击图片放大 →</span>
+    </div>
+    <a href="https://t.zsxq.com/eQkvu" target="_blank" rel="noopener noreferrer" class="openclaw-sidepromo-card hkm">
+      <span class="openclaw-sidepromo-badge">💰 港美掘金星球</span>
+      <h3>加入「港美掘金」知识星球</h3>
+      <p>不只是星球入口，也是一套投研与数据基建包。加入满 3 天可拿量化课程、Web3 课程、数据 API、3 个 Tushare token 和持续更新的策略资料。</p>
+      <span class="openclaw-sidepromo-cta">立即加入星球 →</span>
+    </a>
+    <a href="https://m.tb.cn/h.igcmZ1Y?tk=TXkZUzbHkiB" target="_blank" rel="noopener noreferrer" class="openclaw-sidepromo-card tushare">
+      <span class="openclaw-sidepromo-badge">🧾 Tushare Pro</span>
+      <h3>199 甩卖：原价 8500 元的 Tushare Pro API</h3>
+      <p><strong>重点是 199。</strong> 发货 3 个 token。优先点击闲鱼链接直接打开；如果闲鱼链接失效，再联系微信。</p>
+      <span class="openclaw-sidepromo-cta">优先点击闲鱼链接 →</span>
+    </a>
+  </div>
+</aside>
+
+{% include "tools/_column_nav.html" %}
+
 <section style="margin-bottom: 24px;">
   <div style="background:
     radial-gradient(circle at top left, rgba(251,191,36,.22), transparent 28%),
@@ -18,12 +474,16 @@
         </div>
         <h1 style="font-size: 2.3rem; line-height:1.15; margin-bottom: 12px;">OpenClaw 专栏</h1>
         <p style="color: rgba(255,255,255,.88); line-height: 1.85; margin: 0; font-size:1.02rem;">
-          这页不再只是堆链接，而是把 OpenClaw 的高价值资料按真实工作流重组：先上手，再部署，再补搜索能力，最后接到内容增长、投研交易、编码协同和商业化。
+          这页不再只是堆链接，而是把 OpenClaw 的高价值资料按真实工作流重组：先上手，再部署，再补搜索能力，并结合全球用例库做分类映射，最后接到内容增长、投研交易、编码协同和商业化。
         </p>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:18px;">
+          <span class="badge" style="background: rgba(255,255,255,.14); color:#fff7ed;">累计 {{ column_stats.total_views|default:0 }} 浏览</span>
+          <span class="badge" style="background: rgba(45,212,191,.18); color:#ccfbf1;">今日 {{ column_stats.today_views|default:0 }} 浏览</span>
+        </div>
       </div>
       <div style="display:grid; grid-template-columns:repeat(3,minmax(120px,1fr)); gap:12px; min-width:min(100%, 420px); flex:1;">
         <div style="background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:14px 16px;">
-          <div style="font-size:1.4rem; font-weight:700;">36+</div>
+          <div style="font-size:1.4rem; font-weight:700;">60+</div>
           <div style="color:#fde68a; font-size:.9rem;">精选用例</div>
         </div>
         <div style="background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:14px 16px;">
@@ -31,7 +491,7 @@
           <div style="color:#fde68a; font-size:.9rem;">部署入口</div>
         </div>
         <div style="background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:14px 16px;">
-          <div style="font-size:1.4rem; font-weight:700;">8</div>
+          <div style="font-size:1.4rem; font-weight:700;">9</div>
           <div style="color:#fde68a; font-size:.9rem;">主题分区</div>
         </div>
       </div>
@@ -39,38 +499,518 @@
   </div>
 </section>
 
-<section style="margin-bottom: 18px;">
-  <div style="display:flex; gap:10px; flex-wrap:wrap;">
-    <a href="#starter" class="filter-btn" style="text-decoration:none;">入门总览</a>
-    <a href="#search" class="filter-btn" style="text-decoration:none;">搜索配置</a>
-    <a href="#deploy" class="filter-btn" style="text-decoration:none;">部署方案</a>
-    <a href="#growth" class="filter-btn" style="text-decoration:none;">内容增长</a>
-    <a href="#finance" class="filter-btn" style="text-decoration:none;">交易投研</a>
-    <a href="#builder" class="filter-btn" style="text-decoration:none;">编码协同</a>
-    <a href="#archive" class="filter-btn" style="text-decoration:none;">资料索引</a>
-    <a href="#monetize" class="filter-btn" style="text-decoration:none;">变现案例</a>
+<section style="margin-bottom: 28px;">
+  <div class="openclaw-guide-shell">
+    <div class="openclaw-guide-grid">
+      <div class="openclaw-guide-card">
+        <h3>这页怎么用</h3>
+        <div class="openclaw-step-list">
+          <div class="openclaw-step">
+            <div class="openclaw-step-no">1</div>
+            <div>
+              <h4>先看入门，不要直接扑向复杂自动化</h4>
+              <p>如果你还没把 OpenClaw 当成“数字团队”而不是“聊天框”，先去看入门总览和精选案例。</p>
+            </div>
+          </div>
+          <div class="openclaw-step">
+            <div class="openclaw-step-no">2</div>
+            <div>
+              <h4>再按目标选赛道</h4>
+              <p>想做内容，就去内容增长；想做投研，就去交易投研；想做工程协同，就去编码协同。</p>
+            </div>
+          </div>
+          <div class="openclaw-step">
+            <div class="openclaw-step-no">3</div>
+            <div>
+              <h4>最后再回到资料索引深挖</h4>
+              <p>等你确认方向后，再翻飞书、微信、GitHub、X 的原始资料，效率会高很多。</p>
+            </div>
+          </div>
+        </div>
+        <div class="openclaw-note">
+          这页已经从“堆链接”改成“导航页”。核心原则是少废话、少重复、少迷路。
+        </div>
+      </div>
+      <div class="openclaw-guide-card">
+        <h3>快速进入</h3>
+        <div class="openclaw-quicknav">
+          <a href="#starter" class="openclaw-pill secondary">入门总览</a>
+          <a href="#usecase-picks" class="openclaw-pill secondary">精选案例</a>
+          <a href="#usecase-map" class="openclaw-pill secondary">全球分类</a>
+          <a href="#search" class="openclaw-pill secondary">搜索配置</a>
+          <a href="#deploy" class="openclaw-pill secondary">部署方案</a>
+          <a href="#growth" class="openclaw-pill secondary">内容增长</a>
+          <a href="#finance" class="openclaw-pill secondary">交易投研</a>
+          <a href="#builder" class="openclaw-pill secondary">编码协同</a>
+          <a href="#archive" class="openclaw-pill secondary">资料索引</a>
+        </div>
+        <div class="openclaw-note">
+          如果你只是想抄作业，优先顺序是：`入门总览` -> `全球精选案例` -> 你最关心的那个赛道。
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
-<section style="margin-bottom: 28px;">
-  <div style="background:linear-gradient(135deg,#fff7ed 0%,#ffffff 100%); border:1px solid #fdba74; border-radius:20px; padding:22px 24px; box-shadow: var(--shadow-md);">
+<section id="usecase-map" style="margin-bottom: 36px;">
+  <div class="section-header">
+    <h2 class="section-title"><span class="icon">🗺️</span> 全球用例分类</h2>
+    <span style="color: var(--gray-500);">基于 2026 年 3 月 12 日抓取的 336 个 OpenClaw 用例做中文重组</span>
+  </div>
+  <div style="background:linear-gradient(135deg,#fff7ed 0%,#ffffff 52%,#ecfeff 100%); border:1px solid #fdba74; border-radius:20px; padding:20px 22px; box-shadow: var(--shadow-md); margin-bottom:16px;">
     <div style="display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; align-items:flex-start;">
-      <div style="max-width:780px;">
-        <div style="display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:999px; background:#fff1f2; color:#c2410c; font-size:.9rem; font-weight:600; margin-bottom:12px;">
-          <span>🔥</span>
-          <span>本次新增</span>
-        </div>
-        <h2 style="margin:0 0 10px; color:#111827; font-size:1.4rem;">新加内容都在这里，打开页面就能看到</h2>
+      <div style="max-width:840px;">
         <p style="margin:0; color:#7c2d12; line-height:1.85;">
-          已新增：Web Search 配置总结、从 0 到 1 上手教程、发现机会到产品上线、16 个会自我进化的 OpenClaw 员工、公众号躺更神器、飞书调用 Codex 编码、OpenClaw 搜索工作流、云服务器浏览器自动化、腾讯 CNB 一键启动，以及飞书/微信/GitHub/X 的完整资料索引。
+          这部分不是照搬原站卡片，而是把 <strong>useclaw.vercel.app</strong> 的英文用例库按中文用户更容易上手的场景重新归并。原站分类更细，这里改成“先能抄作业、再能选方向”的导航结构；每个分区现在都扩成 8 到 10 条代表案例，不再只留几条意思一下。
         </p>
       </div>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <a href="#archive" class="filter-btn" style="text-decoration:none;">看完整索引</a>
-        <a href="#search" class="filter-btn" style="text-decoration:none;">看搜索配置</a>
-        <a href="#deploy" class="filter-btn" style="text-decoration:none;">看部署方案</a>
+        <a href="https://useclaw.vercel.app/" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">打开原站</a>
+        <a href="https://useclaw.vercel.app/data.json" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">看数据源</a>
       </div>
     </div>
+  </div>
+  <div class="openclaw-tabs" id="openclaw-category-tabs">
+    <button type="button" class="openclaw-tab active" data-group="setup">基础设施</button>
+    <button type="button" class="openclaw-tab" data-group="development">开发工程</button>
+    <button type="button" class="openclaw-tab" data-group="content">内容生产</button>
+    <button type="button" class="openclaw-tab" data-group="marketing">营销获客</button>
+    <button type="button" class="openclaw-tab" data-group="finance">交易财务</button>
+    <button type="button" class="openclaw-tab" data-group="monetization">赚钱模式</button>
+    <button type="button" class="openclaw-tab" data-group="ecommerce">电商运营</button>
+    <button type="button" class="openclaw-tab" data-group="personal">个人效率</button>
+    <button type="button" class="openclaw-tab" data-group="all">查看全部</button>
+  </div>
+  <div class="tool-grid">
+    <article class="tool-card openclaw-category-card" data-group="setup" style="border-left: 4px solid #64748b;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">基础设施</span>
+          <span class="badge" style="background: rgba(100,116,139,.12); color:#475569;">原站 93 条 / 精选 9 条</span>
+        </div>
+      </div>
+      <h3>搭建与团队协作</h3>
+      <p class="description">原站的 `setup` 是最大类，核心不是装软件，而是多 Agent 分工、Slack 协作、权限沙箱、知识库和模型路由。适合先建立“OpenClaw 是团队，不是聊天框”的理解。</p>
+      <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="https://www.youtube.com/watch?v=bzWI3Dil9Ig" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">AI 团队搭建</a>
+        <a href="https://www.youtube.com/watch?v=7UaQB325EqU" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">Markdown Skills</a>
+        <a href="https://www.youtube.com/watch?v=q2iLy90uRS8" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">消息入口接入</a>
+        <a href="https://www.youtube.com/watch?v=bzWI3Dil9Ig" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">权限沙箱</a>
+        <a href="https://www.youtube.com/watch?v=bzWI3Dil9Ig" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">模型路由控成本</a>
+        <a href="https://www.youtube.com/watch?v=bzWI3Dil9Ig" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">Markdown 脑库</a>
+        <a href="https://www.youtube.com/watch?v=bzWI3Dil9Ig" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">独立 Mac Mini</a>
+        <a href="https://www.youtube.com/watch?v=bzWI3Dil9Ig" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">Agent 管理面板</a>
+        <a href="https://www.youtube.com/watch?v=bzWI3Dil9Ig" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">按岗位设计 Agent</a>
+      </div>
+      <div class="card-footer">
+        <a href="#starter" class="card-link">看入门总览 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card openclaw-category-card is-hidden" data-group="development" style="border-left: 4px solid #8b5cf6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">开发工程</span>
+          <span class="badge" style="background: rgba(139,92,246,.12); color:#6d28d9;">原站 38 条 / 精选 9 条</span>
+        </div>
+      </div>
+      <h3>编码开发与 DevOps</h3>
+      <p class="description">从 backlog 处理、代码审查、远程开发，到自愈服务器和自动化游戏流水线，都是原站 `development` 的代表场景。你这页里最接近的是编码协同区。</p>
+      <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/autonomous-game-dev-pipeline.md" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">自动化游戏开发</a>
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/self-healing-home-server.md" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">自愈服务器</a>
+        <a href="https://www.youtube.com/watch?v=8kNv3rjQaVA" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">AI 夜间 Code Review</a>
+        <a href="https://www.youtube.com/watch?v=Q7r--i9lLck" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">Cursor SSH 远程开发</a>
+        <a href="https://www.youtube.com/watch?v=Q7r--i9lLck" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">Greptile 全库审查</a>
+        <a href="https://www.youtube.com/watch?v=3GrG-dOmrLU" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">委托 Cursor Agent 编码</a>
+        <a href="https://www.youtube.com/watch?v=4uzGDAoNOZc" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">自我修改 Agent</a>
+        <a href="https://www.youtube.com/watch?v=bzWI3Dil9Ig" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">Backlog 自动接单</a>
+        <a href="https://www.youtube.com/watch?v=8kNv3rjQaVA" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">AI 安全委员会</a>
+      </div>
+      <div class="card-footer">
+        <a href="#builder" class="card-link">看编码协同 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card openclaw-category-card is-hidden" data-group="content" style="border-left: 4px solid #f97316;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">内容生产</span>
+          <span class="badge" style="background: rgba(249,115,22,.12); color:#c2410c;">原站 38 条 / 精选 9 条</span>
+        </div>
+      </div>
+      <h3>内容研究与自动发布</h3>
+      <p class="description">原站 `content` 很集中在研究、选题、播客嘉宾挖掘、会议纪要、内容工厂和跨平台分发。对中文用户来说，这部分最容易先跑通结果。</p>
+      <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="https://www.youtube.com/watch?v=XeTgMEapbag" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">Discord 研究流水线</a>
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/content-factory.md" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">内容工厂</a>
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/daily-reddit-digest.md" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">Reddit 摘要</a>
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/daily-youtube-digest.md" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">YouTube 摘要</a>
+        <a href="https://www.youtube.com/watch?v=q2iLy90uRS8" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">播客嘉宾挖掘</a>
+        <a href="https://www.youtube.com/watch?v=q2iLy90uRS8" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">Zoom 纪要高亮</a>
+        <a href="https://www.youtube.com/watch?v=bzWI3Dil9Ig" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">趋势洞察周报</a>
+        <a href="https://www.youtube.com/watch?v=bzWI3Dil9Ig" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">项目内容捕获</a>
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/content-factory.md" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">多 Agent 内容工厂</a>
+      </div>
+      <div class="card-footer">
+        <a href="#growth" class="card-link">看内容增长 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card openclaw-category-card is-hidden" data-group="marketing" style="border-left: 4px solid #ec4899;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">营销获客</span>
+          <span class="badge" style="background: rgba(236,72,153,.12); color:#be185d;">原站 21 条 / 精选 8 条</span>
+        </div>
+      </div>
+      <h3>营销自动化与客户服务</h3>
+      <p class="description">原站 `marketing` 主要覆盖 AI 营销团队、竞品广告库研究、提案生成、落地页与广告素材、Meta 广告草稿、多渠道客服。这部分和你现有增长区天然互补。</p>
+      <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/multi-channel-customer-service.md" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">多渠道 AI 客服</a>
+        <a href="https://www.youtube.com/watch?v=Q7r--i9lLck" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">HubSpot 交易跟踪</a>
+        <a href="https://www.youtube.com/watch?v=41_TNGDDnfQ" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">近 30 天痛点研究</a>
+        <a href="https://www.youtube.com/watch?v=7UaQB325EqU" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">Meta 广告库研究</a>
+        <a href="https://www.youtube.com/watch?v=7UaQB325EqU" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">提案自动生成</a>
+        <a href="https://www.youtube.com/watch?v=7UaQB325EqU" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">落地页与广告素材</a>
+        <a href="https://www.youtube.com/watch?v=7UaQB325EqU" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">Meta 草稿投放</a>
+        <a href="https://www.youtube.com/watch?v=8kNv3rjQaVA" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">AI 商业顾问团</a>
+      </div>
+      <div class="card-footer">
+        <a href="#growth" class="card-link">看增长打法 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card openclaw-category-card is-hidden" data-group="finance" style="border-left: 4px solid #eab308;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">交易财务</span>
+          <span class="badge" style="background: rgba(234,179,8,.12); color:#a16207;">原站 20 条 / 精选 8 条</span>
+        </div>
+      </div>
+      <h3>投研、盯盘与财务自动化</h3>
+      <p class="description">原站 `finance` 涵盖财报追踪、自动交易、OCR 发票票据、个人财务与税务资料整理。中文页里已经有交易监控和 A 股链路，这块可以直接接上。</p>
+      <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/earnings-tracker.md" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">财报追踪器</a>
+        <a href="https://www.youtube.com/watch?v=Kyvh5G_BUxo" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">税务资料预处理</a>
+        <a href="https://youtube.com/watch?v=fezsMrqsdrg" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">自动交易</a>
+        <a href="https://www.tldl.io/blog/openclaw-use-cases-2026" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">OCR 票据处理</a>
+        <a href="https://playbooks.com/skills/openclaw/skills/personal-finance" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">本地账本跟踪</a>
+        <a href="https://www.tryopenclaw.ai/use-cases/expense-receipt-tracker" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">收据拍照记账</a>
+        <a href="https://ohmyopenclaw.ai/category/finance/" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">订阅扣费审计</a>
+        <a href="https://www.serif.ai/openclaw/finance" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">组合监控提醒</a>
+      </div>
+      <div class="card-footer">
+        <a href="#finance" class="card-link">看交易投研 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card openclaw-category-card is-hidden" data-group="monetization" style="border-left: 4px solid #22c55e;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">赚钱模式</span>
+          <span class="badge" style="background: rgba(34,197,94,.12); color:#15803d;">原站 39 条 / 精选 9 条</span>
+        </div>
+      </div>
+      <h3>咨询、代搭建与订阅服务</h3>
+      <p class="description">原站 `monetization` 重点不是“玄学躺赚”，而是咨询、代搭建、工作坊、Trading Alerts、微型 SaaS 包装等可出售服务。这和你页面里的私域分销、案例拆解是同一路线。</p>
+      <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="https://mpgone.com/what-is-clawdbot-how-to-make-money/" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">B2B 邮箱代运营</a>
+        <a href="https://alstongodbolt.com/5-advanced-ways-to-make-money-with-openclaw" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">工作坊与咨询</a>
+        <a href="https://github.com/BlockRunAI/awesome-OpenClaw-Money-Maker" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">赚钱仓库</a>
+        <a href="https://alstongodbolt.com/5-advanced-ways-to-make-money-with-openclaw" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">代搭建服务包</a>
+        <a href="https://mpgone.com/what-is-clawdbot-how-to-make-money/" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">交易提醒订阅</a>
+        <a href="https://alstongodbolt.com/5-advanced-ways-to-make-money-with-openclaw" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">微型 SaaS 包装</a>
+        <a href="https://mpgone.com/what-is-clawdbot-how-to-make-money/" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">研究报告产品化</a>
+        <a href="https://mpgone.com/what-is-clawdbot-how-to-make-money/" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">零员工自动业务</a>
+        <a href="https://alstongodbolt.com/5-advanced-ways-to-make-money-with-openclaw" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">策略咨询通话</a>
+      </div>
+      <div class="card-footer">
+        <a href="#monetize" class="card-link">看变现案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card openclaw-category-card is-hidden" data-group="ecommerce" style="border-left: 4px solid #f472b6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">电商运营</span>
+          <span class="badge" style="background: rgba(244,114,182,.12); color:#be185d;">原站 14 条 / 精选 8 条</span>
+        </div>
+      </div>
+      <h3>电商客服、描述与库存</h3>
+      <p class="description">原站 `e-commerce` 主要是弃单挽回、流失预测、商品文案、库存提醒、客服草拟和评论分析。它说明 OpenClaw 很适合做中后台运营，不只适合内容号。</p>
+      <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="https://popularaitools.ai/openclaw-ecommerce-operator-review/" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">弃单召回</a>
+        <a href="https://clawctl.com/blog/openclaw-ecommerce-shopify-automation" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">电商客服草稿</a>
+        <a href="https://x.com/_taysthetic/status/2025848825777160231" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">真实 P&L</a>
+        <a href="https://popularaitools.ai/openclaw-ecommerce-operator-review/" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">流失预测</a>
+        <a href="https://popularaitools.ai/openclaw-ecommerce-operator-review/" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">商品文案 SEO</a>
+        <a href="https://clawctl.com/blog/openclaw-ecommerce-shopify-automation" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">订单校验与风控</a>
+        <a href="https://popularaitools.ai/openclaw-ecommerce-operator-review/" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">库存阈值提醒</a>
+        <a href="https://popularaitools.ai/openclaw-ecommerce-operator-review/" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">评论洞察分析</a>
+      </div>
+      <div class="card-footer">
+        <a href="#monetize" class="card-link">看商业化方向 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card openclaw-category-card is-hidden" data-group="personal" style="border-left: 4px solid #06b6d4;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">个人效率</span>
+          <span class="badge" style="background: rgba(6,182,212,.12); color:#0f766e;">原站 73 条 / 精选 10 条</span>
+        </div>
+      </div>
+      <h3>个人、家庭与自我管理</h3>
+      <p class="description">我把原站的 `life-admin`、`personal-growth`、`health`、`smart-home` 合并成一个中文入口。会议准备、任务清单、家庭日历、健康提醒、晨报和习惯管理，都属于容易长期留存的场景。</p>
+      <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/family-calendar-household-assistant.md" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">家庭日历助手</a>
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/custom-morning-brief.md" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">晨报助手</a>
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/health-symptom-tracker.md" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">健康追踪</a>
+        <a href="https://www.youtube.com/watch?v=XeTgMEapbag" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">晨间会前准备</a>
+        <a href="https://www.youtube.com/watch?v=XeTgMEapbag" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">隔夜待办排序</a>
+        <a href="https://www.youtube.com/watch?v=YFjfBk8HI5o" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">主动关怀提醒</a>
+        <a href="https://community.home-assistant.io/t/openclaw-clawdbot-on-home-assistant/981467" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">Home Assistant 接入</a>
+        <a href="https://www.reddit.com/r/AI_Agents/comments/1r7zsip/open_claw_the_right_tool_as_an_automated_fitness/" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">自动健身教练</a>
+        <a href="https://x.com/_MaxBlade/status/2019060194051846598" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">周目标工作表</a>
+        <a href="https://x.com/AlexFinn/status/2024280496503710174" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">使命反推日程</a>
+      </div>
+      <div class="card-footer">
+        <a href="#starter" class="card-link">回到入门区 <span>→</span></a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section id="usecase-picks" style="margin-bottom: 36px;">
+  <div class="section-header">
+    <h2 class="section-title"><span class="icon">🌍</span> 全球精选案例</h2>
+    <span style="color: var(--gray-500);">从 useclaw 里筛出的 16 条高可复制案例</span>
+  </div>
+  <div class="tool-grid">
+    <article class="tool-card" style="border-left: 4px solid #64748b;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">团队协作</span>
+          <span class="badge" style="background: rgba(100,116,139,.12); color:#475569;">Brian Casel</span>
+        </div>
+      </div>
+      <h3>4 个专职 AI 员工协同作业</h3>
+      <p class="description">开发、营销、项目管理、系统管理四个角色分开跑，这是最适合中文用户理解“OpenClaw 不是单 Agent”的入门案例。</p>
+      <div class="card-footer">
+        <a href="https://www.youtube.com/watch?v=bzWI3Dil9Ig" target="_blank" rel="noopener noreferrer" class="card-link">查看原案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #8b5cf6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">开发工程</span>
+          <span class="badge" style="background: rgba(139,92,246,.12); color:#6d28d9;">GitHub</span>
+        </div>
+      </div>
+      <h3>自愈服务器与基础设施运维</h3>
+      <p class="description">不只是写代码，而是让 Agent 盯住家用服务器和 DevOps 任务，自动发现问题、处理异常、维持服务稳定。</p>
+      <div class="card-footer">
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/self-healing-home-server.md" target="_blank" rel="noopener noreferrer" class="card-link">查看原案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #f97316;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">内容研究</span>
+          <span class="badge" style="background: rgba(249,115,22,.12); color:#c2410c;">Alex Finn</span>
+        </div>
+      </div>
+      <h3>Discord 内容研究流水线</h3>
+      <p class="description">把研究、找资料、整理趋势放进 Discord 渠道长期跑，是内容团队最容易复制的生产线之一。</p>
+      <div class="card-footer">
+        <a href="https://www.youtube.com/watch?v=XeTgMEapbag" target="_blank" rel="noopener noreferrer" class="card-link">查看原案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #ec4899;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">营销获客</span>
+          <span class="badge" style="background: rgba(236,72,153,.12); color:#be185d;">9x</span>
+        </div>
+      </div>
+      <h3>端到端 AI 营销团队</h3>
+      <p class="description">竞品广告研究、提案、落地页、素材、Meta 投放草稿都能串起来，适合做获客型服务和代运营。</p>
+      <div class="card-footer">
+        <a href="https://www.youtube.com/watch?v=7UaQB325EqU" target="_blank" rel="noopener noreferrer" class="card-link">查看原案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #eab308;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">交易财务</span>
+          <span class="badge" style="background: rgba(234,179,8,.12); color:#a16207;">GitHub</span>
+        </div>
+      </div>
+      <h3>科技公司财报追踪器</h3>
+      <p class="description">自动盯财报、提取更新、生成提醒，这类链路最适合改造成 A 股、港股或加密项目的持续监控助手。</p>
+      <div class="card-footer">
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/earnings-tracker.md" target="_blank" rel="noopener noreferrer" class="card-link">查看原案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #ca8a04;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">自动交易</span>
+          <span class="badge" style="background: rgba(202,138,4,.12); color:#a16207;">OpenAlgo</span>
+        </div>
+      </div>
+      <h3>OpenClaw 接 OpenAlgo 自动交易</h3>
+      <p class="description">这是从分析走向执行的一步，把策略、信号和下单动作连接起来，适合有现成策略的人继续扩展。</p>
+      <div class="card-footer">
+        <a href="https://youtube.com/watch?v=fezsMrqsdrg" target="_blank" rel="noopener noreferrer" class="card-link">查看原案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #22c55e;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">变现服务</span>
+          <span class="badge" style="background: rgba(34,197,94,.12); color:#15803d;">服务化</span>
+        </div>
+      </div>
+      <h3>把 OpenClaw 做成代搭建服务</h3>
+      <p class="description">最现实的变现方式之一不是卖软件，而是帮客户搭建、配置、交付可运行的自动化系统。</p>
+      <div class="card-footer">
+        <a href="https://alstongodbolt.com/5-advanced-ways-to-make-money-with-openclaw" target="_blank" rel="noopener noreferrer" class="card-link">查看原案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #f472b6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">电商运营</span>
+          <span class="badge" style="background: rgba(244,114,182,.12); color:#be185d;">Shopify</span>
+        </div>
+      </div>
+      <h3>弃单召回与电商自动运营</h3>
+      <p class="description">弃单挽回、库存提醒、客服回复、评论分析，这类案例说明 OpenClaw 很适合做电商中后台自动化。</p>
+      <div class="card-footer">
+        <a href="https://popularaitools.ai/openclaw-ecommerce-operator-review/" target="_blank" rel="noopener noreferrer" class="card-link">查看原案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #06b6d4;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">个人效率</span>
+          <span class="badge" style="background: rgba(6,182,212,.12); color:#0f766e;">GitHub</span>
+        </div>
+      </div>
+      <h3>家庭日历与家务协调助手</h3>
+      <p class="description">这是最容易长期留存的个人场景之一，把家庭日历、提醒和琐事协调交给 Agent，能持续节省脑力。</p>
+      <div class="card-footer">
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/family-calendar-household-assistant.md" target="_blank" rel="noopener noreferrer" class="card-link">查看原案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #14b8a6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">晨报系统</span>
+          <span class="badge" style="background: rgba(20,184,166,.12); color:#0f766e;">GitHub</span>
+        </div>
+      </div>
+      <h3>自定义晨报与每日任务简报</h3>
+      <p class="description">新闻、任务、优先级和建议动作自动汇总成晨报，是个人工作流里最值得长期保留的一类用法。</p>
+      <div class="card-footer">
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/custom-morning-brief.md" target="_blank" rel="noopener noreferrer" class="card-link">查看原案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #64748b;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">基础设施</span>
+          <span class="badge" style="background: rgba(100,116,139,.12); color:#475569;">Brian Casel</span>
+        </div>
+      </div>
+      <h3>用 Markdown 脑库给 Agent 长期上下文</h3>
+      <p class="description">这是从“会聊天”走向“懂业务”的关键一步。把业务活动、决策和背景写进 markdown，Agent 才能持续接住复杂工作。</p>
+      <div class="card-footer">
+        <a href="https://www.youtube.com/watch?v=bzWI3Dil9Ig" target="_blank" rel="noopener noreferrer" class="card-link">查看原案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #8b5cf6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">开发工程</span>
+          <span class="badge" style="background: rgba(139,92,246,.12); color:#6d28d9;">GitHub</span>
+        </div>
+      </div>
+      <h3>自动化游戏开发流水线</h3>
+      <p class="description">原站里很有代表性的案例之一，不是只写一个函数，而是把策划、开发、迭代串成完整生产流。</p>
+      <div class="card-footer">
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/autonomous-game-dev-pipeline.md" target="_blank" rel="noopener noreferrer" class="card-link">查看原案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #f97316;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">内容生产</span>
+          <span class="badge" style="background: rgba(249,115,22,.12); color:#c2410c;">GitHub</span>
+        </div>
+      </div>
+      <h3>每日 YouTube 摘要与洞察提炼</h3>
+      <p class="description">适合你这种信息摄入密度高的站点运营者，用来长期跟踪频道、自动拉取转录并提炼可发内容。</p>
+      <div class="card-footer">
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/daily-youtube-digest.md" target="_blank" rel="noopener noreferrer" class="card-link">查看原案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #ec4899;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">营销获客</span>
+          <span class="badge" style="background: rgba(236,72,153,.12); color:#be185d;">GitHub</span>
+        </div>
+      </div>
+      <h3>多渠道客服统一回复与升级</h3>
+      <p class="description">适合小团队先做服务自动化，把邮件、聊天、售后问题收束到统一工作流，不必先做复杂广告系统。</p>
+      <div class="card-footer">
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/multi-channel-customer-service.md" target="_blank" rel="noopener noreferrer" class="card-link">查看原案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #eab308;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">交易财务</span>
+          <span class="badge" style="background: rgba(234,179,8,.12); color:#a16207;">Playbooks</span>
+        </div>
+      </div>
+      <h3>本地账本与隐私优先的个人财务跟踪</h3>
+      <p class="description">不是所有财务自动化都要上云。这个案例强调本地、可控、低泄露风险，适合个人和小团队先做内部使用。</p>
+      <div class="card-footer">
+        <a href="https://playbooks.com/skills/openclaw/skills/personal-finance" target="_blank" rel="noopener noreferrer" class="card-link">查看原案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #06b6d4;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">健康管理</span>
+          <span class="badge" style="background: rgba(6,182,212,.12); color:#0f766e;">GitHub</span>
+        </div>
+      </div>
+      <h3>饮食症状跟踪与过敏源识别</h3>
+      <p class="description">这类案例展示了 OpenClaw 在个人长期记录场景里的价值，不追求一次性炫技，而是持续辅助判断。</p>
+      <div class="card-footer">
+        <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases/blob/main/usecases/health-symptom-tracker.md" target="_blank" rel="noopener noreferrer" class="card-link">查看原案例 <span>→</span></a>
+      </div>
+    </article>
   </div>
 </section>
 
@@ -100,6 +1040,25 @@
     <span style="color: var(--gray-500);">先建立正确心智模型</span>
   </div>
   <div class="tool-grid">
+    <article class="tool-card" style="border-left: 4px solid #ef4444;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">装完先配</span>
+          <span class="badge" style="background: rgba(239,68,68,.12); color:#b91c1c;">6 个关键项</span>
+        </div>
+      </div>
+      <h3>装完 OpenClaw 后不要忘了这 6 个配置</h3>
+      <p class="description">很多人装完后觉得 OpenClaw 只能聊天，往往不是模型不行，而是关键配置没补。真正影响体验的，通常是安全、记忆、搜索、浏览器、插件和 Token 管理这 6 件事。</p>
+      <div style="margin-top:12px; color:#374151; line-height:1.9;">
+        <p style="margin:0 0 8px;"><strong>安全性：</strong>改默认端口、检查聊天权限、限制文件访问范围、装 `Skill-Vetting` 先做 Skills 安全扫描。</p>
+        <p style="margin:0 0 8px;"><strong>记忆优化：</strong>`QMD`、`LanceDB`、`Memory OS` 可以逐层增强记忆质量和召回。</p>
+        <p style="margin:0 0 8px;"><strong>搜索增强：</strong>`Agent Reach`、`6551` 这类方案更适合做社媒情报和实时搜索补强。</p>
+        <p style="margin:0 0 8px;"><strong>浏览器操作：</strong>Managed Browser 更安全，录制型方案更省 Token。</p>
+        <p style="margin:0 0 8px;"><strong>实用插件：</strong>`Self Improving Agent`、`cron-backup`、`Git Workflows`、`AgentMail Integration`、`mac-native-suite` 都很实用。</p>
+        <p style="margin:0;"><strong>Token 管理：</strong>优先订阅制，优化心跳，定期让 OpenClaw 输出 Token 体检报告。</p>
+      </div>
+    </article>
+
     <article class="tool-card" style="border-left: 4px solid #f59e0b;">
       <div class="card-header">
         <div class="card-badges">
@@ -197,6 +1156,59 @@
         <a href="https://my.feishu.cn/docx/A59kdcwuGogSAex12YPcvHCbn5g?from=from_copylink" target="_blank" rel="noopener noreferrer" class="card-link">查看工作流 <span>→</span></a>
       </div>
     </article>
+
+    <article class="tool-card" style="border-left: 4px solid #8b5cf6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">Gemini 增强</span>
+          <span class="badge" style="background: rgba(139,92,246,.12); color:#6d28d9;">搜索 + 深研</span>
+        </div>
+      </div>
+      <h3>有 Gemini 账号时，优先补 ModSearch 和 Gemini Deep Research</h3>
+      <p class="description">这两个都适合放在搜索配置区。`ModSearch` 相当于把 Gemini CLI 变成 OpenClaw 里的联网搜索能力，直接吃 Google 搜索优势，而且不是反代，风险更低。`Gemini Deep Research` 则相当于把 Gemini 的 Deep Research 能力搬到 OpenClaw 里，用 Gemini 3.1 Pro 驱动深度调研链路。</p>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #f59e0b;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">技能发现</span>
+          <span class="badge" style="background: rgba(245,158,11,.12); color:#b45309;">自动补技能</span>
+        </div>
+      </div>
+      <h3>find-skills 和 Clawhub</h3>
+      <p class="description">这两个放在搜索区最合适，因为它们本质上是在补 OpenClaw 的“遇到问题先找合适技能”能力。也就是说，不只是搜网页资料，而是主动搜能解决问题的 Skills，减少你手动找技能、装技能、换技能的成本。</p>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #ec4899;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">提示词与 Skills</span>
+          <span class="badge" style="background: rgba(236,72,153,.12); color:#be185d;">效率增强</span>
+        </div>
+      </div>
+      <h3>6 个提示词、20 个 Skills、把搜索做到极致</h3>
+      <p class="description">这几篇都应该放在搜索配置区，因为它们解决的是“装完 OpenClaw 以后怎么立刻变聪明”这个问题。前者偏提示词层，后两者偏 Skills 和搜索能力补强，适合做第一批效率增强配置。</p>
+      <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="https://my.feishu.cn/wiki/APdIwecPLiys2Ck6gQRcPlGDnYd" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">6 个提示词</a>
+        <a href="https://my.feishu.cn/wiki/YHtZwUyElis6nDktJDPciUO1nIg" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">20 个 Skills</a>
+        <a href="https://my.feishu.cn/docx/RAHQdSiLJo5kx7xA4t0cEij2nvg" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">搜索做到极致</a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #10b981;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">情报雷达</span>
+          <span class="badge" style="background: rgba(16,185,129,.12); color:#047857;">7×24 监控</span>
+        </div>
+      </div>
+      <h3>竞品监控自动化：Product Hunt + GitHub Trending + Last 30 Day Skill</h3>
+      <p class="description">这两条很适合放在搜索配置区，因为它们不是普通搜索，而是持续找机会、找真实痛点、找竞品动向的情报链路。一个偏竞品监控，一个偏快速摸清领域真实需求。</p>
+      <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="https://aaf55djl41.feishu.cn/wiki/OxzRwFs2FixgBAkbPeKcLCCanbd" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">竞品监控自动化</a>
+        <a href="https://aaf55djl41.feishu.cn/wiki/YykFw20JriztZZkH4XlcjuQunid" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">Last 30 day skill</a>
+      </div>
+    </article>
   </div>
 </section>
 
@@ -259,6 +1271,54 @@
       </div>
     </article>
 
+    <article class="tool-card" style="border-left: 4px solid #06b6d4;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">一键部署</span>
+          <span class="badge" style="background: rgba(6,182,212,.12); color:#0f766e;">飞书接入</span>
+        </div>
+      </div>
+      <h3>一键部署 OpenClaw，免费使用 MiniMax-M2.5、GLM-5 大模型，并接入飞书</h3>
+      <p class="description">这条适合刚想跑通 OpenClaw 的人：不仅解决部署问题，还把可用模型和飞书接入一起打包，属于非常典型的开箱即用方案。</p>
+      <div class="card-footer">
+        <a href="https://uc387d0m3r.feishu.cn/wiki/Y73OwLa8miV61IkAGLpc4byxnDb" target="_blank" rel="noopener noreferrer" class="card-link">查看部署方案 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #6366f1;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">模型额度</span>
+          <span class="badge" style="background: rgba(99,102,241,.12); color:#4338ca;">iFlow API</span>
+        </div>
+      </div>
+      <h3>iFlow API：免费无限使用 GLM 和千问顶级模型</h3>
+      <p class="description">这条应该放在部署方案区，而不是搜索区。iFlow 的核心价值不是搜索，而是可以免费、近乎无限额度地调用国内最顶级的 GLM 和千问模型。对高频跑 OpenClaw、多 Agent 工作流和长期压低模型成本的人，这一条非常关键。</p>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #ec4899;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">成本优化</span>
+          <span class="badge" style="background: rgba(236,72,153,.12); color:#be185d;">中转站</span>
+        </div>
+      </div>
+      <h3>OpenClaw 太烧 token，我搭建了中转站</h3>
+      <p class="description">这条最适合放在部署区，因为它解决的不是功能本身，而是运行成本和调用链路优化。对长期高频使用 OpenClaw 的人，这比单纯换模型更实际。</p>
+      <div class="openclaw-risk-box">
+        <h4>风险提示：低价中转站不一定真是“云厂商直连”</h4>
+        <p>你图里的核心信息，适合直接放在这里提醒用户：行业里最黑的一层，不是技术优化，而是有人用盗刷信用卡批量注册 OpenAI、Anthropic 等平台账号，再把拿到的额度或 API Key 转手卖给下游。</p>
+        <ol>
+          <li>直接出售 API Key 给下游中转站，价格很低，但封号和连带风险都很高。</li>
+          <li>把这类账号包装成“官方纯血号池”或“云厂商采购直连 API”，报价远低于正常官方成本，本质上可能并不是正规渠道。</li>
+        </ol>
+        <p class="risk-tail">判断标准很简单：如果价格低得离谱、来源讲不清、稳定性全靠“随时补号”，那大概率不是成本优化，而是在透支黑产链路。</p>
+      </div>
+      <div class="card-footer">
+        <a href="https://my.feishu.cn/wiki/RmH0wTqL6i4faKkrejicSPeXnFc" target="_blank" rel="noopener noreferrer" class="card-link">查看方案 <span>→</span></a>
+      </div>
+    </article>
+
     <article class="tool-card" style="border-left: 4px solid #8b5cf6;">
       <div class="card-header">
         <div class="card-badges">
@@ -270,6 +1330,87 @@
       <p class="description">很多实际工作流最后都会卡在浏览器自动化。这篇专门处理“云端运行时怎么接浏览器”这个高频难点。</p>
       <div class="card-footer">
         <a href="https://nodewalk.feishu.cn/docx/M4oldXDAjoeM1LxQPzbcQl6hnlg" target="_blank" rel="noopener noreferrer" class="card-link">查看方案 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #0f766e;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">稳定运行</span>
+          <span class="badge" style="background: rgba(15,118,110,.12); color:#0f766e;">互备 Agent</span>
+        </div>
+      </div>
+      <h3>OpenClaw 总挂？给它配个“保镖”自动修</h3>
+      <p class="description">这篇更适合放在部署方案区，因为它解决的是“装完以后怎么更稳”。核心做法不是硬扛异常，而是给 OpenClaw 配一个互备 Agent，提前备份、定时巡检、出问题自动拉起修复。</p>
+      <div class="card-footer">
+        <a href="{% url 'openclaw_guardian_agent_guide' %}" class="card-link">查看运维方案 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #14b8a6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">浏览器技能</span>
+          <span class="badge" style="background: rgba(20,184,166,.12); color:#0f766e;">精确重放</span>
+        </div>
+      </div>
+      <h3>BrowserWing：把浏览器操作录成 Skills</h3>
+      <p class="description">这条适合放在浏览器自动化附近，因为它解决的是“怎么把一次人工操作沉淀成可复用技能”。录完之后，下次就可以按同样流程精确重放，非常适合高重复网页操作、后台录入和跨站点固定流程自动化。</p>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #0ea5e9;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">CLI 自动化</span>
+          <span class="badge" style="background: rgba(14,165,233,.12); color:#0369a1;">网站 + Electron</span>
+        </div>
+      </div>
+      <h3>OpenCLI 中文教程：把网站和桌面 App 直接变成命令行</h3>
+      <p class="description">这条适合放在浏览器自动化附近，因为它解决的是“如何复用现成登录态、把网页和 Electron 应用直接接进 CLI”。对 Codex、Cursor、ChatGPT、微信读书、小红书、Twitter/X 这类高频工具，提速非常直接。</p>
+      <div class="card-footer">
+        <a href="{% url 'opencli_guide' %}" class="card-link">看中文教程 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #2563eb;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">公益站</span>
+          <span class="badge" style="background: rgba(37,99,235,.12); color:#1d4ed8;">自动签到</span>
+        </div>
+      </div>
+      <h3>AnyRouter：目前能用，支持自动签到</h3>
+      <p class="description">这条适合放在资源入口区，因为它更像长期备用额度池。老牌公益站还在可用区间，而且已经有开源自动签到项目，Fork 原版后补了 Win 本地每日签到，对长期保活更友好。</p>
+      <div class="card-footer">
+        <a href="https://anyrouter.top/register?aff=0FzF" target="_blank" rel="noopener noreferrer" class="card-link">打开 AnyRouter <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #7c3aed;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">模型额度</span>
+          <span class="badge" style="background: rgba(124,58,237,.12); color:#6d28d9;">Claude Opus</span>
+        </div>
+      </div>
+      <h3>AgentRouter：老牌复活，和 AnyRouter 不是同一个站</h3>
+      <p class="description">这条继续放在部署和资源入口附近，因为很多人把 OpenClaw 跑起来后，真正卡住的是高质量模型成本。这个站和上面的 AnyRouter 不是同一个入口，适合多备一个公益站渠道，先拿可用额度再决定后面接 API、接工作流，还是做高频实验。</p>
+      <div class="card-footer">
+        <a href="https://agentrouter.org/register?aff=rLco" target="_blank" rel="noopener noreferrer" class="card-link">打开 AgentRouter <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #0f766e;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">公益 API</span>
+          <span class="badge" style="background: rgba(15,118,110,.12); color:#0f766e;">工作流接入</span>
+        </div>
+      </div>
+      <h3>GemAI：目前能用的公益 API 入口</h3>
+      <p class="description">这条更偏 API 侧，适合已经不满足于网页端白嫖、而是想把 OpenClaw、本地脚本或其他自动化链路直接接到免费接口的人。能不能长期用不敢打包票，但现在是一个可用的低成本备用口。</p>
+      <div class="card-footer">
+        <a href="https://api.gemai.cc/register?aff=gTcX" target="_blank" rel="noopener noreferrer" class="card-link">打开 GemAI <span>→</span></a>
       </div>
     </article>
 
@@ -292,7 +1433,7 @@
 <section id="growth" style="margin-bottom: 36px;">
   <div class="section-header">
     <h2 class="section-title"><span class="icon">📣</span> 内容增长</h2>
-    <span style="color: var(--gray-500);">内容生产、分发、获客和邮件自动化</span>
+    <span style="color: var(--gray-500);">内容生产、分发、SEO 流量、获客和邮件自动化</span>
   </div>
   <div class="tool-grid">
     <article class="tool-card" style="border-left: 4px solid #f97316;">
@@ -303,13 +1444,13 @@
         </div>
       </div>
       <h3>你现在就在跑的 5 个 OpenClaw 场景</h3>
-      <p class="description">这 5 个方向已经足够说明 OpenClaw 的价值不是聊天，而是持续替代人工流程。</p>
+      <p class="description">这 5 个方向已经足够说明 OpenClaw 的价值不是聊天，而是把内容、分发、监控、编译和营销变成几乎无人值守的持续流水线。</p>
       <div style="margin-top:12px; color:#374151; line-height:1.9;">
-        <p style="margin:0 0 8px;"><strong>1.</strong> 自动写内容并发布到 X、Facebook。</p>
-        <p style="margin:0 0 8px;"><strong>2.</strong> 自动发现热门帖子并生成评论草稿，承接热点讨论。</p>
-        <p style="margin:0 0 8px;"><strong>3.</strong> 24 小时监控交易市场异常数据并输出信号。</p>
-        <p style="margin:0 0 8px;"><strong>4.</strong> 自动把英文研报编译成高质量中文研报。</p>
-        <p style="margin:0;"><strong>5.</strong> 全自动邮件营销，显著降低系统成本和人工干预。</p>
+        <p style="margin:0 0 8px;"><strong>1.</strong> 自动写内容并发布到 X、Facebook，持续跑内容分发。</p>
+        <p style="margin:0 0 8px;"><strong>2.</strong> 在 Facebook、YouTube、X 自动找热门帖子并发布评论，承接热点流量并植入软营销。</p>
+        <p style="margin:0 0 8px;"><strong>3.</strong> 24 小时监控交易市场异常数据，按既有交易策略直接输出可用信号。</p>
+        <p style="margin:0 0 8px;"><strong>4.</strong> 自动编译英文研报，并排版输出高质量中文研报。</p>
+        <p style="margin:0;"><strong>5.</strong> 全自动邮件营销，把原本一年约 3 万美元的系统成本压到预估 2000 美元左右，几乎不需要人工干预。</p>
       </div>
     </article>
 
@@ -322,8 +1463,173 @@
       </div>
       <h3>公众号躺更神器：读对标、写文、配图、入草稿箱</h3>
       <p class="description">这个工作流很完整，不只是自动写文，而是把“选题参考、内容生成、配图、存草稿”串成一条能持续运行的链路。</p>
+      <div style="margin-top:12px; color:#374151; line-height:1.9;">
+        <p style="margin:0 0 8px;"><strong>更省事的实战经验：</strong>自媒体自动化不一定非要从零起稿。一个很直接的打法，是盯推特上向阳乔木的文章，筛出适合中文传播的内容后，直接转发到公众号。</p>
+        <p style="margin:0;"><strong>为什么这条值得记：</strong>它本质上是在把“找源头内容 + 二次分发”做成轻量工作流，比完整重写一篇文章更快，更适合先把公众号更新频率跑起来。</p>
+      </div>
       <div class="card-footer">
         <a href="https://pa23ntdf1gf.feishu.cn/wiki/Gj9TwqLXVipURikiKpzcLpDkn6e" target="_blank" rel="noopener noreferrer" class="card-link">查看流程 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #8b5cf6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">漫画自动化</span>
+          <span class="badge" style="background: rgba(139,92,246,.12); color:#6d28d9;">公众号赛道</span>
+        </div>
+      </div>
+      <h3>OpenClaw 实现公众号热门赛道漫画全自动生产</h3>
+      <p class="description">这条最适合放在内容增长区的公众号分支里，因为它不是单纯写文，而是把“热门赛道选题 -> 漫画脚本 -> 画面生成 -> 成品输出”串成更适合微信传播的漫画内容流水线。</p>
+      <div style="margin-top:12px; color:#374151; line-height:1.9;">
+        <p style="margin:0 0 8px;"><strong>更适合谁：</strong>想做公众号差异化内容、连载型内容，或者想把热点解释、故事化表达和知识传播做成漫画形态的人。</p>
+        <p style="margin:0;"><strong>为什么值得放这里：</strong>它和“公众号躺更神器”正好互补，前者更偏图文草稿箱，后者更偏漫画内容工厂，都是 OpenClaw 接中文内容增长的典型玩法。</p>
+      </div>
+      <div class="card-footer">
+        <a href="https://pa23ntdf1gf.feishu.cn/wiki/CaGdwqTUri16lxkMz0XcEvf5nFd" target="_blank" rel="noopener noreferrer" class="card-link">查看流程 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #6366f1;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">图文流水线</span>
+          <span class="badge" style="background: rgba(99,102,241,.12); color:#4338ca;">14 平台分发</span>
+        </div>
+      </div>
+      <h3>用 OpenClaw 写文章，10 分钟发 14 个平台</h3>
+      <p class="description">这条很适合放在内容增长区，因为它已经不是“AI 帮你写初稿”，而是把选题、写作、飞书排版和多平台发布串成完整内容系统。作者用 OpenClaw Agent 先自动推送 5 个选题，再 5 分钟出初稿、自动推飞书，最后接字流一键分发到 14 个平台，把原来 2 到 3 小时的流程压到约 10 分钟。</p>
+      <div style="margin-top:12px; color:#374151; line-height:1.9;">
+        <p style="margin:0 0 8px;"><strong>核心链路：</strong>cron 每天 9 点推选题到 Telegram，确认后 Agent 自动搜素材、按个人风格写稿、推送飞书文档，再接字流做全平台排版和发布。</p>
+        <p style="margin:0 0 8px;"><strong>关键配置：</strong>`SOUL.md` 定义角色和边界，风格文件固化写作习惯，记忆文件记录每天的内容生产历史，保证前后风格和观点一致。</p>
+        <p style="margin:0;"><strong>最值得抄的点：</strong>把“选题找你”做成定时系统，把“人只做最后审核”设成铁规则，既提速又不放弃质量底线。</p>
+      </div>
+      <div class="card-footer">
+        <a href="https://articles.zsxq.com/id_izc4s9agte0g.html" target="_blank" rel="noopener noreferrer" class="card-link">查看案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #10b981;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">多 Agent 运营</span>
+          <span class="badge" style="background: rgba(16,185,129,.12); color:#047857;">13 平台</span>
+        </div>
+      </div>
+      <h3>用 OpenClaw 搭 16 个 AI Agent，一个人运营 13 个自媒体平台</h3>
+      <p class="description">这条很适合放在内容增长区，因为它展示的已经不是“自动写一篇内容”，而是一整套分布式内容运营系统。作者把 16 个 Agent 分成基础支撑层、运营总监层和平台执行层，覆盖公众号、知乎、小红书、X、视频号、抖音、掘金、知识星球、B 站、YouTube、微博、即刻等 13 个平台，把原来每天 4 到 5 小时的运营工作压到 5 到 10 分钟。</p>
+      <div style="margin-top:12px; color:#374151; line-height:1.9;">
+        <p style="margin:0 0 8px;"><strong>核心架构：</strong>7 个基础 Agent 做内容、设计、开发、增长、财务、安全等后台支撑，1 个“墨媒”做全局调度，8 个平台 Agent 各自负责 1 到 2 个平台的选题、发布、采数和复盘。</p>
+        <p style="margin:0 0 8px;"><strong>关键机制：</strong>每个 Agent 有独立 workspace，通过 `sessions_send` 协作；27 个 cron 定时任务分布在早、中、晚三段；没有开放 API 的平台则通过 VNC + CDP 直接操作真实浏览器。</p>
+        <p style="margin:0;"><strong>最值得抄的点：</strong>把平台运营拆成“选题 -> 写稿 -> 适配 -> 发布 -> 采数 -> 复盘”的独立闭环，再让总控 Agent 汇总日报和周报，形成真正能长期跑的内容团队系统。</p>
+      </div>
+      <div class="card-footer">
+        <a href="https://articles.zsxq.com/id_vp4wqdwnel2d.html" target="_blank" rel="noopener noreferrer" class="card-link">查看案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #f59e0b;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">SEO 流量</span>
+          <span class="badge" style="background: rgba(245,158,11,.12); color:#b45309;">关键词占位</span>
+        </div>
+      </div>
+      <h3>想尽办法增加网页 SEO 和流量</h3>
+      <p class="description">如果目标是把 OpenClaw 真正接到增长链路里，这件事必须单独拎出来看。核心不是多发几篇内容，而是让 Agent 持续做关键词研究、热点跟踪、长尾选题生成、多平台分发、旧内容改写和数据复盘，把“内容产出”转成“搜索流量 + 平台流量 + 站外引流”的复合增长系统。</p>
+      <div style="margin-top:12px; color:#374151; line-height:1.9;">
+        <p style="margin:0 0 8px;"><strong>可直接落地的方向：</strong>批量做关键词选题、把一篇长文拆成多平台版本、根据平台数据反向优化标题和结构、持续补写高搜索意图内容。</p>
+        <p style="margin:0;"><strong>更适合 OpenClaw 的原因：</strong>它能把搜索、写作、改写、发布、采数和复盘串成闭环，让 SEO 和流量增长从零散动作变成每日自动执行的系统任务。</p>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #06b6d4;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">自动营销</span>
+          <span class="badge" style="background: rgba(6,182,212,.12); color:#0f766e;">多平台原型</span>
+        </div>
+      </div>
+      <h3>ai_auto_marketing：搜索、生成文案、批量触达的一体化工作台</h3>
+      <p class="description">这套本地项目更适合放在内容增长区，因为它不是单个平台脚本，而是一整套自动营销原型。现在已经接入 X、哔哩哔哩和 Telegram，支持多账号 Cookie 管理、关键词搜内容、双平台并行搜索、自动生成 `soft / medium / hard` 三种营销文案、批量回复，以及结果统计和失败追踪。</p>
+      <div style="margin-top:12px; color:#374151; line-height:1.9;">
+        <p style="margin:0 0 8px;"><strong>最有价值的点：</strong>把“找内容 -> 写文案 -> 发出去 -> 看结果”压缩到几分钟，适合验证多平台自动营销流程。</p>
+        <p style="margin:0;"><strong>界面模块：</strong>控制台、账号管理、Telegram 营销、内容搜索、回复任务、产品管理、数据统计。</p>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #8b5cf6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">YouTube 矩阵</span>
+          <span class="badge" style="background: rgba(139,92,246,.12); color:#6d28d9;">硅基员工</span>
+        </div>
+      </div>
+      <h3>4 个频道，1.3M 订阅，2 亿播放：一个碳基 API 与两个硅基员工的 YouTube 矩阵运营实录</h3>
+      <p class="description">这条最适合放在内容增长区，因为它展示的不是单点爆文，而是频道矩阵、角色分工和持续分发如何被 OpenClaw 式工作流接管。</p>
+      <div class="card-footer">
+        <a href="https://vcn55ni4prkd.feishu.cn/docx/VDqPdF1zeoTHx4x4V84cG49JnIg" target="_blank" rel="noopener noreferrer" class="card-link">查看实录 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #7c3aed;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">工作流合集</span>
+          <span class="badge" style="background: rgba(124,58,237,.12); color:#6d28d9;">公众号到朋友圈</span>
+        </div>
+      </div>
+      <h3>六个工作流，让 OpenClaw 给你打工</h3>
+      <p class="description">这条很适合放在内容增长区，因为它覆盖的是一整条中文互联网内容链路：公众号、配图、视频、朋友圈等多个动作一起自动化，更像“内容工厂”而不是单点技巧。</p>
+      <div class="card-footer">
+        <a href="https://my.feishu.cn/wiki/VLYcwDBgxi17bAk5dr5cz6FLnNe" target="_blank" rel="noopener noreferrer" class="card-link">查看工作流 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #f59e0b;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">短剧脚本</span>
+          <span class="badge" style="background: rgba(245,158,11,.12); color:#b45309;">爆款内容</span>
+        </div>
+      </div>
+      <h3>如何让龙虾自动写出爆款短剧的剧本</h3>
+      <p class="description">这篇适合放在内容增长区，因为它解决的是“高频内容生产”而不是普通文案改写，重点在于让 OpenClaw 持续产出可用于短视频和短剧的脚本母版。</p>
+      <div class="card-footer">
+        <a href="https://rcn71rsvb3w5.feishu.cn/wiki/Ws9YwPxW8ilulNkKBGscbG1Xnac" target="_blank" rel="noopener noreferrer" class="card-link">查看剧本方案 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #14b8a6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">AI 漫剧</span>
+          <span class="badge" style="background: rgba(20,184,166,.12); color:#0f766e;">Seed2.0 Skills</span>
+        </div>
+      </div>
+      <h3>终于，我把 OpenClaw 加 Seed2.0 Skills 做 AI 漫剧搞定</h3>
+      <p class="description">这条也属于内容增长区，但更具体地落在“脚本到成片”的生产链路上，适合和短剧脚本、YouTube 矩阵放在一起看，形成完整的视频内容自动化路径。</p>
+      <div class="card-footer">
+        <a href="https://my.feishu.cn/docx/Al7Rd43WCoD7DIxBMkSciEYLnfh" target="_blank" rel="noopener noreferrer" class="card-link">查看方案 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #0ea5e9;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">视频流水线</span>
+          <span class="badge" style="background: rgba(14,165,233,.12); color:#0e7490;">低成本高频</span>
+        </div>
+      </div>
+      <h3>用 OpenClaw 做视频：播放量从几十涨到 9000，成本一毛钱</h3>
+      <p class="description">这条很适合放在内容增长区，因为它不是“AI 帮你剪个片”，而是把选题、脚本、语音克隆、时间戳对齐、渲染和发布确认串成完整视频生产线。作者用 OpenClaw + Remotion + 语音克隆，把 60 秒短视频从 2 到 3 小时压到约 15 分钟，单条成本约 0.1 元，3 天总播放做到 9018。</p>
+      <div style="margin-top:12px; color:#374151; line-height:1.9;">
+        <p style="margin:0 0 8px;"><strong>核心链路：</strong>Agent 推选题，人工选题后，OpenClaw 自动写旁白、调用 TTS、用 Whisper 提取时间戳，再把内容灌进 Remotion 模板渲染成片。</p>
+        <p style="margin:0 0 8px;"><strong>技术栈：</strong>OpenClaw 做多 Agent 调度，Remotion 用 React 模板化生成视频，MiniMax 语音克隆负责配音，Whisper 负责逐句时间戳。</p>
+        <p style="margin:0;"><strong>最值得抄的点：</strong>视频不是一条条“剪”出来，而是按“数据 + 模板 + 自动化”的方式批量生产，特别适合视频号和短内容日更。</p>
+      </div>
+      <div class="card-footer">
+        <a href="https://articles.zsxq.com/id_bjs4a1r167tm.html" target="_blank" rel="noopener noreferrer" class="card-link">查看案例 <span>→</span></a>
       </div>
     </article>
 
@@ -335,9 +1641,37 @@
         </div>
       </div>
       <h3>小红书 Skills 自动化</h3>
-      <p class="description">适合把 OpenClaw 接到小红书内容分发与线索获取链路中，减少手工运营动作。对于中文互联网增长团队，这条非常值得单独研究。</p>
+      <p class="description">龙虾 OpenClaw 已经有现成的小红书 Skills，直接把小红书引流这件事拉进自动化链路。对国内自媒体和增长团队来说，这是非常强的获客入口；已经有人通过小红书做返佣拿到月入万 U 级别的结果，尤其在币圈交易所返佣场景里更有代表性。原本还要单独开发一套小红书自动化工具，现在很多流程可以直接用这套 Skill 顶上。</p>
       <div class="card-footer">
         <a href="https://github.com/white0dew/XiaohongshuSkills" target="_blank" rel="noopener noreferrer" class="card-link">打开仓库 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #14b8a6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">多 Agent 小红书</span>
+          <span class="badge" style="background: rgba(20,184,166,.12); color:#0f766e;">采集到发布</span>
+        </div>
+      </div>
+      <h3>OpenClaw 实战：多 Agent 打通小红书</h3>
+      <p class="description">这条适合和小红书 Skills 放在一起看，因为它展示的是更完整的闭环：数据收集、笔记编写、自动发布一步到位，适合想把小红书从“发内容”升级到“做系统运营”的团队。</p>
+      <div class="card-footer">
+        <a href="https://pa23ntdf1gf.feishu.cn/wiki/FPL0wx4laiPHXOkt6TocPUclnIs" target="_blank" rel="noopener noreferrer" class="card-link">查看实战 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #f97316;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">素材系统</span>
+          <span class="badge" style="background: rgba(249,115,22,.12); color:#c2410c;">自动长大</span>
+        </div>
+      </div>
+      <h3>我的素材库是怎么自己长大的</h3>
+      <p class="description">这条也很适合放在内容增长区，因为它解决的是“内容系统长期怎么喂料”的问题。手机上就能直接操作 Claude Code 做自动采集，更适合做长期内容资产沉淀和素材库扩容。</p>
+      <div class="card-footer">
+        <a href="https://my.feishu.cn/wiki/YOyywDc0XiCuPEk5cgOc4PtOnSe" target="_blank" rel="noopener noreferrer" class="card-link">查看方案 <span>→</span></a>
       </div>
     </article>
 
@@ -356,6 +1690,17 @@
         <a href="https://geekbang.feishu.cn/wiki/LKriwNl1tispLlkjxUDcRxqrnRg" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">5 个变现方案</a>
       </div>
     </article>
+
+    <article class="tool-card" style="border-left: 4px solid #10b981;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">邮件营销</span>
+          <span class="badge" style="background: rgba(16,185,129,.12); color:#047857;">降本替代</span>
+        </div>
+      </div>
+      <h3>用 OpenClaw 替代传统邮件营销系统</h3>
+      <p class="description">这类场景非常适合放在内容增长区，因为它本质上是“线索筛选 + 文案生成 + 触达执行 + 结果跟踪”的自动化闭环。你现在这套流程，已经把原来一年约 3 万美元的系统成本压到预估 2000 美元左右，而且几乎不需要人工介入。</p>
+    </article>
   </div>
 </section>
 
@@ -365,6 +1710,34 @@
     <span style="color: var(--gray-500);">市场监控、研报编译、选股与交易工作流</span>
   </div>
   <div class="tool-grid">
+    <article class="tool-card" style="border-left: 4px solid #2563eb;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">A 股自动交易</span>
+          <span class="badge" style="background: rgba(37,99,235,.12); color:#1d4ed8;">MiniQMT</span>
+        </div>
+      </div>
+      <h3>说话就能做量化：OpenClaw 本地部署 + MiniQMT 自动交易全攻略</h3>
+      <p class="description">这条适合放在交易投研区靠前的位置，因为它不是泛泛而谈的“AI 能做量化”，而是把本地部署、飞书接入、`miniqmt-xttrade` Skills、查账户、下单和撤单这一整条最关键的执行闭环直接打通。</p>
+      <div class="card-footer">
+        <a href="{% url 'openclaw_miniqmt_trading_guide' %}" class="card-link">查看实战文章 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #0ea5e9;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">A 股系统搭建</span>
+          <span class="badge" style="background: rgba(14,165,233,.12); color:#0e7490;">主板非 ST</span>
+        </div>
+      </div>
+      <h3>从零搭建 A 股自动量化交易系统：数据源、QMT、风控与飞书推送</h3>
+      <p class="description">这条更适合放在交易投研区靠前位置，因为它讲的不是单次下单，而是一整套 A 股自动量化系统怎么搭：AI 做大脑，QMT 做双手，通达信和 AKShare 做数据支撑，最后再把风控和消息通知接起来。</p>
+      <div class="card-footer">
+        <a href="{% url 'openclaw_a_share_auto_trading_guide' %}" class="card-link">查看系统搭建 <span>→</span></a>
+      </div>
+    </article>
+
     <article class="tool-card" style="border-left: 4px solid #14b8a6;">
       <div class="card-header">
         <div class="card-badges">
@@ -373,7 +1746,7 @@
         </div>
       </div>
       <h3>交易市场异动监控</h3>
-      <p class="description">24 小时监控异常数据，再按你自己的交易策略输出可直接使用的异动信号。这类工作流最适合 OpenClaw 这种“会盯盘、会整理、会提醒”的代理形态。</p>
+      <p class="description">24 小时监控异常数据，再按你自己的交易策略输出可直接使用的异动信号。这类工作流最适合 OpenClaw 这种“会盯盘、会整理、会提醒”的代理形态，也很适合接到飞书、Telegram 或邮件提醒链路中。</p>
     </article>
 
     <article class="tool-card" style="border-left: 4px solid #0ea5e9;">
@@ -384,7 +1757,7 @@
         </div>
       </div>
       <h3>英文研报自动编译成中文研报</h3>
-      <p class="description">如果你本身就有海外投研输入源，OpenClaw 很适合做翻译、结构化整理和版式标准化，大幅压缩人工编译时间。</p>
+      <p class="description">如果你本身就有海外投研输入源，OpenClaw 很适合做翻译、结构化整理、术语统一和版式标准化，大幅压缩人工编译时间。你现在这条链路已经能直接把英文研报编译成排版完整的中文研报，适合机构内部分发或私域投研内容输出。</p>
     </article>
 
     <article class="tool-card" style="border-left: 4px solid #10b981;">
@@ -401,6 +1774,34 @@
       </div>
     </article>
 
+    <article class="tool-card" style="border-left: 4px solid #7c3aed;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">A 股数据</span>
+          <span class="badge" style="background: rgba(124,58,237,.12); color:#6d28d9;">24 小时分析</span>
+        </div>
+      </div>
+      <h3>如何让你的 OpenClaw 接入 A 股数据，实现 24 小时股票分析自由</h3>
+      <p class="description">这篇更适合想把 OpenClaw 真正接到中文股票市场的人：重点不是聊天问股，而是把 A 股数据接进持续分析、监控和输出链路里。</p>
+      <div class="card-footer">
+        <a href="https://mp.weixin.qq.com/s/YK5JJ-Lmu522w6EcVHtuwg" target="_blank" rel="noopener noreferrer" class="card-link">查看文章 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #ec4899;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">推特盯盘</span>
+          <span class="badge" style="background: rgba(236,72,153,.12); color:#be185d;">信号提醒</span>
+        </div>
+      </div>
+      <h3>用 OpenClaw 盯盘推特交易大 V：自动抓取、翻译、信号提醒</h3>
+      <p class="description">这条很适合放进交易投研区，因为它解决的是“社媒情报怎么进入交易链路”这个实操问题，把抓取、翻译、筛选和提醒连成一条可持续运行的监控流程。</p>
+      <div class="card-footer">
+        <a href="https://geekbang.feishu.cn/wiki/S3Slwj8r4iyDQdkZi1Vc7gL7n6g" target="_blank" rel="noopener noreferrer" class="card-link">查看工作流 <span>→</span></a>
+      </div>
+    </article>
+
     <article class="tool-card" style="border-left: 4px solid #f59e0b;">
       <div class="card-header">
         <div class="card-badges">
@@ -412,6 +1813,20 @@
       <p class="description">这是一个很好的金融类模板：策略分析、信号执行、结果复盘、日报输出，链路完整，适合拿来理解交易型 Agent 的闭环。</p>
       <div class="card-footer">
         <a href="https://github.com/AlexAnys/awesome-openclaw-usecases-zh/blob/main/usecases/polymarket-autopilot.md" target="_blank" rel="noopener noreferrer" class="card-link">查看用例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #6366f1;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">股票筛选器</span>
+          <span class="badge" style="background: rgba(99,102,241,.12); color:#4338ca;">免费 API</span>
+        </div>
+      </div>
+      <h3>免费 API 搭建股票筛选器：实时数据 + 情绪分析</h3>
+      <p class="description">这条适合放在交易投研区，因为它把免费 API、实时数据和情绪分析串到一起，属于典型的“先低成本验证，再扩成完整投研链路”的方案。</p>
+      <div class="card-footer">
+        <a href="https://aaf55djl41.feishu.cn/wiki/NfezwOfkcicGTakyLToc9EamnRh" target="_blank" rel="noopener noreferrer" class="card-link">查看方案 <span>→</span></a>
       </div>
     </article>
   </div>
@@ -435,6 +1850,17 @@
       <div class="card-footer">
         <a href="https://my.feishu.cn/wiki/NmE5wyTcliXPpPkIqXPcIoOincg?from=from_copylink" target="_blank" rel="noopener noreferrer" class="card-link">查看案例 <span>→</span></a>
       </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #14b8a6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">本地编码</span>
+          <span class="badge" style="background: rgba(20,184,166,.12); color:#0f766e;">iFlow + Codex</span>
+        </div>
+      </div>
+      <h3>iFlow 操控本地 Codex</h3>
+      <p class="description">这条更适合放在编码协同区，因为它本质上是把飞书 OpenClaw、iFlow 和本地 Codex 串成一条执行链。前台在飞书里下指令，后端调本地 Codex 落代码、跑任务、回结果，特别适合把“聊天入口”和“本地工程执行”打通。</p>
     </article>
 
     <article class="tool-card" style="border-left: 4px solid #8b5cf6;">
@@ -464,6 +1890,66 @@
         <a href="https://aaf55djl41.feishu.cn/wiki/TTJvwnMFMiOMwTkmHnRcGh31ngg" target="_blank" rel="noopener noreferrer" class="card-link">进入方法论 <span>→</span></a>
       </div>
     </article>
+
+    <article class="tool-card" style="border-left: 4px solid #10b981;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">项目调研</span>
+          <span class="badge" style="background: rgba(16,185,129,.12); color:#047857;">GitHub Skill</span>
+        </div>
+      </div>
+      <h3>Github-Explorer：一句话完成 GitHub 项目调研</h3>
+      <p class="description">这条更适合放在编码协同区，因为它解决的是“发现项目后怎么快速做技术与社区尽调”。从仓库信息、Issues 质量、社区讨论、论文背景到竞品横评，最后输出结构化报告和主观判断，适合把碎片化调研压缩到 3 到 5 分钟内完成。</p>
+      <div style="margin-top:12px; color:#374151; line-height:1.9;">
+        <p style="margin:0 0 8px;"><strong>核心能力：</strong>自动抓 README、Stars、Forks，筛高质量 Issues，聚合知乎、公众号、V2EX、Twitter 等反馈，并补 arXiv、DeepWiki、zread 资料。</p>
+        <p style="margin:0;"><strong>设计亮点：</strong>Brave + Exa + Tavily 并行搜索，单点故障自动降级；反爬场景可切 MinerU；报告附引用和原始链接，便于追溯。</p>
+      </div>
+      <div class="card-footer">
+        <a href="https://linux.do/t/topic/1583887" target="_blank" rel="noopener noreferrer" class="card-link">查看案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #f97316;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">AI 学习工作流</span>
+          <span class="badge" style="background: rgba(249,115,22,.12); color:#c2410c;">论文 + GitHub</span>
+        </div>
+      </div>
+      <h3>AI 更新太快学不过来？我用 OpenClaw 打造专属 AI 学习工作流</h3>
+      <p class="description">这篇适合放在编码协同区，因为它解决的是高频学习输入怎么沉淀成稳定工作流。把论文链接或 GitHub 仓库丢给 OpenClaw 后，自动下载、按 Skill 解读、循环补充并输出个性化报告，适合持续跟进 AI 新论文和热门开源项目。</p>
+      <div class="card-footer">
+        <a href="{% url 'openclaw_ai_learning_workflow_guide' %}" class="card-link">查看完整文章 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #f59e0b;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">DevOps 协同</span>
+          <span class="badge" style="background: rgba(245,158,11,.12); color:#b45309;">Claude Code 实例</span>
+        </div>
+      </div>
+      <h3>一个人的 DevOps 团队：OpenClaw 如何协调 5 到 20 个 Claude Code 实例</h3>
+      <p class="description">这条更适合放在编码协同区，因为它解决的是“怎么把多个编码实例协调成团队”这个工程问题，适合已经不满足于单个编码 Agent 的用户。</p>
+      <div class="card-footer">
+        <a href="https://aaf55djl41.feishu.cn/wiki/EXeswgWvai2X7wkIkz2cZhzsn6d" target="_blank" rel="noopener noreferrer" class="card-link">查看案例 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #ec4899;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">海外产品</span>
+          <span class="badge" style="background: rgba(236,72,153,.12); color:#be185d;">工具站实践</span>
+        </div>
+      </div>
+      <h3>用 OpenClaw 机器人团队打造海外工具站产品实践</h3>
+      <p class="description">这条也适合放在编码协同区，因为它不是单纯做内容，而是把 OpenClaw 机器人团队接到真实产品建设、海外工具站运营和交付链路里。</p>
+      <div class="card-footer">
+        <a href="https://lcnrf13yipiu.feishu.cn/docx/W9rKdh6gnorv7axws0FcurF3nyf" target="_blank" rel="noopener noreferrer" class="card-link">查看实践 <span>→</span></a>
+      </div>
+    </article>
   </div>
 </section>
 
@@ -486,10 +1972,18 @@
         <a href="https://aaf55djl41.feishu.cn/wiki/TTJvwnMFMiOMwTkmHnRcGh31ngg" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">发现机会到产品上线</a>
         <a href="https://my.feishu.cn/wiki/UDzSwItbZi57y6k533achvyun1b?from=from_copylink" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">16 个自我进化员工</a>
         <a href="https://pa23ntdf1gf.feishu.cn/wiki/Gj9TwqLXVipURikiKpzcLpDkn6e" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">公众号躺更神器</a>
+        <a href="https://pa23ntdf1gf.feishu.cn/wiki/CaGdwqTUri16lxkMz0XcEvf5nFd" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">公众号漫画全自动生产</a>
         <a href="https://my.feishu.cn/wiki/NmE5wyTcliXPpPkIqXPcIoOincg?from=from_copylink" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">飞书调用 Codex 编码</a>
         <a href="https://my.feishu.cn/docx/A59kdcwuGogSAex12YPcvHCbn5g?from=from_copylink" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">OpenClaw 搜索工作流</a>
         <a href="https://nodewalk.feishu.cn/docx/M4oldXDAjoeM1LxQPzbcQl6hnlg" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">云服务器浏览器自动化</a>
         <a href="https://geekbang.feishu.cn/wiki/LKriwNl1tispLlkjxUDcRxqrnRg" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">睡后收入 5 个方案</a>
+        <a href="https://my.feishu.cn/wiki/APdIwecPLiys2Ck6gQRcPlGDnYd" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">6 个提示词</a>
+        <a href="https://my.feishu.cn/wiki/VLYcwDBgxi17bAk5dr5cz6FLnNe" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">6 个工作流</a>
+        <a href="https://my.feishu.cn/docx/PwHIdGYZZoH01cxfzR9crun5n0d" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">3 分钟创建小龙虾</a>
+        <a href="https://my.feishu.cn/wiki/YOyywDc0XiCuPEk5cgOc4PtOnSe" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">素材库自动长大</a>
+        <a href="https://my.feishu.cn/wiki/YHtZwUyElis6nDktJDPciUO1nIg" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">20 个 Skills</a>
+        <a href="https://my.feishu.cn/docx/RAHQdSiLJo5kx7xA4t0cEij2nvg" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">搜索做到极致</a>
+        <a href="{% url 'opencli_guide' %}" class="filter-btn" style="text-decoration:none;">OpenCLI 中文教程</a>
       </div>
     </article>
 
@@ -504,6 +1998,29 @@
       <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
         <a href="https://mp.weixin.qq.com/s/_k7_7Zbh2ibesvwg8yltfg?click_id=39" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">28 个跨境电商数字员工</a>
         <a href="https://mp.weixin.qq.com/s/8BkDww5Sg3AXK-HD3BA3oQ" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">飞书 10 岗位生产力核爆</a>
+        <a href="{% url 'openclaw_ai_learning_workflow_guide' %}" class="filter-btn" style="text-decoration:none;">AI 学习工作流</a>
+        <a href="https://hq6ip952yg1.feishu.cn/wiki/GzgIwuPPQiSZ01klKIGcbfgynQd" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">14 个 AI 员工</a>
+        <a href="https://my.feishu.cn/wiki/BvThw8ubxiO3nTkujEUc1yhvnEV" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">AI PPT 接单复盘</a>
+        <a href="https://aaf55djl41.feishu.cn/wiki/OxzRwFs2FixgBAkbPeKcLCCanbd" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">7×24 情报雷达</a>
+        <a href="https://aaf55djl41.feishu.cn/wiki/YykFw20JriztZZkH4XlcjuQunid" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">真实痛点 Skill</a>
+        <a href="https://aaf55djl41.feishu.cn/wiki/EXeswgWvai2X7wkIkz2cZhzsn6d" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">DevOps 团队</a>
+        <a href="https://pa23ntdf1gf.feishu.cn/wiki/FPL0wx4laiPHXOkt6TocPUclnIs" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">小红书多 Agent</a>
+        <a href="https://aaf55djl41.feishu.cn/wiki/NfezwOfkcicGTakyLToc9EamnRh" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">股票筛选器</a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #ec4899;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">私域变现</span>
+          <span class="badge" style="background: rgba(236,72,153,.12); color:#be185d;">CPS 分销</span>
+        </div>
+      </div>
+      <h3>私域 CPS 分销资料</h3>
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="https://my.feishu.cn/docx/UeepddvkwocP5qxxEX6cLVbtn2f" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">赚小钱 SOP</a>
+        <a href="https://my.feishu.cn/docx/VnKddpTJ8o5jyAxLO1FcOhBjnme" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">私域 CPS 分销文档</a>
+        <a href="https://rcnkcfgp4a15.feishu.cn/wiki/ZMaRwOxGbinw3EkZxMEcjAlPnIh" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">私域分销 Wiki</a>
       </div>
     </article>
 
@@ -521,7 +2038,19 @@
         <a href="https://github.com/hesamsheikh/awesome-openclaw-usecases" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">官方英文用例库</a>
         <a href="https://github.com/AlexAnys/awesome-openclaw-usecases-zh/tree/main" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">中文用例库</a>
         <a href="https://x.com/AYi_AInotes/status/2027677868285915390" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">AI 选股系统案例</a>
+        <a href="https://hks.aipoju.com/" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">AI 破局俱乐部</a>
       </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #06b6d4;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">被动信息源</span>
+          <span class="badge" style="background: rgba(6,182,212,.12); color:#0f766e;">4 小时更新</span>
+        </div>
+      </div>
+      <h3>ClawFeed：给 OpenClaw 持续喂更新源</h3>
+      <p class="description">把它放在资料索引区更合理，因为它不是一次性搜索工具，而是一个被动更新的信息源。可以订阅 X、RSS、Hacker News、Reddit 和 GitHub Trending，大约每 4 小时更新一次，适合做持续情报跟踪和研究素材池。</p>
     </article>
 
     <article class="tool-card" style="border-left: 4px solid #8b5cf6;">
@@ -580,6 +2109,31 @@
       </div>
     </article>
 
+    <article class="tool-card" style="border-left: 4px solid #7c3aed;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">产品拆解</span>
+          <span class="badge" style="background: rgba(124,58,237,.12); color:#6d28d9;">平均万刀月收</span>
+        </div>
+      </div>
+      <h3>OpenClaw 产品生态和 27 个平均万刀月收入的赚钱产品拆解</h3>
+      <p class="description">这类内容的价值不是“再看一个案例”，而是把生态位、卖点、收费方式和复制路径拆出来，让你知道哪些 OpenClaw 产品已经被市场验证过。</p>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #ec4899;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">睡后收入</span>
+          <span class="badge" style="background: rgba(236,72,153,.12); color:#be185d;">小白可上手</span>
+        </div>
+      </div>
+      <h3>OpenClaw 睡后收入秘籍：5 个小白也能上手的躺赚方案</h3>
+      <p class="description">这条放在变现区最合适，因为它不是单个赚钱案例，而是把适合新手切入的几类 OpenClaw 变现路径做了更低门槛的拆解。</p>
+      <div class="card-footer">
+        <a href="https://mp.weixin.qq.com/s/Yf2aQ3_BVSx6hz5Yz7dyEw" target="_blank" rel="noopener noreferrer" class="card-link">查看方案 <span>→</span></a>
+      </div>
+    </article>
+
     <article class="tool-card" style="border-left: 4px solid #10b981;">
       <div class="card-header">
         <div class="card-badges">
@@ -590,6 +2144,108 @@
       <h3>最值得优先抄作业的 6 个方向</h3>
       <p class="description">飞书 AI 助手、钉钉 AI 助手、企业微信 AI 助手、小红书内容自动化、A 股财报追踪器、多渠道 AI 客服。这 6 个方向最适合国内用户快速看到结果。</p>
     </article>
+
+    <article class="tool-card" style="border-left: 4px solid #06b6d4;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">用户增长</span>
+          <span class="badge" style="background: rgba(6,182,212,.12); color:#0f766e;">新增用户</span>
+        </div>
+      </div>
+      <h3>AI 编程新增 1 万用户，躺赚两万加的心得</h3>
+      <p class="description">这条更适合放在变现区，因为它讲的不是单个技巧，而是 AI 编程产品如何把用户增长和收入跑出来，属于“做产品 + 做增长 + 做收益”的复盘型案例。</p>
+      <div class="card-footer">
+        <a href="https://my.feishu.cn/wiki/ZXFDw2jhiiDXvZk1OpOcXUy9nBb" target="_blank" rel="noopener noreferrer" class="card-link">查看复盘 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #8b5cf6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">团队扩张</span>
+          <span class="badge" style="background: rgba(139,92,246,.12); color:#6d28d9;">14 个员工</span>
+        </div>
+      </div>
+      <h3>我一个人养了 14 个 AI 员工的心得</h3>
+      <p class="description">这条放在变现区也合适，因为它更像“小团队如何用 AI 放大产能”的经营心得，适合想从单人作坊升级到 AI 团队的人。</p>
+      <div class="card-footer">
+        <a href="https://hq6ip952yg1.feishu.cn/wiki/GzgIwuPPQiSZ01klKIGcbfgynQd" target="_blank" rel="noopener noreferrer" class="card-link">查看心得 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #f59e0b;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">AI 接单</span>
+          <span class="badge" style="background: rgba(245,158,11,.12); color:#b45309;">PPT 工作室</span>
+        </div>
+      </div>
+      <h3>AI PPT 接单复盘：从两元一页到 500 一单</h3>
+      <p class="description">这条非常适合放在变现区，因为它是典型的“AI 能不能变成服务收入”案例，从低价试水做到四人工作室，更有参考价值。</p>
+      <div class="card-footer">
+        <a href="https://my.feishu.cn/wiki/BvThw8ubxiO3nTkujEUc1yhvnEV" target="_blank" rel="noopener noreferrer" class="card-link">查看复盘 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #14b8a6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">作品展</span>
+          <span class="badge" style="background: rgba(20,184,166,.12); color:#0f766e;">AI 破局</span>
+        </div>
+      </div>
+      <h3>AI 破局俱乐部：破局行动作品展览</h3>
+      <p class="description">这条适合放在变现区，因为它更偏“大家做出了什么”，适合作为案例展陈和灵感入口，帮助用户判断生态里哪些方向真的有人在做、在展示、在变现。</p>
+      <div class="card-footer">
+        <a href="https://hks.aipoju.com/" target="_blank" rel="noopener noreferrer" class="card-link">打开展览 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #ec4899;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">星球权益</span>
+          <span class="badge" style="background: rgba(236,72,153,.12); color:#be185d;">数据基建</span>
+        </div>
+      </div>
+      <h3>「港美掘金」：把课程、代码、API 和情报打包</h3>
+      <p class="description">这条更适合放在变现区，因为它卖的不是单篇内容，而是一整套持续更新的投研与自动化基础设施。加入满 3 天可拿高频交易课程、Web3 教程与代码、十几万级知识付费资源，以及港股、美股、活跃 A 股、Crypto、外汇、指数等数据 API，还包含 3 个可轮换的 Tushare token。</p>
+      <div style="margin-top:12px; color:#374151; line-height:1.9;">
+        <p style="margin:0 0 8px;"><strong>核心卖点：</strong>量化研报、策略源码、机构持仓解读、独家研报摘要、风险预警、AI 工具和 No Code 量化平台。</p>
+        <p style="margin:0;"><strong>适合人群：</strong>想同时补策略、数据、工具和自动化执行链路的人，而不是只买一门孤立课程的人。</p>
+      </div>
+    </article>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    const tabsWrap = document.getElementById('openclaw-category-tabs');
+    if (!tabsWrap) {
+      return;
+    }
+
+    const tabs = Array.from(tabsWrap.querySelectorAll('[data-group]'));
+    const cards = Array.from(document.querySelectorAll('.openclaw-category-card'));
+
+    function applyGroup(group) {
+      tabs.forEach((tab) => {
+        tab.classList.toggle('active', tab.dataset.group === group);
+      });
+
+      cards.forEach((card) => {
+        const shouldShow = group === 'all' || card.dataset.group === group;
+        card.classList.toggle('is-hidden', !shouldShow);
+      });
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', function () {
+        applyGroup(tab.dataset.group);
+      });
+    });
+  })();
+</script>
 {% endblock %}

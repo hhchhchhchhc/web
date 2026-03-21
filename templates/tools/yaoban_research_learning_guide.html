@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+
+{% block title %}姚班人学习、科研与职业路径总结 | AI算法专栏{% endblock %}
+{% block meta_description %}姚班经验高密度总结版：学习方法、科研起步、导师协作、问题选择、顶会标准与职业路径判断。{% endblock %}
+
+{% block content %}
+<style>
+  .yaoban-wrap {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 8px 0 48px;
+  }
+
+  .yaoban-article {
+    background: linear-gradient(180deg, #fffef9 0%, #ffffff 100%);
+    border: 1px solid rgba(30, 41, 59, 0.08);
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+  }
+
+  .yaoban-hero {
+    padding: 54px 56px 34px;
+    background:
+      radial-gradient(circle at top right, rgba(251, 191, 36, 0.18), transparent 30%),
+      linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 64, 175, 0.92) 58%, rgba(8, 145, 178, 0.90));
+    color: #f8fafc;
+  }
+
+  .yaoban-eyebrow {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #e0f2fe;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+  }
+
+  .yaoban-title {
+    margin: 0;
+    font-size: 38px;
+    line-height: 1.24;
+  }
+
+  .yaoban-lead {
+    margin: 16px 0 0;
+    max-width: 760px;
+    color: rgba(248, 250, 252, 0.88);
+    font-size: 17px;
+    line-height: 1.9;
+  }
+
+  .yaoban-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+  }
+
+  .yaoban-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #f8fafc;
+    font-size: 14px;
+  }
+
+  .yaoban-content {
+    padding: 26px 56px 60px;
+    color: #0f172a;
+  }
+
+  .yaoban-note,
+  .yaoban-highlight {
+    margin: 0 0 24px;
+    padding: 18px 20px;
+    border-radius: 18px;
+  }
+
+  .yaoban-note {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e3a8a;
+  }
+
+  .yaoban-highlight {
+    background: #fff7ed;
+    border-left: 4px solid #ea580c;
+    color: #9a3412;
+  }
+
+  .yaoban-content h2 {
+    margin: 34px 0 14px;
+    padding-left: 14px;
+    border-left: 4px solid #2563eb;
+    font-size: 25px;
+    line-height: 1.45;
+    color: #111827;
+  }
+
+  .yaoban-content h3 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    color: #1d4ed8;
+  }
+
+  .yaoban-content p {
+    margin: 0 0 14px;
+    font-size: 18px;
+    line-height: 1.9;
+  }
+
+  .yaoban-content ul {
+    margin: 0 0 18px;
+    padding-left: 1.2em;
+  }
+
+  .yaoban-content li {
+    margin: 0 0 10px;
+    font-size: 18px;
+    line-height: 1.85;
+  }
+
+  .yaoban-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin: 18px 0 24px;
+  }
+
+  .yaoban-card {
+    padding: 18px;
+    border-radius: 18px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+  }
+
+  .yaoban-footer {
+    margin-top: 30px;
+    padding-top: 18px;
+    border-top: 1px dashed #cbd5e1;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  @media (max-width: 760px) {
+    .yaoban-hero {
+      padding: 34px 22px 24px;
+    }
+
+    .yaoban-content {
+      padding: 16px 22px 36px;
+    }
+
+    .yaoban-title {
+      font-size: 29px;
+    }
+
+    .yaoban-content h2 {
+      font-size: 22px;
+    }
+
+    .yaoban-content p,
+    .yaoban-content li {
+      font-size: 16px;
+    }
+
+    .yaoban-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="yaoban-wrap">
+  <article class="yaoban-article">
+    <header class="yaoban-hero">
+      <div class="yaoban-eyebrow">AI算法专栏 · 高密度总结版</div>
+      <h1 class="yaoban-title">姚班人学习、科研与职业路径总结</h1>
+      <p class="yaoban-lead">这不是“天才故事”整理，而是把原长文里真正能迁移到普通计算机学生和算法方向从业者身上的部分抽出来。只保留值得执行的经验，不保留光环叙事。</p>
+      <div class="yaoban-meta">
+        <span class="yaoban-chip">学习心得</span>
+        <span class="yaoban-chip">科研方法</span>
+        <span class="yaoban-chip">职业规划</span>
+        <span class="yaoban-chip">长期主义</span>
+      </div>
+    </header>
+
+    <section class="yaoban-content">
+      <div class="yaoban-note">
+        <p><strong>总判断：</strong>姚班经验真正可复制的，不是高选拔密度，而是更早完成三件事：用第一性原理学基础、尽早进入真实科研问题、把职业方向建立在底层能力而不是短期风口上。</p>
+      </div>
+
+      <h2>1. 学习心得：基础优先，目标是获得跨周期能力</h2>
+      <ul>
+        <li><strong>数学、理论计算机和英文原始材料优先级最高。</strong>这类训练短期见效慢，但换方向时迁移性最强。</li>
+        <li><strong>不要把“会写代码”误判成“学明白了计算机”。</strong>真正拉开差距的是复杂度、抽象能力、建模能力和系统理解。</li>
+        <li><strong>高难课程的核心收益，不是当下全懂，而是持续提升处理陌生问题的阈值。</strong></li>
+        <li><strong>英文环境本质上是专业训练。</strong>越早直接接触论文、讲义和顶会材料，越不依赖失真的二手信息。</li>
+        <li><strong>同侪压力最有价值的用法，是提高标准，而不是比履历。</strong>真正该比的是问题深度和持续推进能力。</li>
+      </ul>
+
+      <div class="yaoban-highlight">
+        <p><strong>直接落地：</strong>普通计算机学生最值得补的是离散数学、概率统计、线性代数、算法、系统、论文阅读能力和英文技术表达，不是继续堆“速成路线”。</p>
+      </div>
+
+      <h2>2. 科研方法：从解题能力升级到定义问题能力</h2>
+      <div class="yaoban-grid">
+        <div class="yaoban-card">
+          <h3>尽早进实验室或暑研</h3>
+          <p>越早碰到没有标准答案的问题，越早知道科研和刷题完全不是一回事。</p>
+        </div>
+        <div class="yaoban-card">
+          <h3>从高级课程切题</h3>
+          <p>高质量研究问题常常藏在课程里的开放问题和老师反复强调的难点里。</p>
+        </div>
+        <div class="yaoban-card">
+          <h3>找强导师做约束</h3>
+          <p>好导师最重要的作用是缩小问题、提高标准、减少在低价值方向上的无效消耗。</p>
+        </div>
+        <div class="yaoban-card">
+          <h3>按顶会标准训练</h3>
+          <p>顶会价值不只是名气，而是逼你把问题定义、方法、实验和表达做成闭环。</p>
+        </div>
+      </div>
+      <ul>
+        <li><strong>竞赛型思维要升级。</strong>科研更重要的是发现空白、缩小问题、判断什么值得做，而不是只会在已知边界内求解。</li>
+        <li><strong>好的科研起点通常是“课程开放点 + 导师约束 + 个人持续兴趣”的交集。</strong></li>
+        <li><strong>本科阶段最该争取的是主导一小块真实问题。</strong>哪怕范围不大，也比只做边角实现更能建立研究直觉。</li>
+        <li><strong>国际合作和暑期科研的重要性，在于让你提前进入更高标准的问题空间。</strong></li>
+        <li><strong>论文发表只是表层结果。</strong>真正稀缺的是问题品味、证明能力、实验设计和写作表达的同步提升。</li>
+      </ul>
+
+      <h2>3. 工作与职业规划：先决定自己靠什么长期不可替代</h2>
+      <ul>
+        <li><strong>共同点不是都去学术界或都去创业，而是先把底层能力做厚再选出口。</strong></li>
+        <li><strong>如果走学术，先建立问题品味。</strong>知道什么值得做，比短期多发几篇更值钱。</li>
+        <li><strong>如果走工业界，理论深度仍然有用。</strong>高价值岗位要求你理解模型、系统、优化和业务约束的联动。</li>
+        <li><strong>如果走创业，必须把技术判断转成商业判断。</strong>不仅看技术先进不先进，还要看时机、需求、资源和落地路径。</li>
+        <li><strong>不要把职业路径绑死在单一风口上。</strong>真正稳的是能跨多个技术周期继续输出的人。</li>
+      </ul>
+
+      <h2>4. 普通人最值得直接拿走的行动顺序</h2>
+      <ul>
+        <li><strong>先修底盘，再追热点。</strong></li>
+        <li><strong>尽早做没有标准答案的小问题。</strong></li>
+        <li><strong>主动争取高标准反馈。</strong></li>
+        <li><strong>用“重要性、独特积累、可持续投入”三条标准筛方向。</strong></li>
+        <li><strong>职业规划先问：三年后我凭什么不可替代。</strong></li>
+      </ul>
+
+      <div class="yaoban-note">
+        <p><strong>一句话收尾：</strong>这套经验最值得学的顺序感是 <strong>基础优先 → 尽早科研 → 高标准协作 → 长期主义选方向</strong>。</p>
+      </div>
+
+      <div class="yaoban-footer">
+        这页是基于你提供的长文做的站内总结版，保留可执行信息，删除宣传性和重复性表述，适合作为 AI算法专栏里的长期入口页。
+      </div>
+    </section>
+  </article>
+</div>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}OpenClaw 实战指南：从零搭建 A 股自动量化交易系统 | OpenClaw 专栏{% endblock %}
+{% block meta_description %}OpenClaw 实战指南：从零搭建 A 股自动量化交易系统，涵盖系统架构、数据源、QMT 对接、A股选股与风险控制，并标注改编自微信原文。{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+  <a href="{% url 'openclaw_column' %}#finance" style="color:#2563eb;text-decoration:none;">← 返回 OpenClaw 专栏</a>
+</div>
+
+<article style="background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:32px; box-shadow:0 10px 25px rgba(2,6,23,.05);">
+  <header style="border-bottom:1px solid #e5e7eb; padding-bottom:18px; margin-bottom:22px;">
+    <p style="display:inline-block; background:#eff6ff; color:#1d4ed8; border-radius:999px; padding:6px 12px; font-size:.85rem; font-weight:600;">OpenClaw 专栏 · 交易投研</p>
+    <h1 style="font-size:2rem; line-height:1.35; color:#111827; margin:12px 0 10px;">OpenClaw 实战指南：从零搭建 A 股自动量化交易系统，迈向稳定盈利</h1>
+    <p style="margin:0; color:#6b7280;">这篇更偏“完整系统搭建”视角：从 AI 交易的认知框架、脑手分离架构，到 QMT、通达信、AKShare、飞书通知和 A 股主板非 ST 策略落地，一步步把自动量化交易系统搭起来。</p>
+    <p style="margin:12px 0 0; color:#475569; line-height:1.8; font-size:.96rem;">
+      改编自
+      <a href="https://mp.weixin.qq.com/s/jqUCwrPugaCqDcfITFYjdA" target="_blank" rel="noopener noreferrer" style="color:#2563eb; text-decoration:none; font-weight:600;">
+        微信原文
+      </a>
+    </p>
+  </header>
+
+  <section style="line-height:1.95; color:#1f2937; font-size:1.05rem;">
+    <p>2026 年之后，越来越多人开始意识到：AI Agent 真正改变交易这件事，不在“神预测”，而在“神执行”。OpenClaw 的价值不是替你拍脑袋，而是把你的策略逻辑拆成可自动运行、可持续迭代、可复盘追踪的完整任务链路。</p>
+    <p>对普通投资者来说，这意味着一个核心变化：原本只有机构才能稳定搭建的自动化量化系统，现在可以通过自然语言和现成数据源拼起来，而且还能通过飞书、钉钉、QQ 等渠道随时接管和复盘。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">一、核心认知：OpenClaw 如何重构量化交易</h2>
+    <div style="overflow:auto; border:1px solid #e5e7eb; border-radius:14px; margin-bottom:16px;">
+      <table style="width:100%; border-collapse:collapse; min-width:680px;">
+        <thead style="background:#f8fafc;">
+          <tr>
+            <th style="padding:12px 14px; text-align:left; border-bottom:1px solid #e5e7eb;">维度</th>
+            <th style="padding:12px 14px; text-align:left; border-bottom:1px solid #e5e7eb;">人工交易</th>
+            <th style="padding:12px 14px; text-align:left; border-bottom:1px solid #e5e7eb;">OpenClaw AI 交易</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">执行效率</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">受时间精力限制，难覆盖多市场</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">7×24 小时运行，可同步监控多交易所与板块</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">决策纪律</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">容易受情绪影响</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">严格执行规则，无情绪干扰</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">数据处理</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">单维度、慢响应、信息滞后</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">可快速整合行情、舆情、财报与板块数据</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 14px;">策略复现</td>
+            <td style="padding:12px 14px;">依赖记忆，执行偏差大</td>
+            <td style="padding:12px 14px;">逻辑可复现、可追踪、可持续优化</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>说白了，OpenClaw 不是预测市场的“作弊器”，而是执行策略的“完美交易员”。你必须先定义清楚“买什么、什么时候买、买多少、什么时候卖”，AI 才能把你的方法论变成稳定动作。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">二、系统架构：大脑与双手分离</h2>
+    <p>为了兼顾 AI 的分析能力和交易安全性，这套方案采用“脑手分离”架构：</p>
+    <ul style="padding-left:20px;">
+      <li><strong>大脑：</strong>OpenClaw 负责数据采集、新闻分析、情绪判断、交易信号生成。</li>
+      <li><strong>双手：</strong>量化平台或 QMT 接收信号并执行交易。</li>
+      <li><strong>数据支撑：</strong>QMT 提供实时行情与历史数据，通达信提供板块分类，AKShare 提供财务与资金数据。</li>
+      <li><strong>交互渠道：</strong>飞书 / 钉钉 / QQ 用于发指令和接收报告。</li>
+    </ul>
+    <p>完整流程是：OpenClaw 定时拉行情与财务数据，结合技术指标与基本面生成买卖信号，再把标准化指令推给 QMT 或者推送到飞书做人工确认，最后由执行端完成下单和止损。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">三、环境部署：5 分钟上手 A 股版 OpenClaw</h2>
+    <ol style="padding-left:20px;">
+      <li>选云服务器，保证 7×24 小时运行；香港地域通常更省事。</li>
+      <li>通过一键部署镜像安装 OpenClaw，配置内存建议 2GiB 起。</li>
+      <li>接入百炼、DeepSeek 或其他可用大模型，配置 API Key。</li>
+      <li>放行对应端口，生成访问 Token。</li>
+      <li>在后台开启 QMT、通达信板块、AKShare 财务数据等数据源。</li>
+      <li>配置飞书通知，确保交易信号能自动推送到移动端。</li>
+    </ol>
+    <p>如果只是从“想法”走到“先跑起来”，腾讯云与阿里云的一键部署路径都能用，重点是不要卡在环境搭建，把时间放回策略验证本身。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">四、用自然语言定义交易规则</h2>
+    <p>OpenClaw 的强项是把自然语言转成任务。一个很典型的均线策略描述可以是：</p>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:18px; margin-bottom:16px;">
+      “创建一个 A 股量化交易任务，只交易主板非 ST 股票。每天收盘后计算 5 日线和 10 日线，如果 5 日线上穿 10 日线且当日成交量是 5 日均量的 1.5 倍以上，就加入买入观察列表。列表最多选 3 支，每支买入 1 万元。如果持仓股票 5 日线下穿 10 日线或亏损超过 5%，就卖出。数据用 QMT，每天 15:30 把结果推送到我的飞书。”
+    </div>
+    <p>它会自动拆解：标的范围、均线条件、成交量放大、单票金额、止损规则、数据源与推送时间，最后把这条自然语言变成可运行任务。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">五、数据接入：不用手写 API，也能拥有实时市场视野</h2>
+    <div style="overflow:auto; border:1px solid #e5e7eb; border-radius:14px; margin-bottom:16px;">
+      <table style="width:100%; border-collapse:collapse; min-width:680px;">
+        <thead style="background:#f8fafc;">
+          <tr>
+            <th style="padding:12px 14px; text-align:left; border-bottom:1px solid #e5e7eb;">数据源</th>
+            <th style="padding:12px 14px; text-align:left; border-bottom:1px solid #e5e7eb;">作用</th>
+            <th style="padding:12px 14px; text-align:left; border-bottom:1px solid #e5e7eb;">配置方式</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">QMT</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">实时行情、历史 K 线、Level-2</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">填写安装路径，自动识别</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">通达信</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">行业板块、概念板块成分股</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">勾选启用，读取本地文件</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 14px;">AKShare</td>
+            <td style="padding:12px 14px;">财务指标、龙虎榜、北向资金等</td>
+            <td style="padding:12px 14px;">勾选启用即可</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>如果你需要更定制的数据，比如东方财富的最新研报标题，直接在任务里写“每天早上 8 点去抓最新研报标题”，OpenClaw 会自己走浏览器自动化。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">六、执行端：自动下单与人工确认</h2>
+    <p>如果券商支持 QMT 自动交易，可以直接勾选“启用交易执行”，让 OpenClaw 把信号推给 QMT 完成下单。</p>
+    <p>如果你是新手，更建议先上“人工确认模式”：每天由飞书推送交易信号，你只负责在 QMT 里最后确认。这样既能享受 AI 的选股和分析，又保留最后一层控制权。</p>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:18px; margin-bottom:16px;">
+      <p style="margin:0;"><strong>示例：</strong><br>买入：平安银行（000001），价格 12.35，理由：5 日线上穿 10 日线，成交量放大 1.8 倍。<br>买入：招商银行（600036），价格 35.20，理由：板块轮动，北向资金连续 3 日流入。<br>请于 14:50 前确认下单。</p>
+    </div>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">七、一个简单的 A 股轮动策略示例</h2>
+    <p>原文里举了一个很适合普通人理解的轮动思路：先找涨幅最低的三个行业板块，再从每个板块里选跌幅最大、但市盈率和流通市值合规的主板非 ST 股票，叠加成交量条件后生成候选买入列表。</p>
+    <p>这种策略的价值不在于“它一定最好”，而在于它足够结构化，便于 OpenClaw 执行、记录、复盘和持续迭代。你跑一周后，可以直接让它输出统计，再用自然语言继续调参数，比如把市盈率上限从 30 调到 25，或者加入 MACD 金叉条件。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">八、A 股里真正决定长期结果的，是风险控制</h2>
+    <ul style="padding-left:20px;">
+      <li>只做主板非 ST，主动避开高风险票。</li>
+      <li>分散持仓，单票仓位不要过高。</li>
+      <li>严格止损，例如 -5% 无条件止损。</li>
+      <li>让 OpenClaw 在财报披露前一周暂停新开仓。</li>
+      <li>每周自动复盘，根据胜率和盈亏比继续调整规则。</li>
+    </ul>
+    <p>OpenClaw 的优势不是“永不亏损”，而是它不会情绪化，会在你设定的纪律下持续执行。长期结果仍然取决于你的策略是否有统计优势。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">九、几个最常见的问题</h2>
+    <p><strong>需要编程基础吗？</strong> 不需要，核心是中文描述与后台配置。</p>
+    <p><strong>能保证盈利吗？</strong> 不能。量化本质是概率游戏，OpenClaw 只能帮你严格执行和持续优化。</p>
+    <p><strong>如何开始？</strong> 先部署 OpenClaw，接好 QMT 和消息通知，再从最简单的均线或轮动策略开始，小资金、长观察、慢优化。</p>
+
+    <div style="margin-top:20px; padding:16px 18px; border-radius:14px; background:#fff7ed; border:1px solid #fdba74; color:#9a3412;">
+      注：本文仅供学习参考，不构成任何投资建议。市场有风险，投资需谨慎。
+    </div>
+  </section>
+</article>
+{% endblock %}
+
+{% block page_tail_promo %}{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}睡眠分类 | 心理学专栏{% endblock %}
+{% block meta_description %}睡眠分类：科学改善失眠、深夜焦虑与节律紊乱，找回稳定深睡。{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+  <a href="{% url 'psychology_column' %}" style="color:#2563eb;text-decoration:none;">← 返回心理学专栏</a>
+</div>
+
+<section style="margin-bottom: 24px; background: linear-gradient(135deg,#0f172a 0%,#1d4ed8 100%); border-radius: 16px; padding: 28px; color: #f8fafc;">
+  <p style="display:inline-block; background: rgba(255,255,255,.16); border-radius: 999px; padding: 6px 12px; font-size: .85rem; margin: 0 0 10px;">心理学分类</p>
+  <h1 style="font-size: 2rem; margin: 0 0 8px;">😴 睡眠分类</h1>
+  <p style="margin: 0; color: #dbeafe; line-height: 1.85;">聚焦失眠、深夜焦虑、换床睡不着、情绪型失眠等常见困扰。用可执行的科学方法，帮你从“硬熬”转向“真正恢复”。</p>
+</section>
+
+<section>
+  <div class="section-header">
+    <h2 class="section-title"><span class="icon">📄</span> 分类文章</h2>
+    <span style="color: var(--gray-500);">2 篇</span>
+  </div>
+  <div class="tool-grid">
+    <article class="tool-card" style="border-left: 4px solid #6366f1;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">压力与睡眠</span>
+          <span class="badge" style="background: rgba(99,102,241,.14); color:#4338ca;">斑马模型</span>
+        </div>
+      </div>
+      <h3>只要你身心不紧张，人其实很难生病｜读《为什么斑马不得胃溃疡》</h3>
+      <p class="description">从HPA轴、皮质醇到可预测性/控制感/支持网，理解压力如何伤身，以及如何系统关闭压力开关。</p>
+      <div class="card-footer">
+        <a href="{% url 'psychology_article_zebra_stress' %}" class="card-link">阅读文章 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #0ea5e9;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">睡眠</span>
+          <span class="badge" style="background: rgba(14,165,233,.14); color:#0369a1;">终结指南</span>
+        </div>
+      </div>
+      <h3>睡眠困扰终结指南：老胡带你破解“深夜焦虑”的 6 个科学真相</h3>
+      <p class="description">从20分钟规则、PMR肌肉放松、反向暗示到烦恼清单与安全岛搭建，系统解决“越想睡越清醒”。</p>
+      <div class="card-footer">
+        <a href="{% url 'psychology_article_sleep' %}" class="card-link">阅读文章 <span>→</span></a>
+      </div>
+    </article>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,117 @@
+<style>
+  .column-nav-shell {
+    margin: 0 0 28px;
+    background:
+      radial-gradient(circle at top left, rgba(59,130,246,.14), transparent 30%),
+      radial-gradient(circle at top right, rgba(16,185,129,.12), transparent 26%),
+      linear-gradient(135deg, #ffffff 0%, #f8fafc 55%, #eff6ff 100%);
+    border: 1px solid #dbeafe;
+    border-radius: 22px;
+    padding: 18px 20px;
+    box-shadow: 0 20px 44px -34px rgba(15,23,42,.28);
+  }
+  .column-nav-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .column-nav-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .92rem;
+    font-weight: 700;
+    color: #1e3a8a;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: rgba(37,99,235,.08);
+  }
+  .column-nav-note {
+    color: #475569;
+    font-size: .94rem;
+    line-height: 1.8;
+  }
+  .column-nav-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+  }
+  .column-nav-link {
+    display: block;
+    text-decoration: none;
+    color: #0f172a;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: rgba(255,255,255,.86);
+    border: 1px solid #dbeafe;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    box-shadow: 0 14px 28px -24px rgba(15,23,42,.24);
+  }
+  .column-nav-link:hover {
+    transform: translateY(-1px);
+    border-color: #93c5fd;
+    box-shadow: 0 18px 32px -24px rgba(37,99,235,.22);
+  }
+  .column-nav-link strong {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 5px;
+  }
+  .column-nav-link span {
+    display: block;
+    color: #64748b;
+    font-size: .88rem;
+    line-height: 1.65;
+  }
+  .column-nav-link.is-active {
+    color: #fff;
+    border-color: transparent;
+    background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 58%, #0891b2 100%);
+    box-shadow: 0 24px 44px -26px rgba(29,78,216,.5);
+  }
+  .column-nav-link.is-active span {
+    color: rgba(255,255,255,.86);
+  }
+  @media (max-width: 720px) {
+    .column-nav-shell {
+      padding: 16px;
+      border-radius: 18px;
+    }
+    .column-nav-links {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 520px) {
+    .column-nav-links {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<section class="column-nav-shell" aria-label="专栏菜单栏">
+  <div class="column-nav-head">
+    <div class="column-nav-title">🧭 专栏菜单栏</div>
+    <div class="column-nav-note">把几条长期入口放在同一层，切换专栏时不用回首页重找。</div>
+  </div>
+  <div class="column-nav-links">
+    <a href="{% url 'openclaw_column' %}" class="column-nav-link{% if request.resolver_match.url_name == 'openclaw_column' %} is-active{% endif %}">
+      <strong>OpenClaw专栏</strong>
+      <span>自动化、部署、搜索、案例和变现实战</span>
+    </a>
+    <a href="{% url 'algorithm_geek_column' %}" class="column-nav-link{% if request.resolver_match.url_name == 'algorithm_geek_column' %} is-active{% endif %}">
+      <strong>AI算法专栏</strong>
+      <span>论文、RL、信息源和科技量化博主调研</span>
+    </a>
+    <a href="{% url 'psychology_column' %}" class="column-nav-link{% if request.resolver_match.url_name == 'psychology_column' %} is-active{% endif %}">
+      <strong>心理学专栏</strong>
+      <span>心力进化、睡眠、边界感与行动系统</span>
+    </a>
+    <a href="{% url 'quant_column' %}" class="column-nav-link{% if request.resolver_match.url_name == 'quant_column' %} is-active{% endif %}">
+      <strong>量化资源专栏</strong>
+      <span>数据、接口、历史行情和研究工作流</span>
+    </a>
+  </div>
+</section>

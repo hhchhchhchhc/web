@@ -1,220 +1,177 @@
 # 部署指南
 
-## 当前状态
-✅ 所有配置文件已创建
-✅ Git 仓库已初始化
-✅ 代码已提交到本地仓库
+当前线上拓扑按这套来维护：
 
-## 生成的密钥
-```
-SECRET_KEY=ynz4t0*$p=*(=f_(my9wrnca60x\4ypi68bv%+\kz32rl0nb*d
-```
+- 源站：VPS / 本地服务器
+- Web：`nginx`
+- App：`gunicorn`
+- 入口：`Cloudflare` 或 `cloudflared tunnel`
 
----
+仓库里的自动化脚本已经按这个结构整理好了。
 
-## 第一步：推送到 GitHub
+## 一键发布
 
-### 1.1 在 GitHub 创建新仓库
-1. 访问 https://github.com/new
-2. 仓库名称：`tool_aggregator`
-3. 设为 Private（推荐）或 Public
-4. **不要**勾选 "Add a README file"
-5. 点击 "Create repository"
-
-### 1.2 推送代码
-复制你的 GitHub 仓库 URL，然后执行：
+本地机器执行：
 
 ```bash
 cd /home/user/tool_aggregator
-git remote add origin https://github.com/你的用户名/tool_aggregator.git
-git branch -M main
-git push -u origin main
+SERVER_HOST=your-server-ip \
+SERVER_USER=your-ssh-user \
+bash deploy.sh
 ```
 
----
+这条命令会做两件事：
 
-## 第二步：部署到 Railway
+1. `git push origin main`
+2. SSH 到服务器执行 `scripts/deploy_server.sh`
 
-### 2.1 创建 Railway 项目
-1. 访问 https://railway.app
-2. 点击 "Login" → 使用 GitHub 登录
-3. 点击 "New Project"
-4. 选择 "Deploy from GitHub repo"
-5. 选择 `tool_aggregator` 仓库
-6. Railway 会自动开始部署
+如果服务器 SSH 端口不是 `22`：
 
-### 2.2 添加 PostgreSQL 数据库
-1. 在项目页面，点击 "New" 按钮
-2. 选择 "Database"
-3. 选择 "Add PostgreSQL"
-4. Railway 会自动创建数据库并注入 `DATABASE_URL` 环境变量
-
-### 2.3 配置环境变量
-在 Railway 项目中，点击你的服务 → "Variables" 标签，添加以下环境变量：
-
-```
-DJANGO_SETTINGS_MODULE=config.settings_prod
-SECRET_KEY=ynz4t0*$p=*(=f_(my9wrnca60x\4ypi68bv%+\kz32rl0nb*d
-ALLOWED_HOSTS=*.railway.app,你的域名.com
-DEBUG=False
-```
-
-**注意**：将 `你的域名.com` 替换为你的实际域名
-
-### 2.4 等待部署完成
-- Railway 会自动重新部署
-- 在 "Deployments" 标签查看部署日志
-- 部署成功后，会显示一个 Railway 提供的 URL（如 `xxx.railway.app`）
-
-### 2.5 创建超级用户
-1. 在 Railway 项目页面，点击你的服务
-2. 点击 "Settings" → 找到 "Service" 部分
-3. 向下滚动找到 "Deploy Logs" 或使用 Railway CLI
-4. 或者使用 Railway CLI：
-   ```bash
-   # 安装 Railway CLI
-   npm i -g @railway/cli
-
-   # 登录
-   railway login
-
-   # 链接到项目
-   railway link
-
-   # 运行命令
-   railway run python manage.py createsuperuser
-   ```
-
----
-
-## 第三步：配置自定义域名
-
-### 3.1 在 Railway 添加域名
-1. 在 Railway 项目中，点击你的服务
-2. 点击 "Settings" 标签
-3. 找到 "Domains" 部分
-4. 点击 "Custom Domain"
-5. 输入你的域名（如 `tools.yourdomain.com` 或 `yourdomain.com`）
-6. Railway 会提供一个 CNAME 记录值（类似 `xxx.railway.app`）
-
-### 3.2 配置 DNS
-在你的域名提供商（阿里云/腾讯云/Cloudflare 等）：
-
-1. 登录域名管理控制台
-2. 找到 DNS 解析设置
-3. 添加 CNAME 记录：
-   - **记录类型**：CNAME
-   - **主机记录**：`tools`（如果用子域名）或 `@`（如果用根域名）
-   - **记录值**：Railway 提供的值（如 `xxx.railway.app`）
-   - **TTL**：默认值（如 600）
-4. 保存设置
-
-### 3.3 等待 DNS 传播
-- DNS 传播通常需要 5-30 分钟
-- 可以用 `nslookup 你的域名.com` 检查是否生效
-- Railway 会自动配置 SSL 证书（Let's Encrypt）
-
----
-
-## 第四步：验证部署
-
-### 4.1 访问网站
-- Railway URL: `https://xxx.railway.app`
-- 自定义域名: `https://你的域名.com`
-
-### 4.2 测试功能
-- [ ] 首页可以访问
-- [ ] 工具列表页正常
-- [ ] 管理后台可以登录：`https://你的域名.com/admin`
-- [ ] 可以添加分类和工具
-
-### 4.3 添加初始数据
-1. 登录管理后台
-2. 添加 2-3 个分类（如：开发工具、设计工具、效率工具）
-3. 添加一些工具测试
-
----
-
-## 快速命令参考
-
-### 推送到 GitHub
 ```bash
-cd /home/user/tool_aggregator
-git remote add origin https://github.com/你的用户名/tool_aggregator.git
-git branch -M main
-git push -u origin main
+SERVER_HOST=your-server-ip \
+SERVER_USER=your-ssh-user \
+SERVER_PORT=2222 \
+bash deploy.sh
 ```
 
-### 后续更新代码
+如果这次只想触发远程部署，不想先 `git push`：
+
 ```bash
-cd /home/user/tool_aggregator
-git add .
-git commit -m "更新说明"
-git push
+SERVER_HOST=your-server-ip \
+SERVER_USER=your-ssh-user \
+PUSH_FIRST=0 \
+bash deploy.sh
 ```
 
-### 查看 Railway 日志
+## 服务器脚本
+
+服务器上也可以直接执行：
+
 ```bash
-railway logs
+cd /var/www/tool_aggregator/code
+bash scripts/deploy_server.sh
 ```
 
-### 在 Railway 运行命令
+默认会执行：
+
+1. `git fetch` + `git pull --ff-only`
+2. `pip install -r requirements.txt`
+3. `python manage.py check --deploy`
+4. `python manage.py migrate --noinput`
+5. `python manage.py collectstatic --noinput`
+6. 重启 `gunicorn`
+7. 重启 `nginx`
+8. 如果存在 `cloudflared` 服务则自动重启
+
+默认路径和服务名：
+
 ```bash
-railway run python manage.py migrate
-railway run python manage.py createsuperuser
-railway run python manage.py collectstatic
+APP_DIR=/var/www/tool_aggregator
+CODE_DIR=/var/www/tool_aggregator/code
+VENV_DIR=/var/www/tool_aggregator/venv
+APP_ENV_FILE=/var/www/tool_aggregator/.env
+GUNICORN_SERVICE=gunicorn
+NGINX_SERVICE=nginx
+CLOUDFLARED_SERVICE=cloudflared
+BRANCH=main
 ```
 
----
+如果你的服务名不同，可以覆盖：
 
-## 故障排查
+```bash
+GUNICORN_SERVICE=tool-aggregator \
+NGINX_SERVICE=nginx \
+CLOUDFLARED_SERVICE=cloudflared-tunnel \
+bash scripts/deploy_server.sh
+```
 
-### 部署失败
-1. 检查 Railway 部署日志
-2. 确认 `requirements.txt` 中的包版本兼容
-3. 确认环境变量配置正确
+## 前置条件
 
-### 静态文件 404
-1. 确认 `DJANGO_SETTINGS_MODULE=config.settings_prod`
-2. 检查 Railway 日志中 `collectstatic` 是否成功
+服务器上需要已经完成这些准备：
 
-### 数据库连接错误
-1. 确认 PostgreSQL 数据库已添加
-2. 检查 `DATABASE_URL` 环境变量是否存在
+- 代码目录存在：`/var/www/tool_aggregator/code`
+- 虚拟环境存在：`/var/www/tool_aggregator/venv`
+- 环境变量文件存在：`/var/www/tool_aggregator/.env`
+- 部署用户对项目目录有写权限
+- 部署用户可以执行 `systemctl restart gunicorn nginx`
 
-### 域名无法访问
-1. 检查 DNS 配置是否正确
-2. 等待 DNS 传播完成（最多 24 小时）
-3. 确认 `ALLOWED_HOSTS` 包含你的域名
+推荐做法是给部署用户配 `sudo` 免密，仅允许重启这些服务。
 
----
+## 验证命令
 
-## 成本说明
+发布后检查：
 
-**Railway 免费额度**：
-- 500 小时/月（约 20 天运行时间）
-- 100GB 出站流量
-- 512MB RAM
-- 1GB 存储
+```bash
+systemctl status gunicorn --no-pager
+systemctl status nginx --no-pager
+systemctl status cloudflared --no-pager
+curl -I https://ai-tool.indevs.in
+```
 
-**对于小规模应用（<1000 访问/天）**：
-- 完全免费
-- 如需 24/7 运行，升级到 Hobby 计划（$5/月）
+如果 tunnel 有问题，再单独跑：
 
----
+```bash
+sudo bash fix_cloudflare_tunnel.sh
+```
 
-## 下一步优化
+如果你看到的是 `Cloudflare Tunnel error 1033`，建议直接带上域名跑：
 
-1. **添加 Cloudflare CDN**：加速全球访问
-2. **配置监控**：Railway 内置监控和告警
-3. **定期备份**：导出数据库数据
-4. **添加更多功能**：搜索、评论、用户系统等
+```bash
+sudo SITE_HOST=ai-tool.indevs.in bash fix_cloudflare_tunnel.sh
+```
 
----
+## 常见问题
 
-## 需要帮助？
+### 1. `deploy_server.sh` 提示不能写代码目录
 
-如果遇到问题，可以：
-1. 查看 Railway 文档：https://docs.railway.app
-2. 查看 Django 部署文档：https://docs.djangoproject.com/en/5.0/howto/deployment/
-3. 检查部署日志找到具体错误信息
+说明你是错的用户在跑脚本，或者目录 owner 不对。先确认：
+
+```bash
+whoami
+ls -ld /var/www/tool_aggregator /var/www/tool_aggregator/code
+```
+
+### 2. `systemctl restart` 权限不足
+
+给当前部署用户加 sudo 规则，或者手动执行：
+
+```bash
+sudo systemctl restart gunicorn
+sudo systemctl restart nginx
+sudo systemctl restart cloudflared
+```
+
+### 3. Cloudflare 前台还没更新
+
+这通常不是 DNS 延迟，而是源站没完成这几步之一：
+
+- 新代码还没 `git pull`
+- `collectstatic` 没跑
+- `gunicorn` 没重启
+- `cloudflared` 还连着旧进程
+
+### 4. Cloudflare 返回 `1033`
+
+`1033` 不是 Django 报错，它通常表示 Cloudflare 边缘已经知道这是一个 Tunnel hostname，但当前无法把这个 hostname 解析到可用的 tunnel。
+
+优先排查：
+
+```bash
+sudo SITE_HOST=ai-tool.indevs.in bash fix_cloudflare_tunnel.sh
+sudo journalctl -u cloudflared -n 50 --no-pager
+systemctl cat cloudflared
+```
+
+重点看这几个点：
+
+- `cloudflared` 服务是否真的在运行
+- `ExecStart` 是否用了正确的 `--config` 或 token
+- `config.yml` 里的 `tunnel:` 和 `credentials-file:` 是否匹配
+- `ingress` 里是否还包含 `ai-tool.indevs.in`
+- Cloudflare Zero Trust 后台的 Public Hostname 是否还指向这个 tunnel
+
+如果服务在跑，但 `cloudflared tunnel info <tunnel-id>` 查不到 tunnel，通常说明：
+
+- tunnel 被删了
+- 当前机器上的凭据文件不是这个 tunnel 的
+- 服务切到了另一份旧配置

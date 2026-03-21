@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}AI 更新太快学不过来？我用 OpenClaw 打造专属 AI 学习工作流 | OpenClaw 专栏{% endblock %}
+{% block meta_description %}把论文链接和 GitHub 仓库丢给 OpenClaw，自动下载、按 Skill 解读、循环补充并输出个性化报告，搭出适合个人持续学习的 AI 学习工作流。{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+  <a href="{% url 'openclaw_column' %}#builder" style="color:#2563eb;text-decoration:none;">← 返回 OpenClaw 专栏</a>
+</div>
+
+<article style="background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:32px; box-shadow:0 10px 25px rgba(2,6,23,.05);">
+  <header style="border-bottom:1px solid #e5e7eb; padding-bottom:18px; margin-bottom:22px;">
+    <p style="display:inline-block; background:#fff7ed; color:#c2410c; border-radius:999px; padding:6px 12px; font-size:.85rem; font-weight:600;">OpenClaw 专栏 · 学习工作流</p>
+    <h1 style="font-size:2rem; line-height:1.35; color:#111827; margin:12px 0 10px;">AI 更新太快学不过来？我用 OpenClaw 打造专属 AI 学习工作流</h1>
+    <p style="margin:0; color:#6b7280;">新工具和新技术层出不穷，不学会焦虑，学又容易跟不上。更现实的解法不是试图手工追完所有更新，而是把“下载资料、按偏好解读、后续补充、输出报告”这条链路交给 OpenClaw 自动完成。</p>
+    <p style="margin:12px 0 0; color:#475569; line-height:1.8; font-size:.96rem;">原创 悟鸣 · 悟鸣AI · 2026 年 3 月 16 日 · 浙江</p>
+    <p style="margin:12px 0 0; color:#475569; line-height:1.8; font-size:.96rem;">
+      转载自
+      <a href="https://mp.weixin.qq.com/s/eVS58oXpXelCrPi2XAsAYA" target="_blank" rel="noopener noreferrer" style="color:#2563eb; text-decoration:none; font-weight:600;">
+        微信原文
+      </a>
+    </p>
+  </header>
+
+  <section style="line-height:1.95; color:#1f2937; font-size:1.05rem;">
+    <p>最近身边不少人都在说，AI 发展的速度太快了。新模型、新产品、新工作流密集出现，真正的问题已经不是“有没有信息”，而是“怎么稳定地消化信息”。</p>
+    <p>即使是本来就愿意主动学习、长期保持输入的人，也会明显感觉吃力。原因不复杂：每天冒出来的新论文、新仓库、新教程太多，靠手工一篇篇看、一项项试，成本很快就高到不可持续。</p>
+    <p>我最近把这件事重新拆了一遍，最后沉淀出一条适合个人使用的 OpenClaw 学习工作流。核心思路很直接：把论文链接或 GitHub 仓库链接发给 OpenClaw，让它自动下载、调用打磨好的 Skill 解读、按节奏继续补充，然后输出更贴合自己研究方向的报告。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">1. 先装好 OpenClaw</h2>
+    <p>前提还是要先把 OpenClaw 安装和基础配置做好。网上已经有不少安装教程，如果你之前没装过，可以先参考自己的历史文章或站内已有的 OpenClaw 入门内容，把模型配置、常用入口和对话环境先跑通。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">2. 再装两个关键 Skills</h2>
+    <p>这条工作流我主要用了两个 Skill，一个处理论文，一个处理代码仓库：</p>
+    <ul style="padding-left:20px;">
+      <li><strong>论文解读 Skill：</strong><a href="https://github.com/chujianyun/skills/tree/main/skills/paper-interpreter" target="_blank" rel="noopener noreferrer" style="color:#2563eb;text-decoration:none;">paper-interpreter</a></li>
+      <li><strong>代码仓库解读 Skill：</strong><a href="https://github.com/chujianyun/skills/tree/main/skills/github-code-interpreter" target="_blank" rel="noopener noreferrer" style="color:#2563eb;text-decoration:none;">github-code-interpreter</a></li>
+    </ul>
+    <p>安装方式也很简单，把 GitHub 地址直接发给 OpenClaw，让它安装即可。重点不在“装了多少 Skill”，而在于这些 Skill 是否真的匹配你的高频工作场景。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">3. 用它高效解读论文</h2>
+    <p>如果你最近看到一篇感兴趣的论文，只需要把 arXiv 链接发给 OpenClaw。它会自动下载论文，按你预先定义好的 Skill 结构产出解读报告。</p>
+    <p>更实用的一点是，它不需要等所有内容都磨完才反馈。初稿出来后就能先给你一个版本，后续还能在一小时、两小时后继续补充细节，把粗读变成持续深化的过程。</p>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:18px; margin:16px 0;">
+      <p style="margin:0 0 8px;"><strong>这类输出最适合包含：</strong></p>
+      <ul style="margin:0; padding-left:20px;">
+        <li>论文的核心问题与创新点</li>
+        <li>方法设计与实验逻辑</li>
+        <li>和你当前研究方向的关联</li>
+        <li>值得继续追踪的启发与风险</li>
+      </ul>
+    </div>
+    <p>因为不同人的关注点不同，最关键的不是生成一份“标准总结”，而是让报告里带上你真正关心的部分，例如是否适合业务落地、是否能迁移到自己的任务中、是否值得继续复现等。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">4. 用它高效阅读 GitHub 源码</h2>
+    <p>同样的逻辑也适用于源码研究。现在很多人开始用 OpenDeepWiki、OpenCode、OpenClaw、OpenSpec 这类工具，但真正抽时间把它们的源码设计吃透并不容易。</p>
+    <p>把 GitHub 地址发给 OpenClaw 后，它可以按 Skill 设定自动克隆仓库、抽取结构、梳理设计，并生成你需要的报告。比如我会让它至少产出两类内容：</p>
+    <ol style="padding-left:20px;">
+      <li>围绕使用场景、优缺点、设计理念和核心原理的解读报告。</li>
+      <li>一份快速上手文档，帮助我尽快安装并跑通 demo。</li>
+    </ol>
+    <p>这样做的价值很高，因为你不只是知道“这个项目是什么”，还能顺手得到“我该怎么最快跑起来”和“它为什么这么设计”这两类最关键的信息。</p>
+    <div style="background:#111827; color:#f9fafb; border-radius:14px; padding:16px; font-family:monospace; overflow:auto; margin:16px 0;">
+      示例项目：<br>
+      https://github.com/garrytan/gstack
+    </div>
+    <p>把链接和你想重点关注的点一起发给它，它就会按预设流程下载、解读并输出方案。常见输出会包括项目名称、核心功能、亮点、适用场景、优缺点、设计思想和详细安装步骤。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">5. 真正重要的是三条经验</h2>
+    <h3 style="font-size:1.15rem; color:#111827; margin:14px 0 8px;">5.1 举一反三</h3>
+    <p>论文解读和源码解读只是两个典型场景。只要某类输入有相对稳定的处理流程，它就适合被封装成 Skill，例如文章解读、研报解读、热点事件追踪等。</p>
+
+    <h3 style="font-size:1.15rem; color:#111827; margin:14px 0 8px;">5.2 重复迭代</h3>
+    <p>很多大模型第一次完成任务时质量并不稳定，所以“只跑一遍”往往不够。更成熟的办法是引入循环检查和持续优化，也就是任务完成后再跑几轮复查和补强。</p>
+    <p>如果你希望 OpenClaw 产出的报告更扎实，可以把这类循环逻辑显式写进 Skill 或任务要求里，例如约定一小时后补充一次，两小时后再做一次完善。</p>
+    <p><a href="https://claude.com/plugins/ralph-loop" target="_blank" rel="noopener noreferrer" style="color:#2563eb;text-decoration:none;">Ralph Loop</a> 就是一个很有代表性的参考思路。</p>
+
+    <h3 style="font-size:1.15rem; color:#111827; margin:14px 0 8px;">5.3 个性化优先</h3>
+    <p>很多人会问“哪个 Skill 最好用”“应该装哪些 Skill”。更实际的答案是：越贴近你自己的真实工作场景，Skill 才越有价值。</p>
+    <p>先梳理自己的高频任务，识别哪些环节能标准化、哪些部分 AI 最擅长，然后把判断标准、参考材料和偏好告诉它。这样封装出来的 Skill，才会越来越像你自己的工作方式。</p>
+    <p>如果你暂时不知道从哪找相似 Skill，也可以安装 <a href="https://skills.sh/vercel-labs/skills/find-skills" target="_blank" rel="noopener noreferrer" style="color:#2563eb;text-decoration:none;">find-skills</a>，让 OpenClaw 先去帮你找，再基于现成版本继续改。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">6. 结论</h2>
+    <p>安装好 OpenClaw 只是起点，不是终点。更关键的是围绕自己的真实需求去查找、创建、调整和复用 Skills，把它变成一个真正能替你持续处理信息输入的系统。</p>
+    <p>对我来说，这条 AI 学习工作流的价值不是“看起来很酷”，而是把原本零散、焦虑、很难坚持的学习过程，变成了可复用、可补充、能迭代的固定流程。</p>
+
+    <div style="margin-top:20px; padding:16px 18px; border-radius:14px; background:#fff7ed; border:1px solid #fdba74; color:#9a3412;">
+      一句话总结：先找到对你真正重要的输入类型，再让 OpenClaw 按你的标准持续处理它。比“装很多 Skill”更重要的，是把少数几个高频场景打磨到足够顺手。
+    </div>
+  </section>
+</article>
+{% endblock %}
+
+{% block page_tail_promo %}{% endblock %}

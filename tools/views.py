@@ -381,8 +381,30 @@ def openclaw_ai_learning_workflow_guide(request):
     return render(request, 'tools/openclaw_ai_learning_workflow_guide.html')
 
 
+def opencli_guide(request):
+    """OpenClaw 专栏文章：OpenCLI 中文教程"""
+    return render(request, 'tools/opencli_guide.html')
+
+
+def llm_algorithm_engineer_sources_guide(request):
+    """AI算法专栏文章：大模型算法工程师信息源指南"""
+    return render(request, 'tools/llm_algorithm_engineer_sources_guide.html')
+
+
+def yaoban_research_learning_guide(request):
+    """AI算法专栏文章：姚班学习、科研与职业路径总结"""
+    return render(request, 'tools/yaoban_research_learning_guide.html')
+
+
 def _get_credit_account(user):
-    return TTSCreditAccount.objects.get_or_create(user=user)[0]
+    account, created = TTSCreditAccount.objects.get_or_create(
+        user=user,
+        defaults={'is_unlimited': True},
+    )
+    if not account.is_unlimited:
+        account.is_unlimited = True
+        account.save(update_fields=['is_unlimited', 'updated_at'])
+    return account
 
 
 def _build_auth_forms():
@@ -678,7 +700,7 @@ def tts_studio(request):
     recharge_form = TTSRechargeForm()
     consume_form = TTSCreditConsumeForm(
         initial={
-            'voice_preset': TTSOrder.VoicePreset.VIVIAN,
+            'voice_preset': TTSOrder.VoicePreset.SERENA,
             'delivery_format': TTSOrder.DeliveryFormat.MP3,
         }
     )

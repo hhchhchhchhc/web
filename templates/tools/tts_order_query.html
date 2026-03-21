@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}订单查询 | Qwen TTS 商业配音工作室{% endblock %}
+{% block page_tail_promo %}{% endblock %}
+{% block page_tail_extra %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .query-form input[type="text"],
+    .query-form input[type="email"],
+    .query-form input[type="file"] {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 12px 14px;
+        font: inherit;
+        background: #fff;
+    }
+    .query-form ul.errorlist {
+        list-style: none;
+        color: #b91c1c;
+        margin-top: 8px;
+    }
+    .progress-bar-shell {
+        height: 12px;
+        background: #e2e8f0;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+    .progress-bar-fill {
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, #0ea5e9, #22c55e);
+        transition: width 0.4s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section style="max-width: 980px; margin: 0 auto 48px;">
+    <div class="tool-card">
+        <div class="section-header" style="margin-bottom: 16px;">
+            <h1 class="section-title"><span class="icon">🔎</span> 查询 TTS 订单</h1>
+        </div>
+        <form method="get" class="query-form">
+            {% if form.non_field_errors %}
+            <div style="padding: 12px 14px; border-radius: 10px; background: #fee2e2; color: #991b1b; margin-bottom: 16px;">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+            <div style="display: grid; gap: 14px; grid-template-columns: 1fr 1fr auto;">
+                <div>
+                    <label style="font-weight: 600; display: block; margin-bottom: 6px;">订单号</label>
+                    {{ form.order_no }}
+                </div>
+                <div>
+                    <label style="font-weight: 600; display: block; margin-bottom: 6px;">邮箱</label>
+                    {{ form.email }}
+                </div>
+                <div style="align-self: end;">
+                    <button type="submit" class="nav-cta" style="border: none; cursor: pointer;">查询</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+{% if order %}
+<section style="max-width: 980px; margin: 0 auto 48px;">
+    <div style="display: grid; gap: 24px; grid-template-columns: 1.05fr 0.95fr;">
+        <div class="tool-card">
+            <h2 style="margin-bottom: 14px;">订单详情</h2>
+            <div style="display: grid; gap: 12px;">
+                <div><strong>订单号：</strong> {{ order.order_no }}</div>
+                <div><strong>状态：</strong> {{ order.get_status_display }} / {{ order.get_payment_status_display }}</div>
+                <div>
+                    <strong>实时进度：</strong>
+                    <span id="tts-progress-label">{{ order_progress.progress_message }}</span>
+                    <span id="tts-progress-percent">({{ order_progress.progress_percent }}%)</span>
+                    <div class="progress-bar-shell" style="margin-top: 8px;">
+                        <div id="tts-progress-fill" class="progress-bar-fill" style="width: {{ order_progress.progress_percent }}%;"></div>
+                    </div>
+                    <div id="tts-eta-hint" style="margin-top: 8px; color: #64748b;">{{ order_progress.eta_hint }}</div>
+                    <div style="display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-top: 12px;">
+                        <div style="padding: 12px; border-radius: 12px; background: #f8fafc;">
+                            <strong>已生成字数</strong>
+                            <div id="tts-done-chars" style="margin-top: 6px;">{{ order_progress.detail.done_chars }} / {{ order_progress.detail.total_chars }}</div>
+                        </div>
+                        <div style="padding: 12px; border-radius: 12px; background: #f8fafc;">
+                            <strong>当前子音频</strong>
+                            <div id="tts-current-chunk" style="margin-top: 6px;">{{ order_progress.detail.current_chunk }} / {{ order_progress.detail.total_chunks }}</div>
+                        </div>
+                        <div style="padding: 12px; border-radius: 12px; background: #f8fafc;">
+                            <strong>最近更新</strong>
+                            <div id="tts-updated-at" style="margin-top: 6px;">{{ order_progress.detail.updated_at }}</div>
+                        </div>
+                        <div style="padding: 12px; border-radius: 12px; background: #f8fafc;">
+                            <strong>总耗时</strong>
+                            <div id="tts-elapsed" style="margin-top: 6px;">{{ order_elapsed.elapsed_text }}</div>
+                        </div>
+                        <div style="padding: 12px; border-radius: 12px; background: #f8fafc;">
+                            <strong>分段规则</strong>
+                            <div style="margin-top: 6px;">{{ order_progress.rules.direct_max_chars }} 字以内整段直出，超过后按 {{ order_progress.rules.chunk_chars }} 字切分，批次预算约 {{ order_progress.rules.batch_chars }} 字</div>
+                        </div>
+                    </div>
+                    {% if can_cancel %}
+                    <div style="margin-top: 14px;">
+                        <button id="tts-cancel-btn" type="button" class="nav-cta" style="border: none; cursor: pointer; background: #b91c1c;">取消任务</button>
+                        <span id="tts-cancel-message" style="margin-left: 12px; color: #991b1b;"></span>
+                    </div>
+                    {% endif %}
+                    <div id="tts-processing-log" style="margin-top: 10px; color: #475569;">{{ order.processing_log }}</div>
+                </div>
+                <div><strong>应付金额：</strong> {{ order.payable_amount }} 元</div>
+                <div><strong>字数：</strong> {{ order.char_count }}</div>
+                <div><strong>音色：</strong> {{ order.get_voice_preset_display }}</div>
+                <div><strong>交付格式：</strong> {{ order.get_delivery_format_display }}</div>
+                <div><strong>备注码：</strong> {{ order.payment_note_token }}</div>
+                {% if order.payment_reference %}
+                <div><strong>支付流水号：</strong> {{ order.payment_reference }}</div>
+                {% endif %}
+                {% if order.output_file %}
+                    {% if order.is_output_expired %}
+                <div><strong>交付文件：</strong> <span style="color: #b91c1c;">已过期并清理</span></div>
+                    {% else %}
+                <div><strong>交付文件：</strong> <a href="{{ order.output_file.url }}" target="_blank">下载音频</a></div>
+                <div><strong>下载提醒：</strong> 请在 {{ order.output_expires_at|date:"Y-m-d H:i" }} 前下载，文件将在 3 小时后自动清除。</div>
+                    {% endif %}
+                {% endif %}
+                {% if order.payment_proof %}
+                <div><strong>已上传付款截图：</strong> <a href="{{ order.payment_proof.url }}" target="_blank">查看截图</a></div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="tool-card">
+            <h2 style="margin-bottom: 14px;">状态说明</h2>
+            <form method="post" enctype="multipart/form-data" action="{% url 'tts_upload_payment_proof' order.order_no %}" class="query-form">
+                {% csrf_token %}
+                <label style="font-weight: 600; display: block; margin-bottom: 6px;">支付截图</label>
+                {{ proof_form.payment_proof }}
+                <button type="submit" class="nav-cta" style="border: none; cursor: pointer; margin-top: 14px;">上传凭证</button>
+            </form>
+            <div style="margin-top: 18px; padding: 16px; border-radius: 14px; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); border: 1px solid #bfdbfe; text-align: center;">
+                <div style="margin-top: 10px; color: #1e3a8a; font-weight: 700;">额度模式已启用</div>
+                <div style="margin-top: 6px; color: #475569; font-size: 0.92rem;">{{ manual_payment_notice }}</div>
+            </div>
+            <div style="margin-top: 14px; color: #475569;">
+                联系微信：{{ sales_wechat }}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if order %}
+<script>
+    (function () {
+        const statusUrl = "{% url 'tts_order_status' order.order_no %}?email={{ order.email|urlencode }}";
+        const label = document.getElementById('tts-progress-label');
+        const percent = document.getElementById('tts-progress-percent');
+        const fill = document.getElementById('tts-progress-fill');
+        const eta = document.getElementById('tts-eta-hint');
+        const doneChars = document.getElementById('tts-done-chars');
+        const currentChunk = document.getElementById('tts-current-chunk');
+        const updatedAt = document.getElementById('tts-updated-at');
+        const elapsed = document.getElementById('tts-elapsed');
+        const processingLog = document.getElementById('tts-processing-log');
+        const cancelButton = document.getElementById('tts-cancel-btn');
+        const cancelMessage = document.getElementById('tts-cancel-message');
+        const cancelUrl = "{% url 'tts_cancel_order' order.order_no %}";
+
+        function applyStatus(data) {
+            if (!data.ok) return;
+            label.textContent = data.progress_message;
+            percent.textContent = '(' + data.progress_percent + '%)';
+            fill.style.width = data.progress_percent + '%';
+            eta.textContent = data.eta_hint;
+            doneChars.textContent = data.progress_detail.done_chars + ' / ' + data.progress_detail.total_chars;
+            currentChunk.textContent = data.progress_detail.current_chunk + ' / ' + data.progress_detail.total_chunks;
+            updatedAt.textContent = data.progress_detail.updated_at || '';
+            elapsed.textContent = data.elapsed_text || '';
+            processingLog.textContent = data.processing_log || '';
+            if (cancelButton && (data.status === 'cancelled' || data.cancel_requested)) {
+                cancelButton.disabled = true;
+                cancelButton.textContent = data.status === 'cancelled' ? '任务已取消' : '取消中';
+            }
+            if (data.status === 'delivered' || data.status === 'cancelled') {
+                clearInterval(timer);
+                window.location.reload();
+            }
+        }
+
+        async function poll() {
+            const response = await fetch(statusUrl, { credentials: 'same-origin' });
+            if (!response.ok) return;
+            const data = await response.json();
+            applyStatus(data);
+        }
+
+        const timer = setInterval(poll, 1000);
+        poll();
+
+        if (cancelButton) {
+            cancelButton.addEventListener('click', async function () {
+                cancelButton.disabled = true;
+                cancelMessage.textContent = '正在提交取消请求...';
+                const response = await fetch(cancelUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                    },
+                    body: 'email={{ order.email|urlencode }}'
+                });
+                const data = await response.json();
+                cancelMessage.textContent = data.message || '取消失败';
+                if (!data.ok) {
+                    cancelButton.disabled = false;
+                }
+                poll();
+            });
+        }
+    }());
+</script>
+{% endif %}
+{% endblock %}

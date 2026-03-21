@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}AI工具专题导航 | 全民效率神器{% endblock %}
+{% block meta_description %}按场景和人群整理的AI工具专题合集，持续自动更新，快速找到最适合你的工具组合。{% endblock %}
+{% block extra_css %}
+<style>
+    .topic-list-hero {
+        background: linear-gradient(135deg, #111827 0%, #0f766e 48%, #2563eb 100%);
+        border-radius: 24px;
+        padding: 30px;
+        color: #fff;
+        margin-bottom: 28px;
+        box-shadow: 0 24px 50px -34px rgba(15, 23, 42, 0.58);
+    }
+    .topic-list-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.8fr);
+        gap: 20px;
+        margin-bottom: 28px;
+    }
+    .topic-list-panel,
+    .topic-list-side {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 22px;
+        padding: 24px;
+        box-shadow: var(--shadow-lg);
+    }
+    .topic-list-panel p,
+    .topic-list-side p {
+        color: var(--gray-600);
+        line-height: 1.85;
+    }
+    .topic-list-route {
+        display: grid;
+        gap: 12px;
+        margin-top: 14px;
+    }
+    .topic-list-route div {
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: var(--gray-600);
+    }
+    .topic-list-route strong {
+        display: block;
+        color: var(--gray-900);
+        margin-bottom: 4px;
+    }
+    @media (max-width: 960px) {
+        .topic-list-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="topic-list-hero">
+    <h1 style="font-size: 2.2rem; font-weight: 800; margin: 0 0 10px;">🧭 AI工具专题导航</h1>
+    <p style="margin:0; color:rgba(255,255,255,.9); line-height:1.85;">专题页适合“不想一个个比工具”的人。它会先按场景、人群和目标帮你收束范围，再进入对应工具池。</p>
+</section>
+
+<section class="topic-list-layout">
+    <div class="topic-list-panel">
+        <div class="section-header" style="margin-bottom: 12px;">
+            <h2 class="section-title"><span class="icon">🪄</span> 怎么用专题页</h2>
+        </div>
+        <p>如果你想直接找到“某类问题该看哪批工具”，专题页会比全站工具列表更高效。当前共 {{ grouped_topics|length }} 个分类专题，每类通常会拆成入门、工作流和免费可用三个切口。</p>
+    </div>
+    <div class="topic-list-side">
+        <h2 style="font-size:1.05rem; color:var(--gray-900); margin-bottom:10px;">推荐浏览顺序</h2>
+        <div class="topic-list-route">
+            <div><strong>1. 先选赛道</strong>先判断自己要的是写作、搜索、自动化、设计还是增长。</div>
+            <div><strong>2. 再选切口</strong>新手先看入门，有经验的直接看工作流或免费方案。</div>
+            <div><strong>3. 最后进工具页</strong>确定方向后再点进工具详情页，效率最高。</div>
+        </div>
+    </div>
+</section>
+
+<div class="tool-grid">
+    {% for group in grouped_topics %}
+    <div class="tool-card">
+        <h3>{{ group.category_name }} AI工具专题</h3>
+        <p class="description">{{ group.meta_description }}</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+            {% for label, topic in group.topic_links %}
+            <a href="{% url 'topic_detail' topic.slug %}" class="filter-btn" style="text-decoration: none;">{{ label }}</a>
+            {% endfor %}
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 48px; color: var(--gray-500);">
+        暂无专题，请先执行自动生成命令。
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

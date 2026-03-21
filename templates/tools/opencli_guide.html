@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}OpenCLI 中文教程：把网站和桌面 App 变成命令行 | OpenClaw 专栏{% endblock %}
+{% block meta_description %}OpenCLI 中文教程：把网站和 Electron App 直接变成 CLI，复用 Chrome 登录态，快速接入 Twitter/X、小红书、Cursor、Codex、ChatGPT 等高频工具，并圈出最值得提速的关键点。{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+  <a href="{% url 'openclaw_column' %}#deploy" style="color:#2563eb;text-decoration:none;">← 返回 OpenClaw 专栏</a>
+</div>
+
+<article style="background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:32px; box-shadow:0 10px 25px rgba(2,6,23,.05);">
+  <header style="border-bottom:1px solid #e5e7eb; padding-bottom:18px; margin-bottom:22px;">
+    <p style="display:inline-block; background:#eff6ff; color:#1d4ed8; border-radius:999px; padding:6px 12px; font-size:.85rem; font-weight:600;">OpenClaw 专栏 · 浏览器自动化</p>
+    <h1 style="font-size:2rem; line-height:1.35; color:#111827; margin:12px 0 10px;">OpenCLI 中文教程：把网站和桌面 App 直接变成命令行</h1>
+    <p style="margin:0; color:#6b7280;">一句话判断：OpenCLI 的价值，不是又一个自动化工具，而是把你已经在用的网站和 Electron App 直接变成可脚本化、可复用、可让 AI 调用的 CLI 接口。</p>
+  </header>
+
+  <section style="line-height:1.95; color:#1f2937; font-size:1.05rem;">
+    <div style="margin-bottom:20px; padding:14px 16px; border-radius:14px; background:#ecfeff; border:1px solid #99f6e4; color:#115e59;">
+      <strong>最可能给我们提速的 4 件事：</strong>
+      <ol style="margin:10px 0 0; padding-left:20px;">
+        <li><strong>复用 Chrome 登录态：</strong>不用自己折腾登录、Cookie、反复扫码，直接吃浏览器里现成会话。</li>
+        <li><strong>把桌面工具 CLI 化：</strong>Cursor、Codex、Antigravity、ChatGPT 这类 Electron App，可以直接被命令行和工作流调度。</li>
+        <li><strong>用 `explore / synthesize / generate` 快速做新适配器：</strong>碰到新网站时，不必从零硬写脚本。</li>
+        <li><strong>用 YAML / TypeScript 动态注册命令：</strong>高频站点和固定流程可以沉淀成自己的 CLI 资产。</li>
+      </ol>
+    </div>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">一、OpenCLI 到底是什么</h2>
+    <p>OpenCLI 是一个把网站或 Electron App 变成命令行接口的工具。它同时覆盖两类场景：</p>
+    <ul style="padding-left:20px;">
+      <li><strong>浏览器侧：</strong>Twitter/X、小红书、知乎、B站、YouTube、雪球、LinkedIn 等。</li>
+      <li><strong>桌面 App 侧：</strong>Cursor、Codex、ChatGPT、ChatWise、Discord、Notion、Antigravity 等。</li>
+    </ul>
+    <p>它最适合的不是“一次性录宏”，而是把你已经在用的网页和桌面工具，重新整理成能被脚本、Agent 和工作流直接调用的执行入口。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">二、为什么这条对我们有现实意义</h2>
+    <div style="overflow:auto; border:1px solid #e5e7eb; border-radius:14px; margin-bottom:16px;">
+      <table style="width:100%; border-collapse:collapse; min-width:680px;">
+        <thead style="background:#f8fafc;">
+          <tr>
+            <th style="padding:12px 14px; text-align:left; border-bottom:1px solid #e5e7eb;">能力</th>
+            <th style="padding:12px 14px; text-align:left; border-bottom:1px solid #e5e7eb;">对我们的现实意义</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">复用浏览器登录态</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">少掉一大截登录、鉴权、Cookie 搬运和反复排错成本。</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">控制桌面 App</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">把 Codex、Cursor、ChatGPT 这类原本只能手点的工具拉进自动化链路。</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">AI-native 探索链路</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">遇到新站点时，更快找到可用接口、页面能力和认证策略。</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 14px;">动态加载适配器</td>
+            <td style="padding:12px 14px;">适合把自己常用站点和固定动作沉淀成团队长期资产。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">三、简洁教程：最短上手步骤</h2>
+    <ol style="padding-left:20px;">
+      <li>确保 Node.js 版本至少是 20。</li>
+      <li>安装：<code>npm install -g @jackwener/opencli</code></li>
+      <li>给 Chrome 装 Browser Bridge 扩展。</li>
+      <li>在 Chrome 里提前登录你要操作的网站。</li>
+      <li>跑 <code>opencli doctor --live</code> 检查扩展、daemon 和浏览器连通性。</li>
+      <li>跑 <code>opencli list</code> 看当前可用命令。</li>
+    </ol>
+
+    <div style="background:#111827; color:#f9fafb; border-radius:14px; padding:16px; font-family:monospace; overflow:auto; margin:16px 0;">
+      npm install -g @jackwener/opencli
+      <br>opencli doctor --live
+      <br>opencli list
+      <br>opencli twitter trending
+      <br>opencli xiaohongshu search --keyword "AI Agent"
+      <br>opencli cursor status
+      <br>opencli codex status
+    </div>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">四、先只记住这 5 个命令</h2>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:18px; margin-bottom:16px;">
+      <p style="margin:0 0 10px;"><strong>1. 看所有命令：</strong><code>opencli list</code></p>
+      <p style="margin:0 0 10px;"><strong>2. 查扩展和浏览器连通性：</strong><code>opencli doctor --live</code></p>
+      <p style="margin:0 0 10px;"><strong>3. 直接跑现成站点命令：</strong><code>opencli twitter search --query "AI Agent"</code></p>
+      <p style="margin:0 0 10px;"><strong>4. 控制桌面 App：</strong><code>opencli codex status</code> / <code>opencli cursor status</code></p>
+      <p style="margin:0;"><strong>5. 给新网站快速起适配器：</strong><code>opencli generate https://example.com --goal "hot"</code></p>
+    </div>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">五、圈出来：哪些最值得我们优先试</h2>
+
+    <h3 style="font-size:1.15rem; color:#111827; margin:14px 0 8px;">5.1 Chrome 登录态复用</h3>
+    <p>这是最现实、最立竿见影的提速点。很多自动化项目死在登录、鉴权、会话保持和风控处理上，而 OpenCLI 直接走浏览器已登录会话，天然就省掉一大截麻烦。</p>
+
+    <h3 style="font-size:1.15rem; color:#111827; margin:14px 0 8px;">5.2 Electron App CLI 化</h3>
+    <p>对我们这种会同时用 Codex、Cursor、ChatGPT、Antigravity 的场景，这点最有想象力。它意味着这些桌面工具不再只是 GUI，而是可以进入更大的自动化系统。</p>
+
+    <h3 style="font-size:1.15rem; color:#111827; margin:14px 0 8px;">5.3 `explore / synthesize / generate`</h3>
+    <p>对新网站，最慢的通常是“先理解页面、再猜接口、再试认证”。OpenCLI 的探索链路就是在压缩这段时间。哪怕最后还需要手工修 adapter，也比完全从零摸索快很多。</p>
+
+    <h3 style="font-size:1.15rem; color:#111827; margin:14px 0 8px;">5.4 下载与导出能力</h3>
+    <p>小红书、Twitter、B站、知乎这类平台，如果你本来就有素材采集、导出文章、下载媒体的需求，OpenCLI 的内置下载支持会比你自己每个平台重写一遍更省事。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">六、适合我们先试的场景</h2>
+    <ul style="padding-left:20px;">
+      <li><strong>内容增长：</strong>抓 Twitter/X、小红书、知乎、B站内容，做素材池和二次分发。</li>
+      <li><strong>研发提效：</strong>先用 `cursor / codex / antigravity` 做状态检查、读历史、导出结果。</li>
+      <li><strong>资料采集：</strong>知乎文章导出、Twitter 媒体下载、B站视频下载、小红书素材下载。</li>
+      <li><strong>新站点接入：</strong>碰到一个新网站，先用 `explore` 和 `generate` 试水，别急着自己手搓整套脚本。</li>
+    </ul>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">七、使用时要注意什么</h2>
+    <ul style="padding-left:20px;">
+      <li>它依赖你本机 Chrome 已经登录目标站点。</li>
+      <li>Browser Bridge 扩展和本地 daemon 是前提，建议先跑 `doctor`。</li>
+      <li>桌面 App 适配器很强，但不同系统和 App 版本可能会有差异，别一上来就赌全自动。</li>
+      <li>最好的做法不是全盘替换现有工作流，而是先挑一两个高频场景试。</li>
+    </ul>
+
+    <div style="margin-top:20px; padding:16px 18px; border-radius:14px; background:#fff7ed; border:1px solid #fdba74; color:#9a3412;">
+      <strong>一句话建议：</strong>如果你最近最想提速的是“复用网页登录态 + 接管桌面 AI 工具 + 给新站点快速起自动化入口”，OpenCLI 很值得先试；如果你只是想做一次性网页点击脚本，它的价值反而没那么大。
+    </div>
+  </section>
+</article>
+{% endblock %}
+
+{% block page_tail_promo %}{% endblock %}

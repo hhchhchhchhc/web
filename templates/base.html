@@ -141,6 +141,185 @@
             margin: 0 auto;
             padding: 0 24px;
         }
+        .global-sidepromo {
+            position: fixed;
+            top: 132px;
+            width: 176px;
+            z-index: 60;
+        }
+        .global-sidepromo.left {
+            left: 18px;
+            width: 220px;
+        }
+        .global-sidepromo.right {
+            right: 18px;
+        }
+        .global-sidepromo-card {
+            display: block;
+            text-decoration: none;
+            border-radius: 18px;
+            padding: 16px 15px;
+            box-shadow: 0 22px 42px -28px rgba(15, 23, 42, 0.45);
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            backdrop-filter: blur(10px);
+        }
+        .global-sidepromo-card + .global-sidepromo-card {
+            margin-top: 12px;
+        }
+        .global-sidepromo-card.tardis {
+            background: linear-gradient(180deg, rgba(255, 247, 237, 0.98) 0%, rgba(255, 241, 242, 0.98) 100%);
+            color: #7c2d12;
+            padding: 22px 18px;
+            border-radius: 22px;
+            box-shadow: 0 28px 56px -28px rgba(194, 65, 12, 0.38);
+        }
+        .global-sidepromo-card.gangmei {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%);
+            color: #f8fafc;
+        }
+        .global-sidepromo-card.tushare {
+            background: linear-gradient(180deg, rgba(239, 246, 255, 0.98) 0%, rgba(240, 253, 250, 0.98) 100%);
+            color: #0f172a;
+            padding: 20px 18px;
+            border-radius: 22px;
+            box-shadow: 0 24px 48px -24px rgba(29, 78, 216, 0.28);
+        }
+        .global-sidepromo-card.qr {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
+            color: #0f172a;
+            padding: 20px 18px;
+            border-radius: 22px;
+            box-shadow: 0 24px 48px -24px rgba(15, 23, 42, 0.28);
+        }
+        .global-sidepromo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .global-sidepromo-card.tardis .global-sidepromo-badge {
+            background: rgba(17, 24, 39, 0.08);
+            color: #9a3412;
+            font-size: 0.82rem;
+            padding: 7px 12px;
+        }
+        .global-sidepromo-card.tardis h3 {
+            font-size: 1.18rem;
+            line-height: 1.35;
+            color: #7c2d12;
+            margin-bottom: 10px;
+        }
+        .global-sidepromo-card.tardis p {
+            font-size: 0.92rem;
+            line-height: 1.82;
+            color: #7c2d12;
+        }
+        .global-sidepromo-card.tardis .global-sidepromo-meta {
+            font-size: 0.86rem;
+            line-height: 1.78;
+            padding: 12px 13px;
+        }
+        .global-sidepromo-card.tardis .global-sidepromo-cta {
+            font-size: 0.9rem;
+        }
+        .global-sidepromo-card.gangmei .global-sidepromo-badge {
+            background: rgba(251, 191, 36, 0.14);
+            color: #fbbf24;
+        }
+        .global-sidepromo-card.tushare .global-sidepromo-badge {
+            background: rgba(37, 99, 235, 0.1);
+            color: #1d4ed8;
+            font-size: 0.82rem;
+            padding: 7px 12px;
+        }
+        .global-sidepromo-card.tushare h3 {
+            font-size: 1.16rem;
+            line-height: 1.35;
+            margin-bottom: 10px;
+            color: #0f172a;
+        }
+        .global-sidepromo-card.tushare p {
+            font-size: 0.92rem;
+            line-height: 1.75;
+            margin-bottom: 12px;
+            color: #334155;
+        }
+        .global-sidepromo-card.tushare .global-sidepromo-meta {
+            font-size: 0.84rem;
+            line-height: 1.72;
+            padding: 12px 13px;
+        }
+        .global-sidepromo-card.tushare .global-sidepromo-cta {
+            font-size: 0.9rem;
+        }
+        .global-sidepromo-card.qr .global-sidepromo-badge {
+            background: rgba(15, 23, 42, 0.08);
+            color: #334155;
+            font-size: 0.82rem;
+            padding: 7px 12px;
+        }
+        .global-sidepromo-card.qr h3 {
+            font-size: 1.16rem;
+            line-height: 1.35;
+            margin-bottom: 10px;
+        }
+        .global-sidepromo-card.qr p {
+            font-size: 0.92rem;
+            line-height: 1.75;
+            margin-bottom: 14px;
+        }
+        .global-sidepromo-card.qr .global-sidepromo-cta {
+            margin-top: 10px;
+            font-size: 0.88rem;
+            color: #1d4ed8;
+        }
+        .global-sidepromo-card.gangmei .global-sidepromo-meta {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.12);
+            color: #e2e8f0;
+        }
+        .global-sidepromo-card.qr .qr-link {
+            display: block;
+            text-decoration: none;
+        }
+        .global-sidepromo-card.qr img {
+            display: block;
+            width: 100%;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            padding: 8px;
+        }
+        .global-sidepromo-card h3 {
+            font-size: 1rem;
+            line-height: 1.45;
+            margin-bottom: 8px;
+        }
+        .global-sidepromo-card p {
+            font-size: 0.82rem;
+            line-height: 1.75;
+            margin-bottom: 10px;
+        }
+        .global-sidepromo-meta {
+            font-size: 0.78rem;
+            line-height: 1.7;
+            padding: 10px 11px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.74);
+            border: 1px solid rgba(255, 255, 255, 0.65);
+            margin-bottom: 10px;
+        }
+        .global-sidepromo-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
         
         /* Header */
         header {
@@ -593,6 +772,11 @@
             .header-inner { flex-direction: column; gap: 16px; }
             nav { flex-wrap: wrap; justify-content: center; }
         }
+        @media (max-width: 1200px) {
+            .global-sidepromo {
+                display: none;
+            }
+        }
         
         /* Animations */
         @keyframes fadeInUp {
@@ -612,6 +796,65 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    {% if request.path != '/openclaw/' and request.path != '/free/search/' %}
+    <aside class="global-sidepromo left" aria-label="Tardis 与 Tushare Pro 宣传">
+        <a href="{% url 'quant_article_tardis' %}" class="global-sidepromo-card tardis">
+            <span class="global-sidepromo-badge">📈 TARDIS 数据</span>
+            <h3>高频、期权、现货历史数据低价拿</h3>
+            <p>现货、期货、期权三类交易所数据都能拿，适合研究、回测、信号验证和生产补数。</p>
+            <div class="global-sidepromo-meta">
+                微信：<strong>15180066256</strong><br>
+                单次下载 100 元起<br>
+                整月 API 1500 元/月
+            </div>
+            <span class="global-sidepromo-cta">查看 TARDIS 指南 →</span>
+        </a>
+        <a href="https://m.tb.cn/h.igcmZ1Y?tk=TXkZUzbHkiB" target="_blank" rel="noopener noreferrer" class="global-sidepromo-card tushare">
+            <span class="global-sidepromo-badge">🧾 Tushare Pro</span>
+            <h3>199 甩卖：原价 8500 元的 Tushare Pro API</h3>
+            <p>发货 3 个 token。优先点击闲鱼链接直接打开；如果闲鱼链接失效，再联系微信 dreamsjtuai。</p>
+            <div class="global-sidepromo-meta">
+                A 股 / 港股 / 美股 / 外汇<br>
+                分钟线 / 新闻 / 期货 / 期权<br>
+                3 个 token 可轮换使用
+            </div>
+            <span class="global-sidepromo-cta">优先点击闲鱼链接 →</span>
+        </a>
+    </aside>
+    <aside class="global-sidepromo right" aria-label="港美掘金与 Tushare Pro 宣传">
+        <div class="global-sidepromo-card qr">
+            <span class="global-sidepromo-badge">💬 微信群聊二维码</span>
+            <h3>微信扫码进群</h3>
+            <p>直接用微信扫一扫。如果页面里看不清，点图可放大查看。</p>
+            <a href="/static/images/sidebar/ewm.jpg" target="_blank" rel="noopener noreferrer" class="qr-link">
+                <img src="/static/images/sidebar/ewm.jpg" alt="微信群聊二维码">
+            </a>
+            <span class="global-sidepromo-cta">点击图片放大 →</span>
+        </div>
+        <a href="https://t.zsxq.com/eQkvu" target="_blank" rel="noopener noreferrer" class="global-sidepromo-card gangmei">
+            <span class="global-sidepromo-badge">🔥 港美掘金</span>
+            <h3>实战派财富系统</h3>
+            <p>量化策略、投研情报、AI 工具基建和高价值课程资料都在这里，适合想长期积累信息差的人。</p>
+            <div class="global-sidepromo-meta">
+                量化源码 + 数据接口<br>
+                3 个 Tushare token<br>
+                持续更新的高端社群
+            </div>
+            <span class="global-sidepromo-cta">立即加入 →</span>
+        </a>
+        <a href="https://m.tb.cn/h.igcmZ1Y?tk=TXkZUzbHkiB" target="_blank" rel="noopener noreferrer" class="global-sidepromo-card tushare">
+            <span class="global-sidepromo-badge">🧾 Tushare Pro</span>
+            <h3>199 甩卖：原价 8500 元的 Tushare Pro API</h3>
+            <p>优先点击闲鱼链接直接打开；如果闲鱼链接失效，再联系微信 dreamsjtuai。</p>
+            <div class="global-sidepromo-meta">
+                互动易 / 筹码 / 分钟线<br>
+                港股 / 美股 / 全球指数<br>
+                3 个 token + 微信兜底
+            </div>
+            <span class="global-sidepromo-cta">优先点击闲鱼链接 →</span>
+        </a>
+    </aside>
+    {% endif %}
     <header>
         <div class="container">
             <div class="header-inner">
@@ -622,7 +865,13 @@
                 <nav>
                     <a href="{% url 'home' %}">首页</a>
                     <a href="{% url 'tool_list' %}">全部工具</a>
-                    <a href="/admin/" class="nav-cta">⭐ 收藏本站</a>
+                    <a href="{% url 'tts_studio' %}">低价优质TTS</a>
+                    <a href="{% url 'openclaw_column' %}">OpenClaw专栏</a>
+                    <a href="{% url 'algorithm_geek_column' %}">AI算法专栏</a>
+                    <a href="{% url 'psychology_column' %}">心理学专栏</a>
+                    <a href="{% url 'quant_column' %}">量化资源专栏</a>
+                    <a href="{% url 'free_resources' %}">免费资源</a>
+                    <a href="{% url 'tts_studio' %}" class="nav-cta">🎙 立即卖配音</a>
                 </nav>
             </div>
         </div>
@@ -633,6 +882,12 @@
     <main>
         <div class="container">
             {% block content %}{% endblock %}
+            {% block page_tail_promo %}
+            {% include "tools/_tardis_promo.html" %}
+            {% endblock %}
+            {% block page_tail_extra %}
+            {% include "tools/_tencent_cloud_promo.html" %}
+            {% endblock %}
         </div>
     </main>
 
@@ -644,13 +899,14 @@
                         <div class="logo-icon">🚀</div>
                         <div class="logo-text" style="color: white;"><span>全民效率神器</span></div>
                     </a>
-                    <p>让每个人都能轻松提升效率的神器库<br>精选AI工具、效率资源、实用神器等优质内容<br>持续更新中...</p>
-                    <div style="margin-top: 20px; padding: 16px; background: rgba(99, 102, 241, 0.1); border-radius: 8px; border-left: 3px solid #6366f1;">
-                        <h4 style="color: #6366f1; margin-bottom: 8px; font-size: 0.9rem;">💡 公众号运营技巧</h4>
-                        <p style="font-size: 0.85rem; line-height: 1.6; color: var(--gray-400);">
-                            <strong>SEO优化：</strong>挖掘长尾关键词，在标题和文章中布局，截获微信搜一搜精准流量<br>
-                            <strong>互动营销：</strong>文章留言达5条以上易触发"账号成长"功能，获得平台额外曝光<br>
-                            <strong>裂变增长：</strong>转发公众号文章到朋友圈或200+群，加微信发送转发截图，获取专属礼包
+                    <p>三大核心价值：从“抄作业”到“建系统”<br>港美掘金 · 实盘策略 + 一手情报 + AI工具基建<br>持续更新中...</p>
+                    <div style="margin-top: 20px; padding: 16px; background: rgba(245, 158, 11, 0.12); border-radius: 8px; border-left: 3px solid #f59e0b;">
+                        <h4 style="color: #f59e0b; margin-bottom: 8px; font-size: 0.9rem;">🔥 港美掘金星球</h4>
+                        <p style="font-size: 0.85rem; line-height: 1.7; color: var(--gray-400);">
+                            <strong>价值一：</strong>实盘验证策略与低风险套利教程，拒绝纸上谈兵。<br>
+                            <strong>价值二：</strong>机构持仓、投行摘要、实时风险预警，打破信息茧房。<br>
+                            <strong>价值三：</strong>AI搞钱工具箱 + 零代码量化平台 + 全球资源库。<br>
+                            <a href="https://t.zsxq.com/eQkvu" target="_blank" rel="noopener noreferrer" style="color: #fbbf24; text-decoration: underline; font-weight: 700;">👇 立即加入「港美掘金」</a>
                         </p>
                     </div>
                 </div>

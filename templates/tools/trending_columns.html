@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}7日专栏热度榜 | 全民效率神器{% endblock %}
+{% block meta_description %}基于最近7天浏览数据自动生成的专栏热度榜，每日更新，快速找到最值得先看的专栏入口。{% endblock %}
+{% block extra_css %}
+<style>
+    .trending-hero {
+        background: linear-gradient(135deg, #111827 0%, #1d4ed8 42%, #14b8a6 100%);
+        border-radius: 24px;
+        padding: 30px;
+        color: #fff;
+        margin-bottom: 28px;
+        box-shadow: 0 24px 54px -36px rgba(29, 78, 216, 0.45);
+    }
+    .trending-guide {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 22px;
+        padding: 24px;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 28px;
+    }
+    .trending-guide p {
+        color: var(--gray-600);
+        line-height: 1.85;
+    }
+    .trending-rank {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #2563eb 0%, #14b8a6 100%);
+        color: #fff;
+        font-weight: 800;
+        font-size: 0.92rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="trending-hero">
+    <h1 style="font-size: 2.2rem; font-weight: 800; margin: 0 0 10px;">📚 7日专栏热度榜</h1>
+    <p style="margin:0; color:rgba(255,255,255,.92); line-height:1.85;">如果你不知道先看哪个专栏，这里就是最短路径。按近 7 天真实浏览数据排序，先看大家最近更愿意停留和继续挖的入口。</p>
+</section>
+
+<section class="trending-guide">
+    <div class="section-header" style="margin-bottom: 12px;">
+        <h2 class="section-title"><span class="icon">🔥</span> 怎么用这张榜</h2>
+    </div>
+    <p>这个榜更适合“先决定从哪个入口开始”，不是判断内容质量的唯一标准。通常做法是先看前 2 到 3 个热门专栏，再沿着里面的专题和工具继续往下挖。</p>
+    <p style="margin:10px 0 0;">统计周期：{{ start_date|date:"Y-m-d" }} 至 {{ end_date|date:"Y-m-d" }}</p>
+</section>
+
+<div class="tool-grid">
+    {% for column in trending_columns %}
+    <div class="tool-card">
+        <div class="card-header">
+            <div class="card-badges">
+                <span class="trending-rank">#{{ forloop.counter }}</span>
+                <span class="badge badge-category">专栏入口</span>
+                <span class="badge" style="background: rgba(37, 99, 235, 0.12); color: #1d4ed8;">7日 {{ column.week_views|default:0 }} 浏览</span>
+                <span class="badge" style="background: rgba(20, 184, 166, 0.12); color: #0f766e;">累计 {{ column.total_views|default:0 }}</span>
+            </div>
+        </div>
+        <h3>{{ column.title }}</h3>
+        <p class="description">适合把这个专栏当成长期入口来逛。先看热度更高的专栏，通常更容易快速找到最近被反复点击和收藏的内容。</p>
+        <div class="card-footer">
+            <a href="{% url column.url_name %}" class="card-link">进入专栏 <span>→</span></a>
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 48px; color: var(--gray-500);">
+        暂无专栏热度数据，等待访问数据积累后自动生成榜单。
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

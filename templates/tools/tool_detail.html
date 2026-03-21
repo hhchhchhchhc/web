@@ -11,6 +11,95 @@
 
 {% block twitter_title %}{{ tool.name }} - {{ tool.short_description }}{% endblock %}
 {% block twitter_description %}{{ tool.short_description }}{% endblock %}
+{% block extra_css %}
+<style>
+    .tool-detail-shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.75fr);
+        gap: 24px;
+        align-items: start;
+    }
+    .tool-detail-main,
+    .tool-detail-side {
+        display: grid;
+        gap: 20px;
+    }
+    .tool-detail-card,
+    .tool-detail-sidecard {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 22px;
+        padding: 24px;
+        box-shadow: var(--shadow-lg);
+    }
+    .tool-detail-sidecard {
+        position: sticky;
+        top: 88px;
+    }
+    .tool-detail-prose {
+        color: #475569;
+        line-height: 1.9;
+        white-space: pre-wrap;
+    }
+    .tool-detail-quicklinks {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .tool-detail-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        text-decoration: none;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #334155;
+        font-weight: 700;
+        font-size: 0.92rem;
+    }
+    .tool-detail-faq {
+        display: grid;
+        gap: 14px;
+    }
+    .tool-detail-faq-item {
+        padding: 16px;
+        border-radius: 14px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+    .tool-detail-faq-item h3 {
+        color: #0f172a;
+        margin-bottom: 8px;
+        font-size: 1.02rem;
+    }
+    .tool-detail-meta {
+        display: grid;
+        gap: 12px;
+    }
+    .tool-detail-meta div {
+        padding: 14px 16px;
+        border-radius: 14px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+    }
+    .tool-detail-meta strong {
+        display: block;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+    @media (max-width: 980px) {
+        .tool-detail-shell {
+            grid-template-columns: 1fr;
+        }
+        .tool-detail-sidecard {
+            position: static;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block structured_data %}
 <script type="application/ld+json">
@@ -21,15 +110,16 @@
   "description": "{{ tool.short_description }}",
   "url": "https://ai-tool.indevs.in{% url 'tool_detail' tool.slug %}",
   "applicationCategory": "{{ tool.category.name }}",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "CNY"
+  "inLanguage": "zh-CN",
+  "isAccessibleForFree": true,
+  "publisher": {
+    "@type": "Organization",
+    "name": "全民效率神器"
   },
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.5",
-    "ratingCount": "{{ tool.view_count }}"
+  "interactionStatistic": {
+    "@type": "InteractionCounter",
+    "interactionType": "https://schema.org/ViewAction",
+    "userInteractionCount": {{ tool.view_count|default:0 }}
   }
 }
 </script>
@@ -54,6 +144,38 @@
   }]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "{{ tool.name|escapejs }} 是什么？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ tool.short_description|escapejs }}"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "{{ tool.name|escapejs }} 适合什么人使用？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ tool.name|escapejs }} 适合关注 {{ tool.category.name|escapejs }} 场景的人，尤其适合想快速了解工具定位、官网入口和基础使用方式的用户。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "在哪里可以访问 {{ tool.name|escapejs }} 官网？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "可以通过当前页面的“访问官网”按钮直接跳转到 {{ tool.name|escapejs }} 的官方网站。"
+      }
+    }
+  ]
+}
+</script>
 {% endblock %}
 
 {% block content %}
@@ -61,184 +183,107 @@
     <a href="{% url 'tool_list' %}" style="color: #3498db; text-decoration: none; font-size: 0.9rem;">← 返回工具列表</a>
 </div>
 
-<div style="background: white; border-radius: 8px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span class="category">{{ tool.category.name }}</span>
-            {% if tool.is_featured %}
-            <span class="featured-badge">精选</span>
-            {% endif %}
+<div class="tool-detail-shell">
+    <div class="tool-detail-main">
+        <div class="tool-detail-card">
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+                <span class="badge badge-category">{{ tool.category.name }}</span>
+                {% if tool.is_featured %}
+                <span class="badge badge-featured">精选</span>
+                {% endif %}
+            </div>
+
+            <h1 style="font-size: 2.35rem; color: #0f172a; margin-bottom: 1rem; line-height:1.15;">{{ tool.name }}</h1>
+            <p style="font-size: 1.08rem; color: #475569; margin-bottom: 1.4rem; line-height:1.85;">{{ tool.short_description }}</p>
+
+            <div class="tool-detail-quicklinks">
+                <a href="{{ tool.website_url }}" target="_blank" rel="noopener noreferrer" class="tool-detail-chip" style="background:#2563eb; color:#fff; border-color:#2563eb;">访问官网 ↗</a>
+                <a href="{% url 'tool_list' %}?category={{ tool.category.slug }}" class="tool-detail-chip">更多 {{ tool.category.name }}</a>
+                <a href="{% url 'trending_tools' %}" class="tool-detail-chip">趋势热榜</a>
+                <a href="{% url 'topic_list' %}" class="tool-detail-chip">更多专题</a>
+            </div>
+        </div>
+
+        <div class="tool-detail-card">
+            <h2 style="color: #0f172a; margin-bottom: 1rem; font-size: 1.45rem;">详细介绍</h2>
+            <div class="tool-detail-prose">{{ tool.full_description|safe }}</div>
+        </div>
+
+        <div class="tool-detail-card">
+            <h2 style="color: #0f172a; margin-bottom: 1rem; font-size: 1.45rem;">常见问题</h2>
+            <div class="tool-detail-faq">
+                <div class="tool-detail-faq-item">
+                    <h3>{{ tool.name }} 是什么？</h3>
+                    <p style="margin:0; color:#475569; line-height:1.8;">{{ tool.short_description }}</p>
+                </div>
+                <div class="tool-detail-faq-item">
+                    <h3>{{ tool.name }} 适合哪些人？</h3>
+                    <p style="margin:0; color:#475569; line-height:1.8;">如果你正在找 {{ tool.category.name }} 相关工具，并且想快速了解官网入口、核心定位和基本用途，这个页面就是最直接的起点。</p>
+                </div>
+                <div class="tool-detail-faq-item">
+                    <h3>在哪里访问 {{ tool.name }} 官网？</h3>
+                    <p style="margin:0; color:#475569; line-height:1.8;">点击上方“访问官网”按钮即可跳转。如果你还想继续找替代方案，也可以看下方相关推荐工具。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tool-detail-card">
+            <h3 style="color: #0f172a; margin-bottom: 1rem; font-size: 1.2rem;">📢 分享给朋友</h3>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button onclick="shareToWeChat()" style="padding: 10px 20px; background: #07c160; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600;">微信分享</button>
+                <a href="https://service.weibo.com/share/share.php?url=https://ai-tool.indevs.in{% url 'tool_detail' tool.slug %}&title={{ tool.name }} - {{ tool.short_description }}" target="_blank" style="padding: 10px 20px; background: #e6162d; color: white; border-radius: 10px; text-decoration: none; font-weight: 600;">微博分享</a>
+                <a href="https://twitter.com/intent/tweet?url=https://ai-tool.indevs.in{% url 'tool_detail' tool.slug %}&text={{ tool.name }}" target="_blank" style="padding: 10px 20px; background: #1da1f2; color: white; border-radius: 10px; text-decoration: none; font-weight: 600;">Twitter分享</a>
+                <button onclick="copyLink()" style="padding: 10px 20px; background: #6366f1; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600;">复制链接</button>
+            </div>
         </div>
     </div>
 
-    <h1 style="font-size: 2.5rem; color: #2c3e50; margin-bottom: 1rem;">{{ tool.name }}</h1>
-
-    <p style="font-size: 1.2rem; color: #666; margin-bottom: 2rem;">{{ tool.short_description }}</p>
-
-    <div style="margin-bottom: 2rem;">
-        <a href="{{ tool.website_url }}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #3498db; color: white; padding: 0.75rem 2rem; border-radius: 4px; text-decoration: none; font-weight: 500; font-size: 1.1rem;">
-            访问官网 ↗
-        </a>
-    </div>
-
-    <div style="border-top: 2px solid #ecf0f1; padding-top: 2rem;">
-        <h2 style="color: #2c3e50; margin-bottom: 1rem; font-size: 1.5rem;">详细介绍</h2>
-        <div style="color: #555; line-height: 1.8; white-space: pre-wrap;">{{ tool.full_description }}</div>
-    </div>
-
-    <div style="border-top: 2px solid #ecf0f1; margin-top: 2rem; padding-top: 1.5rem;">
-        <h3 style="color: #2c3e50; margin-bottom: 1rem; font-size: 1.2rem;">📢 分享给朋友</h3>
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <button onclick="shareToWeChat()" style="padding: 10px 20px; background: #07c160; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">微信分享</button>
-            <a href="https://service.weibo.com/share/share.php?url=https://ai-tool.indevs.in{% url 'tool_detail' tool.slug %}&title={{ tool.name }} - {{ tool.short_description }}" target="_blank" style="padding: 10px 20px; background: #e6162d; color: white; border: none; border-radius: 6px; text-decoration: none; font-weight: 500;">微博分享</a>
-            <a href="https://twitter.com/intent/tweet?url=https://ai-tool.indevs.in{% url 'tool_detail' tool.slug %}&text={{ tool.name }}" target="_blank" style="padding: 10px 20px; background: #1da1f2; color: white; border: none; border-radius: 6px; text-decoration: none; font-weight: 500;">Twitter分享</a>
-            <button onclick="copyLink()" style="padding: 10px 20px; background: #6366f1; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">复制链接</button>
-        </div>
-    </div>
-
-    <div style="border-top: 2px solid #ecf0f1; margin-top: 2rem; padding-top: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; padding: 2rem; color: white;">
-        <h2 style="color: white; margin-bottom: 1.5rem; font-size: 1.8rem; text-align: center; font-weight: bold;">🎁 限时福利活动</h2>
-
-        <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; backdrop-filter: blur(10px);">
-            <h3 style="color: #ffd700; margin-bottom: 1rem; font-size: 1.3rem;">💎 知识星球专属福利</h3>
-            <p style="line-height: 1.8; margin-bottom: 1rem;">
-                <strong style="color: #ffd700;">2月7号之后</strong>加入「<a href="https://t.zsxq.com/Fed8e" target="_blank" style="color: #ffd700; text-decoration: underline;">财富自由之路</a>」知识星球（星球票价199）的朋友，加微信 <strong style="color: #ffd700;">a13479004101</strong> 或 <strong style="color: #ffd700;">dreamsjtuai</strong> 领取：
-            </p>
-            <ul style="line-height: 2; margin-left: 1.5rem; list-style: none;">
-                <li style="margin-bottom: 0.5rem;">✅ 一年的2核2G VPS（价值200-800元）</li>
-                <li style="margin-bottom: 0.5rem;">✅ 永久免费下载知网、万方、维普等学术论文</li>
-                <li style="margin-bottom: 0.5rem;">✅ 无限使用 Opus 4.6 的多种方法</li>
-            </ul>
-            <p style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.15); border-radius: 6px; border-left: 4px solid #ffd700;">
-                💰 <strong>单独购买VPS：</strong>2核2G VPS 一年仅需100元<br>
-                📞 <strong>联系微信：</strong>a13479004101
-            </p>
-        </div>
-
-        <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; backdrop-filter: blur(10px);">
-            <h3 style="color: #ffd700; margin-bottom: 1rem; font-size: 1.3rem;">🎯 星球核心福利（后续会不断加码）</h3>
-
-            <div style="margin-bottom: 1.5rem;">
-                <h4 style="color: #fff; margin-bottom: 0.8rem; font-size: 1.1rem;">1️⃣ 核心技术资源与源码</h4>
-                <ul style="line-height: 1.9; margin-left: 1.5rem; list-style: disc; color: rgba(255,255,255,0.95);">
-                    <li><strong>深度学习量化模型：</strong>提供名为 DecompGRU 的端到端模型源码（基于趋势分解的时序+截面模型），据称效果惊人</li>
-                    <li><strong>策略源码包：</strong>聚宽（JoinQuant）社区效果最好的9个策略源码 + 600+其余优质量化策略</li>
-                    <li><strong>Meme币交易策略：</strong>价值数千元的构建源码</li>
-                    <li><strong>高价值课程：</strong>包含价值4.425万元以上的"Crypto高频训练营"代码及相关Web3、预测市场赚钱副业教程</li>
-                </ul>
+    <div class="tool-detail-side">
+        <div class="tool-detail-sidecard">
+            <h2 style="color:#0f172a; margin-bottom:12px; font-size:1.1rem;">快速判断</h2>
+            <p style="color:#475569; line-height:1.8; margin:0 0 16px;">如果你只是想快速判断这工具值不值得看官网，先看简介、分类和相关推荐，再决定是否跳转外部网站。</p>
+            <div class="tool-detail-meta">
+                <div>
+                    <strong>分类</strong>
+                    <a href="{% url 'tool_list' %}?category={{ tool.category.slug }}" style="color:#2563eb; text-decoration:none;">{{ tool.category.name }}</a>
+                </div>
+                <div>
+                    <strong>添加时间</strong>
+                    {{ tool.created_at|date:"Y年m月d日" }}
+                </div>
+                <div>
+                    <strong>更新时间</strong>
+                    {{ tool.updated_at|date:"Y年m月d日" }}
+                </div>
+                <div>
+                    <strong>当前浏览</strong>
+                    {{ tool.view_count }} 次
+                </div>
             </div>
-
-            <div style="margin-bottom: 1.5rem;">
-                <h4 style="color: #fff; margin-bottom: 0.8rem; font-size: 1.1rem;">2️⃣ 数据与API服务</h4>
-                <ul style="line-height: 1.9; margin-left: 1.5rem; list-style: disc; color: rgba(255,255,255,0.95);">
-                    <li><strong>Tardis数据下载：</strong>针对2月6日后加入且满3天的用户，提供一次免费代下服务（包含合约与现货数据，单次限2T以内）</li>
-                    <li><strong>金融数据接口：</strong>提供高级版 Tushare Pro API 访问权限</li>
-                    <li><strong>AI接口工具：</strong>Google Pro 账号（可使用 Gemini Pro）、无限使用 Opus 4.6 的多种方法</li>
-                    <li>通过 <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">antigravity2api</code> 反代获取 Claude Opus 4.6（bolt.new 白嫖方案）</li>
-                    <li>永久免费下载知网、万方、维普等学术论文</li>
-                </ul>
-            </div>
-
-            <div style="margin-bottom: 1.5rem;">
-                <h4 style="color: #fff; margin-bottom: 0.8rem; font-size: 1.1rem;">3️⃣ 硬件与服务器福利</h4>
-                <ul style="line-height: 1.9; margin-left: 1.5rem; list-style: disc; color: rgba(255,255,255,0.95);">
-                    <li><strong>VPS赠送：</strong>2月7日后加入"港美掘金知识星球"（票价299）的用户，可免费领取一年的2核2G VPS服务器（价值约200-800元）</li>
-                    <li><strong>购买优惠：</strong>微信找 a13479004101 单独购买该配置VPS的价格为100元/年</li>
-                </ul>
-            </div>
-
-            <div>
-                <h4 style="color: #fff; margin-bottom: 0.8rem; font-size: 1.1rem;">4️⃣ 获取规则与门槛</h4>
-                <ul style="line-height: 1.9; margin-left: 1.5rem; list-style: disc; color: rgba(255,255,255,0.95);">
-                    <li><strong>入群时间要求：</strong>大多数核心福利（源码、数据代下）要求加入星球超过3天</li>
-                    <li><strong>特定任务要求：</strong>部分顶级策略代码（如聚宽9大策略）需要将星球海报/二维码转发至300人以上的AI/CS/金融类群聊</li>
-                    <li><strong>联系方式：</strong>所有福利统一通过微信 <strong style="color: #ffd700;">a13479004101</strong> 进行对接和领取</li>
-                </ul>
+            <div style="display:grid; gap:10px; margin-top:16px;">
+                <a href="{{ tool.website_url }}" target="_blank" rel="noopener noreferrer" class="tool-detail-chip" style="justify-content:center; background:#2563eb; color:#fff; border-color:#2563eb;">访问官网 ↗</a>
+                <a href="{% url 'tool_list' %}?category={{ tool.category.slug }}" class="tool-detail-chip" style="justify-content:center;">同类工具</a>
+                <a href="{% url 'home' %}" class="tool-detail-chip" style="justify-content:center;">回首页继续逛</a>
             </div>
         </div>
 
-        <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; backdrop-filter: blur(10px);">
-            <h3 style="color: #ffd700; margin-bottom: 1rem; font-size: 1.3rem;">📈 券商开户专属福利</h3>
-            <p style="line-height: 1.8; margin-bottom: 1rem;">
-                <strong>QuantAILab公众号官方合作头部国企券商</strong>对接的客户经理微信为：<strong style="color: #ffd700;">lsrhuarui</strong>，加经理微信后注意备注从微信：<strong style="color: #ffd700;">好运莲莲</strong>渠道来的。
-            </p>
-
-            <div style="background: rgba(255,255,255,0.15); border-radius: 6px; padding: 1rem; margin-bottom: 1rem;">
-                <h4 style="color: #fff; margin-bottom: 0.8rem;">🎁 为什么找客户经理开户：</h4>
-                <ol style="line-height: 1.9; margin-left: 1.5rem; color: rgba(255,255,255,0.95);">
-                    <li style="margin-bottom: 0.5rem;">比自己开户佣金更低，会额外获得：客户经理专门解答国企qmt/ptrade技术和交易问题、可被拉入官方量化专业讨论群、客户经理分享软件和量化资料、用户开户三个月内入金10万可得QMT等软件（客户经理将协助和答疑）</li>
-                    <li>像上述指定客户经理报备从微信：<strong style="color: #ffd700;">好运莲莲</strong>渠道来的，并且成功开户+开户三个月内入金十万，可加微信 <strong style="color: #ffd700;">a13479004101</strong> 获取"一年谷歌pro共享账号、一个月免费88核16GB内存120GB硬盘 windows云电脑"、tushare pro api以及刚买的2399RMB期权知识星球全部内容，含年化200%回撤18%的大宗商品套利策略和N个其他优质策略和底层方法论</li>
-                </ol>
-            </div>
-
-            <p style="padding: 1rem; background: rgba(255,215,0,0.2); border-radius: 6px; border-left: 4px solid #ffd700; line-height: 1.8;">
-                💡 <strong>Tardis API 说明：</strong>现在的Tardis API是solo 1200每月的档位，年付！（14400美元折合人民币10万多人民币）<br>
-                现货、期货、期权的数据都有啦！需要数据的联系微信 <strong style="color: #ffd700;">a13479004101</strong>。代下载每一T收费249，单次最低99
-            </p>
-        </div>
-
-        <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 1.5rem; backdrop-filter: blur(10px);">
-            <h3 style="color: #ffd700; margin-bottom: 1rem; font-size: 1.3rem;">🌏 致富证券美港股开户</h3>
-            <p style="line-height: 1.8; margin-bottom: 1rem;">
-                致富证券可能是一张内地身份证5分钟线上开户美港股的最后一台车了。
-            </p>
-
-            <div style="background: rgba(255,255,255,0.15); border-radius: 6px; padding: 1rem; margin-bottom: 1rem;">
-                <h4 style="color: #fff; margin-bottom: 0.8rem;">🎉 开户奖励（总价值高达HK$8,800）：</h4>
-                <ul style="line-height: 1.9; margin-left: 1.5rem; list-style: disc; color: rgba(255,255,255,0.95);">
-                    <li>开户直接拿 HK$200 现金券+交易券</li>
-                    <li>入金最高返 HK$1,300，还送 NVIDIA 股票</li>
-                    <li>转仓最高回赠 HK$7,000</li>
-                    <li>推荐好友每成功一个得 HK$300</li>
-                </ul>
-            </div>
-
-            <p style="padding: 1rem; background: rgba(255,215,0,0.2); border-radius: 6px; border-left: 4px solid #ffd700; line-height: 1.8; margin-bottom: 1rem;">
-                ⚠️ <strong>重要提示：</strong>需要通过邀请码 <strong style="color: #ffd700; font-size: 1.2rem;">XC6774</strong> 注册才有数千额外奖励！<br>
-                二维码：<a href="https://image2url.com/r2/default/images/1770021823559-f8b6c7cb-d63d-4b01-9ead-48455da15c08.png" target="_blank" style="color: #ffd700; text-decoration: underline;">点击查看</a> 或 <a href="https://mp.weixin.qq.com/s/NnIA1hszlLCyQ6BVxTmMAw" target="_blank" style="color: #ffd700; text-decoration: underline;">微信文章</a>
-            </p>
-
-            <p style="line-height: 1.8;">
-                致富支持大陆用户无港卡开户，可尝试用工商银行等快速入金，需开户7天内入金1万港币等值的前才有上述奖励。<br>
-                <strong>致富chief.apk 下载：</strong><a href="https://pan.baidu.com/s/1gpI4JSYY6MwZqP8Ywor9Tw?pwd=hmec" target="_blank" style="color: #ffd700; text-decoration: underline;">百度网盘链接</a>（提取码: hmec）
-            </p>
-        </div>
-
-        <div style="text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.3);">
-            <p style="font-size: 0.9rem; color: rgba(255,255,255,0.8);">
-                📞 所有福利咨询请联系微信：<strong style="color: #ffd700; font-size: 1.1rem;">a13479004101</strong> 或 <strong style="color: #ffd700; font-size: 1.1rem;">dreamsjtuai</strong>
-            </p>
-        </div>
-    </div>
-
-    <div style="border-top: 2px solid #ecf0f1; margin-top: 2rem; padding-top: 1.5rem;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; color: #666; font-size: 0.9rem;">
-            <div>
-                <strong style="color: #2c3e50;">分类：</strong>
-                <a href="{% url 'tool_list' %}?category={{ tool.category.slug }}" style="color: #3498db; text-decoration: none;">{{ tool.category.name }}</a>
-            </div>
-            <div>
-                <strong style="color: #2c3e50;">添加时间：</strong>
-                {{ tool.created_at|date:"Y年m月d日" }}
-            </div>
-            <div>
-                <strong style="color: #2c3e50;">更新时间：</strong>
-                {{ tool.updated_at|date:"Y年m月d日" }}
-            </div>
-        </div>
+        {% include "tools/_gangmei_promo.html" %}
     </div>
 </div>
 
 {% if related_tools %}
 <div style="margin-top: 3rem;">
-    <h2 style="color: #2c3e50; margin-bottom: 1.5rem; font-size: 1.8rem;">相关工具</h2>
+    <h2 style="color: #0f172a; margin-bottom: 1.5rem; font-size: 1.8rem;">继续往下看</h2>
     <div class="tool-grid">
         {% for related in related_tools %}
         <div class="tool-card">
-            <span class="category">{{ related.category.name }}</span>
+            <span class="badge badge-category">{{ related.category.name }}</span>
             <h3>{{ related.name }}</h3>
             <p class="description">{{ related.short_description }}</p>
-            <a href="{% url 'tool_detail' related.slug %}" class="link">查看详情 →</a>
+            <div class="card-footer">
+                <a href="{% url 'tool_detail' related.slug %}" class="card-link">查看详情 <span>→</span></a>
+                <a href="{{ related.website_url }}" target="_blank" rel="noopener" class="external-link">访问 ↗</a>
+            </div>
         </div>
         {% endfor %}
     </div>
@@ -254,5 +299,22 @@ function shareToWeChat() {
 function copyLink() {
     navigator.clipboard.writeText(window.location.href).then(() => alert('链接已复制！'));
 }
+(function () {
+    try {
+        const entry = {
+            name: '{{ tool.name|escapejs }}',
+            url: window.location.pathname,
+            category: '{{ tool.category.name|escapejs }}',
+            description: '{{ tool.short_description|escapejs }}'
+        };
+        const raw = localStorage.getItem('recent_tools') || '[]';
+        const items = Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : [];
+        const deduped = items.filter((item) => item.url !== entry.url);
+        deduped.unshift(entry);
+        localStorage.setItem('recent_tools', JSON.stringify(deduped.slice(0, 8)));
+    } catch (e) {
+        console.warn('recent_tools write failed', e);
+    }
+})();
 </script>
 {% endblock %}

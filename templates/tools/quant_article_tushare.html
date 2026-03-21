@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Tushare Pro 可下载数据权限 | 量化资源专栏{% endblock %}
+{% block meta_description %}Tushare Pro 可下载数据权限说明：互动易问答、筹码分布、分钟线、融资融券、新闻、期货、期权、港股、美股、外汇、全球指数、主连与指数数据。{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+  <a href="{% url 'quant_column' %}" style="color:#2563eb;text-decoration:none;">← 返回量化资源专栏</a>
+</div>
+
+<article style="background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:32px; box-shadow:0 10px 25px rgba(2,6,23,.05);">
+  <header style="border-bottom:1px solid #e5e7eb; padding-bottom:18px; margin-bottom:22px;">
+    <p style="display:inline-block; background:#eff6ff; color:#1d4ed8; border-radius:999px; padding:6px 12px; font-size:.85rem; font-weight:600;">量化资源专栏 · A 股与跨市场数据</p>
+    <h1 style="font-size:2rem; line-height:1.35; color:#111827; margin:12px 0 10px;">Tushare Pro 可下载数据权限</h1>
+    <p style="margin:0; color:#6b7280;">这页只负责讲清楚 Tushare Pro 能下什么、限频怎么理解、3 个 token 怎么轮换使用。TARDIS 仍然是站内量化数据主入口。</p>
+  </header>
+
+  <section style="line-height:1.95; color:#1f2937; font-size:1.05rem;">
+    <div style="margin-bottom:20px; padding:14px 16px; border-radius:14px; background:#fff7ed; border:1px solid #fed7aa; color:#9a3412;">
+      <strong>TARDIS 仍然优先：</strong>如果你的核心需求是高频、盘口、期权、现货与交易所历史数据，优先看
+      <a href="{% url 'quant_article_tardis' %}" style="color:#b45309; font-weight:700; text-decoration:none;">TARDIS 数据指南</a>。
+      Tushare 更适合拿 A 股、新闻、全球指数和跨市场补充数据，不喧宾夺主。
+    </div>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">一、可下载数据范围</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px;">
+      <div style="border:1px solid #e2e8f0; border-radius:14px; padding:16px; background:#fff;">
+        <p style="margin:0; font-weight:700; color:#0f172a;">A 股与舆情</p>
+        <ul style="padding-left:18px; margin:10px 0 0;">
+          <li>互动易问答（沪深）</li>
+          <li>筹码分布</li>
+          <li>融资融券基础数据</li>
+          <li>新闻数据</li>
+        </ul>
+      </div>
+      <div style="border:1px solid #e2e8f0; border-radius:14px; padding:16px; background:#fff;">
+        <p style="margin:0; font-weight:700; color:#0f172a;">分钟与衍生品</p>
+        <ul style="padding-left:18px; margin:10px 0 0;">
+          <li>股票分钟线</li>
+          <li>期货数据</li>
+          <li>期权数据</li>
+          <li>主连 / 连续合约数据</li>
+        </ul>
+      </div>
+      <div style="border:1px solid #e2e8f0; border-radius:14px; padding:16px; background:#fff;">
+        <p style="margin:0; font-weight:700; color:#0f172a;">跨市场</p>
+        <ul style="padding-left:18px; margin:10px 0 0;">
+          <li>港股数据</li>
+          <li>美股数据</li>
+          <li>外汇数据</li>
+          <li>全球指数数据</li>
+          <li>指数数据</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:24px 0 10px;">二、补充说明</h2>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:16px 18px;">
+      <ul style="padding-left:20px; margin:0;">
+        <li>主连分钟直下：不算直接支持，通常需要先做 `mapping`，再映射到实际合约分钟数据。</li>
+        <li>分钟数据单个 API 最多每分钟下两次，不能按无限制高频方式去打。</li>
+        <li>期货数据支持下载历史期货分钟数据，不支持实时期货分钟数据。</li>
+        <li>发货 3 个 token，可轮换使用，能够缓解部分接口的每分钟或每日限频。</li>
+      </ul>
+    </div>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:24px 0 10px;">三、更适合什么场景</h2>
+    <p>Tushare 更适合做 A 股研究、事件驱动、舆情辅助、港美股补充、全球指数同步和中低频研究所需的数据补全。它不是 TARDIS 的替代品，而是量化数据栈里的另一层。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:24px 0 10px;">四、联系与交付</h2>
+    <p>当前交付方式包含 <strong>3 个 token</strong>，可轮换使用。优先点击闲鱼链接直接打开：<a href="https://m.tb.cn/h.igcmZ1Y?tk=TXkZUzbHkiB" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8; font-weight:700;">闲鱼商品页</a>；如果闲鱼链接失效，再联系微信 <strong>dreamsjtuai</strong>。</p>
+  </section>
+</article>
+{% endblock %}
+
+{% block page_tail_promo %}{% endblock %}

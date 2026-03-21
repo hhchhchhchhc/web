@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}充值订单 | 低价生成优质TTS{% endblock %}
+
+{% block content %}
+<section style="max-width: 920px; margin: 0 auto 48px;">
+    <div style="background: linear-gradient(135deg, #ecfdf5 0%, #eff6ff 100%); border: 1px solid #bbf7d0; border-radius: 18px; padding: 28px;">
+        <div class="badge badge-category" style="margin-bottom: 14px;">充值订单已创建</div>
+        <h1 style="font-size: 2.1rem; margin-bottom: 10px; color: #0f172a;">{{ recharge_order.order_no }}</h1>
+        <p style="color: #334155; margin-bottom: 18px;">{{ manual_payment_notice }}</p>
+        <div style="display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+            <div class="tool-card">
+                <h3>充值字数</h3>
+                <p class="description">{{ recharge_order.char_amount }} 字</p>
+            </div>
+            <div class="tool-card">
+                <h3>应付金额</h3>
+                <p class="description">{{ recharge_order.amount }} 元</p>
+            </div>
+            <div class="tool-card">
+                <h3>备注码</h3>
+                <p class="description">{{ recharge_order.payment_note_token }}</p>
+            </div>
+            <div class="tool-card">
+                <h3>状态</h3>
+                <p class="description" id="payment-status">{{ recharge_order.get_payment_status_display }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section style="max-width: 920px; margin: 0 auto 48px;">
+    <div style="display: grid; gap: 22px; grid-template-columns: 1fr 1fr;">
+        <div class="tool-card">
+            <h2 style="margin-bottom: 12px;">付款方式</h2>
+            <div style="padding: 18px; border-radius: 16px; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); border: 1px solid #bfdbfe; text-align: center;">
+                <img src="{% static 'tts/wx.jpg' %}" alt="微信收款码" style="width: 100%; max-width: 280px; border-radius: 14px;">
+                <div style="margin-top: 10px; color: #1e3a8a; font-weight: 700;">微信收款码</div>
+            </div>
+            <div style="margin-top: 14px; padding: 14px; border-radius: 12px; background: #f8fafc;">
+                <strong>联系微信：</strong> {{ sales_wechat }}
+            </div>
+            <div style="margin-top: 14px;">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <label style="font-weight: 600; display: block; margin-bottom: 6px;">上传付款截图</label>
+                    {{ proof_form.payment_proof }}
+                    <button type="submit" class="nav-cta" style="border: none; cursor: pointer; margin-top: 14px;">上传截图</button>
+                </form>
+                {% if recharge_order.payment_proof %}
+                <p style="margin-top: 10px; color: #475569;">已上传：<a href="{{ recharge_order.payment_proof.url }}" target="_blank">查看截图</a></p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="tool-card">
+            <h2 style="margin-bottom: 12px;">到账流程</h2>
+            <ol style="padding-left: 20px; color: #334155; line-height: 1.9;">
+                <li>按订单金额扫码微信付款：<strong>{{ recharge_order.amount }} 元</strong></li>
+                <li>加微信 <strong>{{ sales_wechat }}</strong>，发送付款截图，并提供注册邮箱</li>
+                <li>本人确认后，会把 <strong>{{ recharge_order.char_amount }}</strong> 字额度充到对应邮箱账号</li>
+            </ol>
+            <div style="margin-top: 14px; padding: 14px; border-radius: 12px; background: #ecfeff;">
+                <strong>返回面板：</strong> <a href="{% url 'tts_studio' %}">回到额度面板</a>
+            </div>
+            <div id="credit-status" style="margin-top: 14px; padding: 14px; border-radius: 12px; background: #ecfdf5; display: none;">
+                额度已到账，页面将自动刷新。
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+(() => {
+    const statusEl = document.getElementById('payment-status');
+    const creditEl = document.getElementById('credit-status');
+    const statusUrl = "{% url 'tts_recharge_status' recharge_order.order_no %}";
+    let tries = 0;
+
+    async function poll() {
+        tries += 1;
+        try {
+            const resp = await fetch(statusUrl, {headers: {'X-Requested-With': 'XMLHttpRequest'}});
+            if (!resp.ok) {
+                return;
+            }
+            const data = await resp.json();
+            statusEl.textContent = data.payment_status_display;
+            if (data.payment_status === 'paid') {
+                creditEl.style.display = 'block';
+                creditEl.textContent = `额度已到账，当前余额 ${data.char_balance} 字，页面即将刷新。`;
+                setTimeout(() => window.location.href = "{% url 'tts_studio' %}", 1500);
+                return;
+            }
+        } catch (err) {
+        }
+        if (tries < 120) {
+            setTimeout(poll, 3000);
+        }
+    }
+
+    if ("{{ recharge_order.payment_status }}" !== "paid") {
+        setTimeout(poll, 3000);
+    }
+})();
+</script>
+{% endblock %}

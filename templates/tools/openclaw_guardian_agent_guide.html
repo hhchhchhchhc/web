@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}OpenClaw 总挂？配个“保镖”自动修 | OpenClaw 专栏{% endblock %}
+{% block meta_description %}给 OpenClaw 配一个互备 Agent：备份配置、安装运维 Skill、定时巡检和异常自愈，让 OpenClaw 更接近 7x24 小时稳定运行。{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+  <a href="{% url 'openclaw_column' %}#deploy" style="color:#2563eb;text-decoration:none;">← 返回 OpenClaw 专栏</a>
+</div>
+
+<article style="background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:32px; box-shadow:0 10px 25px rgba(2,6,23,.05);">
+  <header style="border-bottom:1px solid #e5e7eb; padding-bottom:18px; margin-bottom:22px;">
+    <p style="display:inline-block; background:#ecfeff; color:#0f766e; border-radius:999px; padding:6px 12px; font-size:.85rem; font-weight:600;">OpenClaw 专栏 · 部署运维</p>
+    <h1 style="font-size:2rem; line-height:1.35; color:#111827; margin:12px 0 10px;">OpenClaw 总挂？配个“保镖”自动修，尽量接近 7x24 小时稳定运行</h1>
+    <p style="margin:0; color:#6b7280;">如果你已经在高频使用 OpenClaw，真正影响体验的往往不是模型本身，而是它在自动改配置、长时间运行和异常恢复上的稳定性。这篇给出的不是单点修补，而是一套“互备 Agent + 运维 Skill + 定时巡检”的守护方案。</p>
+    <p style="margin:12px 0 0; color:#475569; line-height:1.8; font-size:.96rem;">
+      改编自
+      <a href="https://mp.weixin.qq.com/s/dtmGHZo27ohfVVa_sKW3_g" target="_blank" rel="noopener noreferrer" style="color:#2563eb; text-decoration:none; font-weight:600;">
+        微信原文
+      </a>
+    </p>
+  </header>
+
+  <section style="line-height:1.95; color:#1f2937; font-size:1.05rem;">
+    <p>最近不少人把 OpenClaw 当成长期在线的执行代理来用，但当前版本在“自动改配置”“自动自修”这类操作上还不算完全稳定。常见症状是配置改坏、任务卡住、响应明显变慢，严重时甚至直接挂掉。</p>
+    <p>更稳的做法不是让它无条件自改一切，而是先把“变更、安全、修复、回滚”这四件事拆开，交给不同角色完成。最实用的一条，就是给 OpenClaw 再配一个互备 Agent，当它异常时由“保镖”负责检查、修复和托底。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">一、先明确这套方案的目标</h2>
+    <ul style="padding-left:20px;">
+      <li>仅在你人在电脑前时，才允许 OpenClaw 执行自身配置变更。</li>
+      <li>每次变更前自动备份，出问题能回滚。</li>
+      <li>再准备一个备用 Agent，OpenClaw 异常时由它接管运维动作。</li>
+      <li>把配置和关键文件按天备份到私有仓库，方便迁移和恢复。</li>
+    </ul>
+    <p>这篇重点展开第三条，也就是“给 OpenClaw 配一个拯救者”。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">二、先选一个互备 Agent</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin-bottom:16px;">
+      <div style="border:1px solid #dbeafe; border-radius:14px; padding:16px;">
+        <p style="margin:0 0 8px; color:#1d4ed8; font-weight:700;">候选 1：阿里 CoPaw</p>
+        <p style="margin:0 0 10px; color:#4b5563;">GitHub 约 9K Star，能力完整，和 OpenClaw 的定位接近，适合做“无缝接班”的备援 Agent。</p>
+        <p style="margin:0;"><a href="https://github.com/agentscope-ai/CoPaw" target="_blank" rel="noopener noreferrer" style="color:#2563eb; text-decoration:none;">查看 CoPaw →</a></p>
+      </div>
+      <div style="border:1px solid #ccfbf1; border-radius:14px; padding:16px;">
+        <p style="margin:0 0 8px; color:#0f766e; font-weight:700;">候选 2：有道龙虾</p>
+        <p style="margin:0 0 10px; color:#4b5563;">网页端即可用，和 OpenClaw 的操作方式也比较接近，适合作为轻量备用通道。</p>
+        <p style="margin:0;"><a href="https://lobsterai.youdao.com/#/index" target="_blank" rel="noopener noreferrer" style="color:#2563eb; text-decoration:none;">打开有道龙虾 →</a></p>
+      </div>
+    </div>
+    <p>按你的使用习惯选一个即可。如果你更看重和 OpenClaw 相似的工程能力，CoPaw 通常更合适；如果你想先低门槛备一个网页端入口，有道龙虾也够用。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">三、给备用 Agent 安装 OpenClaw 运维 Skill</h2>
+    <p>互备 Agent 只有“会聊天”是不够的，它还得能做运维。这里的关键不是提示词，而是让它掌握一套专门面向 OpenClaw 的诊断和修复动作。</p>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:18px; margin-bottom:16px;">
+      <p style="margin:0 0 10px;"><strong>推荐 Skill：</strong><a href="https://github.com/chujianyun/skills/tree/main/skills/openclaw-ops" target="_blank" rel="noopener noreferrer" style="color:#2563eb; text-decoration:none;">openclaw-ops</a></p>
+      <p style="margin:0;">这类 Skill 的价值在于，把健康检查、日志排查、配置修复、异常恢复等常见运维动作标准化，让备用 Agent 真能“接手救火”。</p>
+    </div>
+    <p>最简单的安装指令，就是把这个链接直接发给备用 Agent：</p>
+    <div style="background:#111827; color:#f9fafb; border-radius:14px; padding:16px; font-family:monospace; overflow:auto;">
+      帮我安装：https://github.com/chujianyun/skills/tree/main/skills/openclaw-ops 这个 skill
+    </div>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">四、让“保镖”平时也巡逻，不要只在出事后出现</h2>
+    <p>如果 OpenClaw 偶尔无响应、明显变慢，或者某个任务异常卡住，你当然可以手动给备用 Agent 发消息，让它跑一次检查。但更推荐的做法是把这件事变成定时任务。</p>
+    <ol style="padding-left:20px;">
+      <li>先让备用 Agent 能调用 `openclaw-ops` 做健康检查。</li>
+      <li>再给它加一个定时提醒，比如每小时检查一次。</li>
+      <li>一旦发现 OpenClaw 异常，就按预设流程执行修复。</li>
+      <li>如果短时间修不好，直接切到备用 Agent 继续完成任务。</li>
+    </ol>
+    <p>适合作为定时巡检的参考提示词：</p>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:18px; margin-bottom:16px;">
+      每 1 小时参考 openclaw-ops 这个 skill 的知识检查一下 openclaw 是否正常，如果不正常进行修复。
+    </div>
+    <p>这样做的核心收益很直接：从“发现问题后再去补救”，变成“持续看护，出问题尽快自愈”。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">五、这套守护方案为什么有效</h2>
+    <div style="overflow:auto; border:1px solid #e5e7eb; border-radius:14px; margin-bottom:16px;">
+      <table style="width:100%; border-collapse:collapse; min-width:680px;">
+        <thead style="background:#f8fafc;">
+          <tr>
+            <th style="padding:12px 14px; text-align:left; border-bottom:1px solid #e5e7eb;">问题</th>
+            <th style="padding:12px 14px; text-align:left; border-bottom:1px solid #e5e7eb;">常规做法</th>
+            <th style="padding:12px 14px; text-align:left; border-bottom:1px solid #e5e7eb;">守护方案</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">配置改坏</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">手动排查、猜哪里错了</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">变更前备份，异常时回滚</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">服务无响应</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">等你发现后再处理</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">定时巡检，异常即触发修复</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">短期修不好</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">任务中断</td>
+            <td style="padding:12px 14px; border-bottom:1px solid #e5e7eb;">备用 Agent 继续接任务</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 14px;">迁移或换机</td>
+            <td style="padding:12px 14px;">配置散落、本地难找</td>
+            <td style="padding:12px 14px;">私有仓库按天备份，随时恢复</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">六、最小落地顺序</h2>
+    <ol style="padding-left:20px;">
+      <li>先挑一个互备 Agent：CoPaw 或有道龙虾。</li>
+      <li>给它装上 `openclaw-ops` 这类运维 Skill。</li>
+      <li>把 OpenClaw 的关键配置和日志目录纳入备份。</li>
+      <li>设置每小时一次健康检查。</li>
+      <li>把“异常时先检查、再修复、最后回滚或切备用”固定成流程。</li>
+    </ol>
+    <p>别一开始就追求全自动自治。对大多数人来说，先把“能备份、能巡检、能托底”这三件事跑通，已经能显著降低维护成本。</p>
+
+    <div style="margin-top:20px; padding:16px 18px; border-radius:14px; background:#ecfeff; border:1px solid #99f6e4; color:#115e59;">
+      结论：真正让 OpenClaw 更像 7x24 小时在线员工的，不只是模型能力，而是你有没有给它准备好守护者、备份和回滚链路。偶发异常不可怕，没有托底才可怕。
+    </div>
+  </section>
+</article>
+{% endblock %}
+
+{% block page_tail_promo %}{% endblock %}

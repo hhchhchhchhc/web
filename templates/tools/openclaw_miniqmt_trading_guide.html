@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}OpenClaw 量化交易实战 1：MiniQMT 自动交易 | OpenClaw 专栏{% endblock %}
+{% block meta_description %}OpenClaw 量化交易实战 1：本地部署 OpenClaw，接入 MiniQMT 与 miniqmt-xttrade Skills，实现对话式下单、撤单、查资产和持仓。{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+  <a href="{% url 'openclaw_column' %}#finance" style="color:#2563eb;text-decoration:none;">← 返回 OpenClaw 专栏</a>
+</div>
+
+<article style="background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:32px; box-shadow:0 10px 25px rgba(2,6,23,.05);">
+  <header style="border-bottom:1px solid #e5e7eb; padding-bottom:18px; margin-bottom:22px;">
+    <p style="display:inline-block; background:#eff6ff; color:#1d4ed8; border-radius:999px; padding:6px 12px; font-size:.85rem; font-weight:600;">OpenClaw 专栏 · 交易投研</p>
+    <h1 style="font-size:2rem; line-height:1.35; color:#111827; margin:12px 0 10px;">OpenClaw 量化交易的实际应用 1：MiniQMT 自动交易</h1>
+    <p style="margin:0; color:#6b7280;">说话就能做量化。从本地部署、飞书接入到 `miniqmt-xttrade` Skills，这篇把“查询账户 -> 下单 -> 撤单”的最短闭环先打通。</p>
+    <p style="margin:12px 0 0; color:#475569; line-height:1.8; font-size:.96rem;">
+      改编自
+      <a href="https://mp.weixin.qq.com/s/Pu-0lVATrWo6yU4x8ahDOA" target="_blank" rel="noopener noreferrer" style="color:#2563eb; text-decoration:none; font-weight:600;">
+        微信原文
+      </a>
+    </p>
+  </header>
+
+  <section style="line-height:1.95; color:#1f2937; font-size:1.05rem;">
+    <p>这篇实战的核心不是“再教你写一套交易框架”，而是把 OpenClaw 变成真正能操作本地 MiniQMT 的执行 Agent。你用自然语言说出交易意图，它负责理解、拼参数、调用技能、落到本机交易终端执行。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">一、为什么要做“说话做量化”</h2>
+    <ul style="padding-left:20px;">
+      <li>量化想法很多，但一碰到 Python、环境变量、接口文档和状态同步就被卡住。</li>
+      <li>传统自动下单链路长，要啃文档、写回调、处理异常和订单状态。</li>
+      <li>策略多数跑在本地机器或云服务器上，人在外面时难以及时干预。</li>
+    </ul>
+    <p>OpenClaw 的价值在这里很直接：它不只是聊天，而是能操作本地电脑的 Agent。只要 MiniQMT 和 OpenClaw 在同一台机器上，很多原本需要手写的底层动作都可以压缩成自然语言指令。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">二、这一套先打通什么能力</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-bottom:16px;">
+      <div style="border:1px solid #bfdbfe; border-radius:14px; padding:16px;">
+        <p style="margin:0 0 8px; color:#2563eb; font-weight:700;">基础交互</p>
+        <p style="margin:0; color:#4b5563;">对话式查账户、查持仓、查委托。</p>
+      </div>
+      <div style="border:1px solid #fde68a; border-radius:14px; padding:16px;">
+        <p style="margin:0 0 8px; color:#b45309; font-weight:700;">交易执行</p>
+        <p style="margin:0; color:#4b5563;">自然语言买入、卖出、限价、市价、撤单。</p>
+      </div>
+      <div style="border:1px solid #bbf7d0; border-radius:14px; padding:16px;">
+        <p style="margin:0 0 8px; color:#15803d; font-weight:700;">移动干预</p>
+        <p style="margin:0; color:#4b5563;">接入飞书后，通勤路上也能下指令。</p>
+      </div>
+    </div>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">三、本地部署要点</h2>
+    <p>最关键的一条：<strong>OpenClaw 必须部署在运行 MiniQMT 的本地电脑上</strong>。因为只有在同一台机器里，它才有权限调用你的本地交易终端。</p>
+    <p>推荐最短路径：</p>
+    <ol style="padding-left:20px;">
+      <li>Windows PowerShell 一键安装 OpenClaw：<code>iwr -useb https://openclaw.ai/install.ps1 | iex</code></li>
+      <li>执行 <code>openclaw onboard</code> 完成基础引导。</li>
+      <li>接入一个可用大模型，作为 OpenClaw 的“大脑”。</li>
+      <li>接入飞书，方便在手机端随时发指令。</li>
+      <li>安装 `miniqmt-xttrade` Skills 与常用技能。</li>
+      <li>确保 MiniQMT 已登录，并且使用的是 MiniQMT 版本。</li>
+    </ol>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">四、交易核心：miniqmt-xttrade Skills</h2>
+    <p>真正让大模型能“安全且精确”操作股票账户的关键，不是提示词，而是技能层。`miniqmt-xttrade` 本质上是一套封装好的原生交易指令集，放进 OpenClaw 的 `skills/` 目录后，大模型才看得懂账户查询、报单、撤单和银证转账这些动作。</p>
+    <ul style="padding-left:20px;">
+      <li><code>query_account.py</code>：查可用资金、持仓市值、总资产。</li>
+      <li><code>query_position.py</code>：查当前持仓与浮盈浮亏。</li>
+      <li><code>query_order.py</code> / <code>cancel_order.py</code>：查委托、查未成单、执行撤单。</li>
+      <li><code>order_stock.py</code>：支持买卖、限价、市价、最新价和多种报价模式。</li>
+      <li><code>bank_transfer.py</code>：支持银证转账。</li>
+    </ul>
+    <p>比如你说“帮我全仓市价买入浦发银行”，OpenClaw 会自动拆解出代码、方向、价格类型和数量，再拼成底层脚本调用参数，完成本地执行。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">五、这篇演示的闭环</h2>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:18px; margin-bottom:16px;">
+      <p style="margin:0 0 10px;"><strong>场景 1：查账户</strong><br>“帮我查下当前股票账户里还有多少可用资金？”</p>
+      <p style="margin:0 0 10px;"><strong>场景 2：精准下单</strong><br>“马上帮我以 10.5 元的价格限价买入 100 股 600000.SH。”</p>
+      <p style="margin:0;"><strong>场景 3：撤单</strong><br>“慢着，帮我把刚才那笔 600000.SH 的买单撤销掉。”</p>
+    </div>
+    <p>重点不是单个命令，而是这条链路已经通了：<strong>查询账户 -> 提交委托 -> 找回订单 -> 发起撤单</strong>。这说明 OpenClaw 在量化场景里不只是“能分析”，而是真的可以接管执行。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">六、后续可以继续扩展什么</h2>
+    <ul style="padding-left:20px;">
+      <li>自然语言条件选股：连续资金净流入、低市盈率、AI 概念等。</li>
+      <li>新闻情绪分析后自动调仓。</li>
+      <li>对话式回测并把收益曲线发到飞书或微信。</li>
+      <li>长财报扫描，自动提取风险点和业绩亮点。</li>
+    </ul>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">七、获取方式</h2>
+    <p>文中提到的 `miniqmt-xttrade Skills` 完整源码包已经整理好，拿到后放进对应目录即可运行。原文给出的领取方式是后台回复关键字：<strong>openclaw量化应用1-miniqmt</strong>。</p>
+
+    <div style="margin-top:20px; padding:16px 18px; border-radius:14px; background:#fff7ed; border:1px solid #fdba74; color:#9a3412;">
+      声明：本文主要用于量化技术交流、代码分享与探讨，文中提及的个股与策略内容不构成投资建议。市场有风险，投资需谨慎。
+    </div>
+  </section>
+</article>
+{% endblock %}
+
+{% block page_tail_promo %}{% endblock %}

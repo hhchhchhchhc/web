@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}低价生成优质TTS{% endblock %}
+{% block meta_description %}低价生成优质 TTS，登录后购买字数额度，提交文本后自动扣额度并进入生成队列。{% endblock %}
+{% block og_title %}低价生成优质TTS{% endblock %}
+{% block og_description %}低价生成优质 TTS，登录、充值、提交文本、自动生成。{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tts-auth input,
+    .tts-auth select,
+    .tts-auth textarea {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 12px 14px;
+        font: inherit;
+        background: #fff;
+        color: #0f172a;
+    }
+    .tts-auth textarea {
+        min-height: 260px;
+        resize: vertical;
+    }
+    .tts-auth ul.errorlist {
+        list-style: none;
+        color: #b91c1c;
+        margin-top: 6px;
+    }
+    .tts-grid {
+        display: grid;
+        gap: 24px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    @media (max-width: 900px) {
+        .tts-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block hero %}
+<section class="hero" style="background: linear-gradient(135deg, #0f172a 0%, #14532d 48%, #16a34a 100%);">
+    <div class="container">
+        <div class="hero-content" style="text-align: left; max-width: 1100px; margin: 0 auto;">
+            <div style="display: grid; gap: 28px; grid-template-columns: 1.15fr 0.85fr; align-items: center;">
+                <div>
+                    <div style="display: inline-flex; gap: 10px; align-items: center; background: rgba(255,255,255,0.12); color: #fff; border-radius: 999px; padding: 8px 14px; margin-bottom: 18px; font-weight: 600;">
+                        <span>登录后直接充值额度</span>
+                        <span style="opacity: 0.75;">支付自动到账</span>
+                    </div>
+                    <h1 style="font-size: 3.2rem; line-height: 1.08; margin-bottom: 16px;">低价生成优质 TTS<br>充值额度后自动扣费生成</h1>
+                    <p style="font-size: 1.1rem; max-width: 640px;">
+                        用户只需注册登录、扫码付款并上传截图。你在后台确认到账后，额度会自动加到账号里。之后提交文本时，系统按字数直接扣额度并进入 5090 GPU 生成队列。
+                    </p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px;">
+                        <a href="#studio" class="nav-cta" style="text-decoration: none;">进入额度面板</a>
+                        <a href="#pricing" style="text-decoration: none; color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 10px; padding: 10px 18px; font-weight: 600;">查看充值价格</a>
+                    </div>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); border-radius: 18px; padding: 24px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.16);">
+                    <h3 style="color: #fff; margin-bottom: 14px; font-size: 1.35rem;">自动化流程</h3>
+                    <div style="display: grid; gap: 12px;">
+                        <div style="background: rgba(255,255,255,0.08); padding: 14px; border-radius: 12px; color: #f8fafc;">1. 用户注册登录</div>
+                        <div style="background: rgba(255,255,255,0.08); padding: 14px; border-radius: 12px; color: #f8fafc;">2. 扫码付款充值字数</div>
+                        <div style="background: rgba(255,255,255,0.08); padding: 14px; border-radius: 12px; color: #f8fafc;">3. 后台确认到账加额度</div>
+                        <div style="background: rgba(255,255,255,0.08); padding: 14px; border-radius: 12px; color: #f8fafc;">4. 提交文本自动扣额度并生成</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<section id="pricing" style="margin-bottom: 40px;">
+    <div style="display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+        {% for item in pricing_examples %}
+        <div class="tool-card">
+            <div class="badge badge-featured" style="margin-bottom: 10px;">充值套餐</div>
+            <h3>{{ item.label }}</h3>
+            <p class="description">{{ item.price }} 元，到账即加 {{ item.chars }} 字额度。</p>
+        </div>
+        {% endfor %}
+    </div>
+    <p style="margin-top: 14px; color: #64748b;">定价规则固定为每 10000 字 1.2 元。当前使用个人微信收款，用户付款后上传截图，你在后台一键确认到账即可加额度。</p>
+</section>
+
+<section style="margin-bottom: 48px;">
+    <div class="section-header">
+        <h2 class="section-title"><span class="icon">🎙</span> 模型内置 Speaker</h2>
+    </div>
+    <div style="display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+        {% for voice in voice_cards %}
+        <div class="tool-card">
+            <h3>{{ voice.name }}</h3>
+            <p class="description" style="margin-bottom: 8px;"><strong>风格：</strong>{{ voice.summary }}</p>
+            <p class="description">{{ voice.instruction }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    <p style="margin-top: 14px; color: #64748b;">这里只展示你本机 Qwen3-TTS 当前真实支持的内置 speaker。风格描述是相对印象，用来帮助选择，不代表绝对承诺。</p>
+</section>
+
+<section id="studio" class="tts-auth" style="margin-bottom: 48px;">
+    {% if not request.user.is_authenticated %}
+    <div class="tts-grid">
+        <div class="tool-card">
+            <div class="section-header" style="margin-bottom: 16px;">
+                <h2 class="section-title"><span class="icon">🔐</span> 登录</h2>
+            </div>
+            {% if auth_error %}
+            <div style="padding: 12px 14px; border-radius: 10px; background: #fee2e2; color: #991b1b; margin-bottom: 16px;">
+                {{ auth_error }}
+            </div>
+            {% endif %}
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="action" value="login">
+                <div style="display: grid; gap: 14px;">
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 6px;">用户名</label>
+                        {{ login_form.username }}
+                        {{ login_form.username.errors }}
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 6px;">密码</label>
+                        {{ login_form.password }}
+                        {{ login_form.password.errors }}
+                    </div>
+                </div>
+                <button type="submit" class="nav-cta" style="border: none; cursor: pointer; margin-top: 16px;">登录进入额度面板</button>
+            </form>
+        </div>
+        <div class="tool-card">
+            <div class="section-header" style="margin-bottom: 16px;">
+                <h2 class="section-title"><span class="icon">🆕</span> 注册</h2>
+            </div>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="action" value="register">
+                {% if register_form.non_field_errors %}
+                <div style="padding: 12px 14px; border-radius: 10px; background: #fee2e2; color: #991b1b; margin-bottom: 16px;">
+                    {{ register_form.non_field_errors }}
+                </div>
+                {% endif %}
+                <div style="display: grid; gap: 14px;">
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 6px;">用户名</label>
+                        {{ register_form.username }}
+                        {{ register_form.username.errors }}
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 6px;">邮箱</label>
+                        {{ register_form.email }}
+                        {{ register_form.email.errors }}
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 6px;">密码</label>
+                        {{ register_form.password }}
+                        {{ register_form.password.errors }}
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 6px;">确认密码</label>
+                        {{ register_form.password_confirm }}
+                        {{ register_form.password_confirm.errors }}
+                    </div>
+                </div>
+                <button type="submit" class="nav-cta" style="border: none; cursor: pointer; margin-top: 16px;">注册并登录</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="tts-grid">
+        <div class="tool-card">
+            <div class="section-header" style="margin-bottom: 16px;">
+                <h2 class="section-title"><span class="icon">💳</span> 额度面板</h2>
+            </div>
+            <div style="display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 16px;">
+                <div style="padding: 16px; border-radius: 14px; background: #ecfdf5;">
+                    <div style="color: #166534; font-weight: 700;">当前余额</div>
+                    {% if account.is_unlimited %}
+                    <div style="font-size: 2rem; font-weight: 800; color: #14532d;">无限</div>
+                    <div style="color: #166534;">不限转换字数</div>
+                    {% else %}
+                    <div style="font-size: 2rem; font-weight: 800; color: #14532d;">{{ account.char_balance }}</div>
+                    <div style="color: #166534;">可转换字数</div>
+                    {% endif %}
+                </div>
+                <div style="padding: 16px; border-radius: 14px; background: #eff6ff;">
+                    <div style="color: #1d4ed8; font-weight: 700;">累计购买</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: #1e3a8a;">{{ account.total_purchased_chars }}</div>
+                    <div style="color: #1d4ed8;">累计消费 {{ account.total_used_chars }}</div>
+                </div>
+                <div style="padding: 16px; border-radius: 14px; background: #fff7ed;">
+                    <div style="color: #9a3412; font-weight: 700;">累计转换上限</div>
+                    {% if account.is_unlimited %}
+                    <div style="font-size: 2rem; font-weight: 800; color: #7c2d12;">无限</div>
+                    <div style="color: #9a3412;">该账号不执行总字数上限</div>
+                    {% else %}
+                    <div style="font-size: 2rem; font-weight: 800; color: #7c2d12;">{{ account.total_purchased_chars }}</div>
+                    <div style="color: #9a3412;">累计实际转换字数不会超过这个值</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div style="font-weight: 700;">当前账号：{{ request.user.username }}</div>
+                <a href="{% url 'tts_logout' %}" style="text-decoration: none; color: #b91c1c; font-weight: 700;">退出登录</a>
+            </div>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="action" value="recharge">
+                <div>
+                    <label style="font-weight: 600; display: block; margin-bottom: 6px;">选择充值套餐</label>
+                    {{ recharge_form.char_amount }}
+                    {{ recharge_form.char_amount.errors }}
+                </div>
+                <button type="submit" class="nav-cta" style="border: none; cursor: pointer; margin-top: 16px;">创建充值订单</button>
+            </form>
+            <div style="margin-top: 18px; padding: 18px; border-radius: 16px; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); border: 1px solid #bfdbfe; text-align: center;">
+                <img src="{% static 'tts/wx.jpg' %}" alt="微信收款码" style="width: 100%; max-width: 260px; border-radius: 14px;">
+                <div style="margin-top: 10px; color: #1e3a8a; font-weight: 700;">微信扫码充值</div>
+                <div style="margin-top: 6px; color: #475569; font-size: 0.92rem;">{{ manual_payment_notice }}</div>
+            </div>
+            <div style="margin-top: 14px; padding: 14px; border-radius: 12px; background: #f8fafc;">
+                <strong>联系微信：</strong> {{ sales_wechat }}
+            </div>
+        </div>
+        <div class="tool-card">
+            <div class="section-header" style="margin-bottom: 16px;">
+                <h2 class="section-title"><span class="icon">🧾</span> 提交 TTS</h2>
+            </div>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="action" value="submit_tts">
+                {% if consume_form.non_field_errors %}
+                <div style="padding: 12px 14px; border-radius: 10px; background: #fee2e2; color: #991b1b; margin-bottom: 16px;">
+                    {{ consume_form.non_field_errors }}
+                </div>
+                {% endif %}
+                <div style="display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr));">
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 6px;">音色方案</label>
+                        {{ consume_form.voice_preset }}
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 6px;">交付格式</label>
+                        {{ consume_form.delivery_format }}
+                    </div>
+                </div>
+                <div style="margin-top: 14px;">
+                    <label style="font-weight: 600; display: block; margin-bottom: 6px;">补充风格要求</label>
+                    {{ consume_form.style_notes }}
+                </div>
+                <div style="margin-top: 14px;">
+                    <label style="font-weight: 600; display: block; margin-bottom: 6px;">待转文本</label>
+                    {{ consume_form.source_text }}
+                    {{ consume_form.source_text.errors }}
+                </div>
+                <div style="margin-top: 16px; padding: 14px; border-radius: 12px; background: #eff6ff; color: #1e3a8a;">
+                    <strong>说明：</strong> 提交后系统按实际字数直接扣减额度，不再单独付款。
+                </div>
+                <button type="submit" class="nav-cta" style="border: none; cursor: pointer; margin-top: 16px;">提交并扣额度</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="tts-grid" style="margin-top: 24px;">
+        <div class="tool-card">
+            <h2 style="margin-bottom: 12px;">最近充值</h2>
+            <div style="display: grid; gap: 12px;">
+                {% for item in recent_recharges %}
+                <div style="padding: 14px; border-radius: 12px; background: #f8fafc;">
+                    <div><strong>{{ item.order_no }}</strong></div>
+                    <div>{{ item.char_amount }} 字 / {{ item.amount }} 元 / {{ item.get_payment_status_display }}</div>
+                </div>
+                {% empty %}
+                <div style="color: #64748b;">还没有充值记录。</div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="tool-card">
+            <h2 style="margin-bottom: 12px;">最近 TTS 提交</h2>
+            <div style="display: grid; gap: 12px;">
+                {% for item in recent_orders %}
+                <div style="padding: 14px; border-radius: 12px; background: #f8fafc;">
+                    <div><strong><a href="{% url 'tts_order_submitted' item.order_no %}">{{ item.order_no }}</a></strong></div>
+                    <div>{{ item.char_count }} 字 / {{ item.get_status_display }}</div>
+                </div>
+                {% empty %}
+                <div style="color: #64748b;">还没有 TTS 提交记录。</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

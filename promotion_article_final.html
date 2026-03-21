@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全民效率神器 - 你的AI工具百宝箱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            font-weight: 800;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .hero .subtitle {
+            font-size: 1.5em;
+            opacity: 0.95;
+            margin-bottom: 30px;
+        }
+
+        .hero .cta {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2em;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .hero .cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .content {
+            padding: 50px 40px;
+        }
+
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section h2 {
+            font-size: 2em;
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .section p {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .feature-card h3 {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .feature-card p {
+            color: #666;
+            font-size: 1em;
+        }
+
+        .stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 30px;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .stat-item h3 {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .stat-item p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            color: white;
+        }
+
+        .highlight-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 5px;
+        }
+
+        .highlight-box strong {
+            color: #856404;
+            font-size: 1.2em;
+        }
+
+        .category-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .category-tag {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .footer {
+            background: #2d3748;
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2em;
+            }
+            .hero .subtitle {
+                font-size: 1.2em;
+            }
+            .content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>🚀 全民效率神器</h1>
+            <p class="subtitle">一站式AI工具聚合平台，让效率提升10倍！</p>
+            <a href="http://ai-tool.indevs.in" class="cta">立即探索 →</a>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <h2>💡 为什么选择我们？</h2>
+                <p>在AI时代，工具就是生产力。但面对海量的AI工具，你是否感到迷茫？</p>
+                <p><strong>全民效率神器</strong>为你精心整理了最全面、最实用的AI工具库，从免费GPU资源到顶级AI模型，从电子书搜索到OpenClaw教程，应有尽有！</p>
+
+                <div class="highlight-box">
+                    <strong>🎯 我们的使命：</strong> 让每个人都能轻松找到最适合自己的效率工具，无需再花费大量时间搜索和筛选。
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <h3>100+</h3>
+                    <p>精选工具</p>
+                </div>
+                <div class="stat-item">
+                    <h3>20+</h3>
+                    <p>工具分类</p>
+                </div>
+                <div class="stat-item">
+                    <h3>100%</h3>
+                    <p>免费使用</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>✨ 核心特色</h2>
+                <div class="features">
+                    <div class="feature-card">
+                        <h3>🎁 免费资源</h3>
+                        <p>精选免费GPU平台、顶级大模型、VPN服务等，让你零成本体验AI的强大</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>📚 学习资源</h3>
+                        <p>Z-Library、鸠摩搜书等电子书资源，OpenClaw使用教程，助你快速上手</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>🤖 AI工具全覆盖</h3>
+                        <p>从写作、图像、视频到编程、办公，涵盖AI应用的方方面面</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>☁️ 云算力平台</h3>
+                        <p>九天·毕昇、阿里天池、Google Colab等免费GPU资源一网打尽</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>🔍 智能搜索</h3>
+                        <p>AI搜索引擎、网盘搜索、电子书搜索，找资源从未如此简单</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>🎯 持续更新</h3>
+                        <p>紧跟AI发展趋势，每周更新最新工具和资源</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🗂️ 丰富的工具分类</h2>
+                <div class="category-list">
+                    <span class="category-tag">AI聊天助手</span>
+                    <span class="category-tag">AI写作工具</span>
+                    <span class="category-tag">AI图像工具</span>
+                    <span class="category-tag">AI视频工具</span>
+                    <span class="category-tag">AI编程工具</span>
+                    <span class="category-tag">AI办公工具</span>
+                    <span class="category-tag">AI搜索引擎</span>
+                    <span class="category-tag">云算力平台</span>
+                    <span class="category-tag">搜索工具</span>
+                    <span class="category-tag">OpenClaw使用方法</span>
+                    <span class="category-tag">免费资源</span>
+                    <span class="category-tag">🎁 限时福利</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🌟 精选推荐</h2>
+                <p><strong>免费GPU资源：</strong></p>
+                <ul style="margin-left: 20px; color: #555;">
+                    <li>九天·毕昇平台 - 注册送1000-3000算力豆</li>
+                    <li>阿里天池实验室 - 60小时免费GPU时长</li>
+                    <li>Google Colab - 免费T4/P100/V100显卡</li>
+                    <li>腾讯云CNB - 每月1600核时免费额度</li>
+                </ul>
+
+                <p style="margin-top: 20px;"><strong>电子书搜索神器：</strong></p>
+                <ul style="margin-left: 20px; color: #555;">
+                    <li>Z-Library - 世界最大电子图书馆</li>
+                    <li>鸠摩搜书 - 聚合型电子书搜索</li>
+                    <li>凌风云网盘搜索 - 网盘资源一键查找</li>
+                </ul>
+
+                <p style="margin-top: 20px;"><strong>AI Agent工具：</strong></p>
+                <ul style="margin-left: 20px; color: #555;">
+                    <li>Claude Cowork替代品全面调研</li>
+                    <li>OpenClaw免费一键启动教程</li>
+                    <li>Agent团队搭建完整指南</li>
+                </ul>
+            </div>
+
+            <div class="highlight-box">
+                <strong>💰 省钱秘籍：</strong> 通过我们的平台，你可以找到价值数千元的免费资源和优惠信息，包括Colab Pro学生包仅40元/年等超值福利！
+            </div>
+
+            <div class="section">
+                <h2>🎯 适合谁使用？</h2>
+                <div class="features">
+                    <div class="feature-card">
+                        <h3>👨‍💻 开发者</h3>
+                        <p>免费GPU训练模型、AI编程助手、开发平台一应俱全</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>📝 内容创作者</h3>
+                        <p>AI写作、图像生成、视频制作工具助你高效创作</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>🎓 学生党</h3>
+                        <p>免费学习资源、电子书搜索、AI学习网站应有尽有</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>💼 职场人士</h3>
+                        <p>AI办公工具、效率神器让你工作效率翻倍</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" style="text-align: center; padding: 40px 0;">
+                <h2 style="margin-bottom: 30px;">🚀 开始你的效率提升之旅</h2>
+                <a href="http://ai-tool.indevs.in" class="cta" style="color: #667eea;">立即访问 →</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>全民效率神器 - 让AI工具触手可及</p>
+            <p style="margin-top: 10px;">
+                <a href="http://ai-tool.indevs.in">ai-tool.indevs.in</a>
+            </p>
+            <p style="margin-top: 20px; font-size: 0.9em; opacity: 0.8;">
+                © 2026 全民效率神器 | 持续更新中
+            </p>
+        </div>
+    </div>
+</body>
+</html>

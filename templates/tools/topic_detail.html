@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ topic.title }} | AI工具专题{% endblock %}
+{% block meta_description %}{{ topic.meta_description }}{% endblock %}
+{% block extra_css %}
+<style>
+    .topic-detail-shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.8fr);
+        gap: 22px;
+        align-items: start;
+    }
+    .topic-detail-main,
+    .topic-detail-side {
+        display: grid;
+        gap: 20px;
+    }
+    .topic-detail-card,
+    .topic-detail-sidecard {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 22px;
+        padding: 24px;
+        box-shadow: var(--shadow-lg);
+    }
+    .topic-detail-sidecard {
+        position: sticky;
+        top: 88px;
+    }
+    .topic-detail-intro {
+        color: #475569;
+        line-height: 1.9;
+        white-space: pre-wrap;
+    }
+    .topic-detail-tags {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+    }
+    .topic-detail-tags a {
+        text-decoration: none;
+    }
+    @media (max-width: 980px) {
+        .topic-detail-shell {
+            grid-template-columns: 1fr;
+        }
+        .topic-detail-sidecard {
+            position: static;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 28px;">
+    <a href="{% url 'topic_list' %}" style="color: #3498db; text-decoration: none; font-size: 0.95rem;">← 返回专题列表</a>
+</div>
+
+<div class="topic-detail-shell">
+    <div class="topic-detail-main">
+        <section class="topic-detail-card">
+            <h1 style="font-size: 2rem; color: #111827; margin-bottom: 10px;">{{ topic.title }}</h1>
+            <p style="color: #6b7280; margin-bottom: 12px;">{{ topic.meta_description }}</p>
+            {% if topic.intro %}
+            <div class="topic-detail-intro">{{ topic.intro }}</div>
+            {% endif %}
+            <div class="topic-detail-tags">
+                {% for category in categories %}
+                <a href="{% url 'tool_list' %}?category={{ category.slug }}" class="badge badge-category">
+                    {{ category.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section style="margin-bottom: 0;">
+            <div class="section-header">
+                <h2 class="section-title"><span class="icon">🛠️</span> 专题工具</h2>
+                <span style="color: var(--gray-500);">{{ tools.count }} 个结果</span>
+            </div>
+            <div class="tool-grid">
+                {% for tool in tools %}
+                <div class="tool-card">
+                    <div class="card-header">
+                        <div class="card-badges">
+                            <span class="badge badge-category">{{ tool.category.name }}</span>
+                            <span class="badge" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">{{ tool.view_count }} 浏览</span>
+                        </div>
+                    </div>
+                    <h3>{{ tool.name }}</h3>
+                    <p class="description">{{ tool.short_description }}</p>
+                    <div class="card-footer">
+                        <a href="{% url 'tool_detail' tool.slug %}" class="card-link">查看详情 <span>→</span></a>
+                        <a href="{{ tool.website_url }}" target="_blank" rel="noopener" class="external-link">访问 ↗</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <div class="topic-detail-side">
+        <div class="topic-detail-sidecard">
+            <h2 style="font-size:1.06rem; color:var(--gray-900); margin-bottom:10px;">这个专题适合谁</h2>
+            <p style="margin:0 0 16px; color:var(--gray-600); line-height:1.85;">如果你不想一个个工具自己筛，而是想先看某个场景下“应该优先研究哪几类工具”，专题页会更适合你。</p>
+            <div style="display:grid; gap:10px;">
+                <a href="{% url 'topic_list' %}" class="filter-btn" style="text-decoration:none;">返回专题列表</a>
+                <a href="{% url 'trending_tools' %}" class="filter-btn" style="text-decoration:none;">看趋势热榜</a>
+                <a href="{% url 'tool_list' %}" class="filter-btn" style="text-decoration:none;">看全部工具</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if related_topics %}
+<section>
+    <div class="section-header">
+        <h2 class="section-title"><span class="icon">🔗</span> 相关推荐专题</h2>
+    </div>
+    <div class="tool-grid">
+        {% for item in related_topics %}
+        <div class="tool-card">
+            <h3>{{ item.title }}</h3>
+            <p class="description">{{ item.meta_description }}</p>
+            <div class="card-footer">
+                <a href="{% url 'topic_detail' item.slug %}" class="card-link">查看专题 <span>→</span></a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -19,6 +19,28 @@
 {% include "tools/_column_nav.html" %}
 
 <section style="margin-bottom: 34px;">
+  <div style="background:#fff; border:1px solid #c7d2fe; border-radius:18px; padding:22px; box-shadow: var(--shadow-lg); margin-bottom:18px;">
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+      <span class="badge" style="background: rgba(79,70,229,.12); color:#4338ca;">新增长文</span>
+      <span class="badge" style="background: rgba(8,145,178,.12); color:#0f766e;">学习 + 科研 + 职业</span>
+      <span class="badge" style="background: rgba(245,158,11,.14); color:#b45309;">高密度总结版</span>
+    </div>
+    <h2 style="margin:0 0 10px; color:#111827;">姚班人学习、科研与职业路径总结</h2>
+    <p style="margin:0 0 14px; color:#374151; line-height:1.85;">把你给的长文压缩成真正能用的版本，只保留可执行信息。结构分成学习心得、科研方法、职业规划三块，适合计算机学生、算法工程师和准备尽早切入科研的人。</p>
+    <a href="{% url 'yaoban_research_learning_guide' %}" class="filter-btn" style="text-decoration:none; border:1px solid #c7d2fe; color:#4338ca; background:#eef2ff;">查看总结版 →</a>
+  </div>
+
+  <div style="background:#fff; border:1px solid #dbeafe; border-radius:18px; padding:22px; box-shadow: var(--shadow-lg); margin-bottom:18px;">
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+      <span class="badge" style="background: rgba(15,118,110,.12); color:#0f766e;">新增长文</span>
+      <span class="badge" style="background: rgba(37,99,235,.12); color:#1d4ed8;">信息源系统</span>
+      <span class="badge" style="background: rgba(124,58,237,.12); color:#6d28d9;">LLM 算法工程师</span>
+    </div>
+    <h2 style="margin:0 0 10px; color:#111827;">大模型算法工程师信息源指南</h2>
+    <p style="margin:0 0 14px; color:#374151; line-height:1.85;">这篇更适合放在 AI 算法专栏顶部，因为它解决的是“长期该追哪些高信噪比信息源、怎么搭自己的输入系统”。内容覆盖学术、开源工程、官方博客、Newsletter、社区反馈和中国本土生态。</p>
+    <a href="{% url 'llm_algorithm_engineer_sources_guide' %}" class="filter-btn" style="text-decoration:none; border:1px solid #99f6e4; color:#0f766e; background:#ecfdf5;">查看完整指南 →</a>
+  </div>
+
   <div class="section-header">
     <h2 class="section-title"><span class="icon">📰</span> AI公众号观察</h2>
     <span style="color: var(--gray-500);">P0 重点关注 + P1 避免漏信息</span>

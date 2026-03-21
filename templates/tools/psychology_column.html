@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}心理学专栏 | 全民效率神器{% endblock %}
+{% block meta_description %}心理学专栏：聚焦心力进化、情绪边界、自我成长与行动系统。{% endblock %}
+
+{% block content %}
+<section style="margin-bottom: 28px;">
+  <div style="background: linear-gradient(135deg,#0b1020 0%,#1f2a44 100%); border-radius: 16px; padding: 30px; color: #f8fafc;">
+    <h1 style="font-size: 2rem; margin-bottom: 10px;">🧠 心理学专栏</h1>
+    <p style="color: #cbd5e1; line-height: 1.8; margin: 0;">在高压时代，用科学心理学重建心力秩序。这里不贩卖空洞鸡汤，只提供可实践的认知与行动框架。</p>
+    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:18px;">
+      <span class="badge" style="background: rgba(255,255,255,.12); color:#f8fafc;">累计 {{ column_stats.total_views|default:0 }} 浏览</span>
+      <span class="badge" style="background: rgba(14,165,233,.18); color:#e0f2fe;">今日 {{ column_stats.today_views|default:0 }} 浏览</span>
+    </div>
+  </div>
+</section>
+
+{% include "tools/_column_nav.html" %}
+
+<section style="margin-bottom: 20px;">
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a href="{% url 'psychology_sleep_category' %}" class="filter-btn" style="text-decoration:none; border:1px solid #0ea5e9; color:#0e7490; background:#ecfeff;">😴 睡眠分类</a>
+    <a href="{% url 'psychology_article_evolution' %}" class="filter-btn" style="text-decoration:none;">🧠 心力进化</a>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <h2 class="section-title"><span class="icon">📚</span> 专栏文章</h2>
+    <span style="color: var(--gray-500);">2 篇</span>
+  </div>
+  <div class="tool-grid">
+    <article class="tool-card" style="border-left: 4px solid #0ea5e9;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">睡眠分类</span>
+          <span class="badge" style="background: rgba(14,165,233,.12); color:#0e7490;">终结指南</span>
+        </div>
+      </div>
+      <h3>睡眠困扰终结指南：老胡带你破解“深夜焦虑”的 6 个科学真相</h3>
+      <p class="description">失眠不是“意志力不足”，而是神经系统在求救。用 20 分钟规则、PMR、反向暗示等方法，科学重建深睡。</p>
+      <div class="card-footer">
+        <a href="{% url 'psychology_article_sleep' %}" class="card-link">阅读文章 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #6366f1;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">心理学专栏</span>
+          <span class="badge" style="background: rgba(99,102,241,.12); color:#4338ca;">深度长文</span>
+        </div>
+      </div>
+      <h3>进化不靠意志力：来自“心力进化岛”的5个扎心真相</h3>
+      <p class="description">从环境设计、边界感、低速启动到创伤修复，帮你跳出“自律失败”的自责循环，建立真正可持续的进化系统。</p>
+      <div class="card-footer">
+        <a href="{% url 'psychology_article_evolution' %}" class="card-link">阅读文章 <span>→</span></a>
+      </div>
+    </article>
+  </div>
+</section>
+{% endblock %}

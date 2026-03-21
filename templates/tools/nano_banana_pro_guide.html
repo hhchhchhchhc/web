@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Nano Banana Pro 完整攻略 | 17个渠道与高清中文生图指南{% endblock %}
+{% block meta_description %}Nano Banana Pro 完整攻略：中文不再乱码，整理官方与第三方渠道、免费额度、提示词技巧、多图融合和常见问题。{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+  <a href="{% url 'home' %}" style="color:#2563eb;text-decoration:none;">← 返回首页</a>
+</div>
+
+<article style="background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:32px; box-shadow:0 10px 25px rgba(2,6,23,.05);">
+  <header style="border-bottom:1px solid #e5e7eb; padding-bottom:18px; margin-bottom:22px;">
+    <p style="display:inline-block; background:#eff6ff; color:#1d4ed8; border-radius:999px; padding:6px 12px; font-size:.85rem; font-weight:600;">AI 图片生成 · 中文文字渲染</p>
+    <h1 style="font-size:2rem; line-height:1.35; color:#111827; margin:12px 0 10px;">Google 王炸！Nano Banana Pro 完整攻略</h1>
+    <p style="margin:0; color:#6b7280;">整理 17 个渠道、免费额度、提示词公式、多图融合和常见问题，适合想快速把 Nano Banana Pro 用起来的人。</p>
+  </header>
+
+  <section style="line-height:1.95; color:#1f2937; font-size:1.05rem;">
+    <p>过去大多数 AI 生图工具在中文海报、招牌、封面场景里最大的问题就是文字经常乱码。Nano Banana Pro 这次最重要的变化，就是中文渲染和文字生成终于进入了“能直接拿来干活”的阶段。</p>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">一、它是什么</h2>
+    <p>Nano Banana Pro 是 Google 在 2025 年 11 月发布的新一代图像生成模型，基于 Gemini 3 Pro 框架打造，重点强化了中文文字渲染、4K 输出、多图融合、角色一致性和专业级画面控制。</p>
+    <ul style="padding-left:20px;">
+      <li>中文渲染：海报、招牌、封面里的汉字不再轻易乱码。</li>
+      <li>高清输出：支持 2K / 4K 画质。</li>
+      <li>多图融合：最多可上传 14 张参考图。</li>
+      <li>角色一致性：适合系列海报、漫画、分镜和品牌 IP。</li>
+      <li>专业控制：可更细地指定光线、角度、景深和风格。</li>
+    </ul>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">二、为什么值得看</h2>
+    <ul style="padding-left:20px;">
+      <li>17 个渠道可选：官方和第三方都能上手。</li>
+      <li>每月至少 343 张免费额度：适合想低成本试错的人。</li>
+      <li>10 组爆款提示词模板：覆盖封面图、电商图、海报、插画、信息图等高频场景。</li>
+      <li>支持多图融合与角色一致性：非常适合系列内容生产。</li>
+    </ul>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">三、最推荐的官方渠道</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-bottom:16px;">
+      <div style="border:1px solid #bfdbfe; background:#fff; border-radius:14px; padding:16px;">
+        <p style="margin:0 0 8px; color:#2563eb; font-weight:700;">Gemini 网页端</p>
+        <p style="margin:0; color:#4b5563;">最适合新手。每天免费 10 次，界面简单，切到 Thinking 模式才是 Pro。</p>
+      </div>
+      <div style="border:1px solid #c7d2fe; background:#fff; border-radius:14px; padding:16px;">
+        <p style="margin:0 0 8px; color:#4338ca; font-weight:700;">Google AI Studio</p>
+        <p style="margin:0; color:#4b5563;">更适合开发者和 API 工作流，参数控制更细，但正式使用通常需要绑定支付方式。</p>
+      </div>
+      <div style="border:1px solid #f9a8d4; background:#fff; border-radius:14px; padding:16px;">
+        <p style="margin:0 0 8px; color:#be185d; font-weight:700;">Gemini App</p>
+        <p style="margin:0; color:#4b5563;">适合移动端随时创作，也支持拍照后继续编辑。</p>
+      </div>
+    </div>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">四、第三方渠道怎么选</h2>
+    <ul style="padding-left:20px;">
+      <li>LMArena：稳定、免费、无水印，最适合长期白嫖试用。</li>
+      <li>Flowith：每月 1000 积分，约可免费生成 33 次。</li>
+      <li>Lovart：中文界面友好，项目管理体验更好。</li>
+      <li>OpenRouter：适合开发者，但核心价值更偏模型聚合而不是白嫖。</li>
+      <li>Banana Lab / TapNow / insMind / imini：适合轮换薅额度。</li>
+    </ul>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">五、提示词实战公式</h2>
+    <p>最稳的写法是：</p>
+    <p style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px 16px; color:#0f172a;">
+      [主体] + [动作/状态] + [环境/场景] + [光线] + [视角/构图] + [风格] + [氛围] + [技术参数]
+    </p>
+    <p>如果要做中文海报、封面或产品图，建议明确写出：</p>
+    <ul style="padding-left:20px;">
+      <li>比例：1:1、16:9、9:16、3:4</li>
+      <li>文字内容：用中文引号明确标出</li>
+      <li>风格：扁平插画、水彩、写实、赛博朋克、中国风等</li>
+      <li>光线：自然光、黄昏光、背光、霓虹灯光</li>
+      <li>镜头：35mm、浅景深、散景、平视角、俯视角等</li>
+    </ul>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">六、多图融合与角色一致性</h2>
+    <p>这是 Nano Banana Pro 最炸裂的一部分。它可以上传最多 14 张参考图，并让多个角色在系列图中尽量保持一致。最适合以下场景：</p>
+    <ul style="padding-left:20px;">
+      <li>连环漫画</li>
+      <li>品牌 IP 设计</li>
+      <li>产品系列图</li>
+      <li>广告分镜脚本</li>
+      <li>短剧和 AI 漫剧素材统一</li>
+    </ul>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">七、常见问题</h2>
+    <ul style="padding-left:20px;">
+      <li>找不到 Pro：在 Gemini 里它通常显示为 Thinking 模式。</li>
+      <li>免费额度用完：等第二天重置，或切换第三方渠道轮流用。</li>
+      <li>速度慢：Thinking 模式比 Fast 慢 2 到 3 倍是正常现象。</li>
+      <li>中文仍有错字：尽量减少文字数量，反复多生成几次，再做后期微调。</li>
+      <li>想保持风格一致：上传前一次生成的图作为参考，或保持相同的风格描述。</li>
+    </ul>
+
+    <h2 style="font-size:1.35rem; color:#111827; margin:20px 0 10px;">八、适合谁先上手</h2>
+    <ul style="padding-left:20px;">
+      <li>做公众号封面、海报、短视频封面的内容创作者</li>
+      <li>做电商详情图、产品图和促销物料的商家</li>
+      <li>想批量做系列人物图、IP 图、漫画分镜的人</li>
+      <li>想验证“中文文字生图是否终于可用”的工具玩家</li>
+    </ul>
+
+    <p>如果你的核心目标是“低成本快速出图”，先走 Gemini 网页端和 LMArena；如果你的目标是“批量化、自动化、接工作流”，再往 AI Studio 和第三方平台延展会更稳。</p>
+  </section>
+</article>
+{% endblock %}

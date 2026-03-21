@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>免费AI资源大全 - OpenClaw生态</title>
+  <meta name="description" content="免费AI资源导航：100+Skills、免费Token、优惠活动、一键部署、厂商促销汇总">
+  <meta name="keywords" content="免费AI,免费Token,促销,打折,包月,阿里云,腾讯云,百度云,讯飞,智谱,MiniMax,Kimi,OpenClaw">
+  <link rel="canonical" href="https://ai-tool.indevs.in/free/search/">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root { --primary: #FF385C; --bg: #fff; --text: #222; --text-light: #717171; --border: #ddd; --radius: 12px; }
+    body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background: #f7f7f7; color: var(--text); min-height: 100vh; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    .free-sidepromo { position: fixed; top: 136px; width: 190px; z-index: 65; }
+    .free-sidepromo.left { left: 18px; width: 220px; }
+    .free-sidepromo.right { right: 18px; }
+    .free-sidepromo-card { display:block; text-decoration:none; border-radius:16px; padding:16px; box-shadow:0 20px 40px -28px rgba(15,23,42,.42); border:1px solid rgba(148,163,184,.18); }
+    .free-sidepromo-card + .free-sidepromo-card { margin-top:12px; }
+    .free-sidepromo-card.gangmei { background: linear-gradient(180deg, rgba(15,23,42,.98) 0%, rgba(30,41,59,.98) 100%); color:#f8fafc; }
+    .free-sidepromo-card.tardis { background: linear-gradient(180deg, rgba(255,247,237,.98) 0%, rgba(255,241,242,.98) 100%); color:#7c2d12; }
+    .free-sidepromo-card.tushare { background: linear-gradient(180deg, rgba(239,246,255,.98) 0%, rgba(240,253,250,.98) 100%); color:#0f172a; }
+    .free-sidepromo-card.qr { background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(248,250,252,.98) 100%); color:#0f172a; }
+    .free-sidepromo-badge { display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px; font-size:12px; font-weight:700; margin-bottom:10px; }
+    .free-sidepromo-card.gangmei .free-sidepromo-badge { background: rgba(251,191,36,.15); color:#fbbf24; }
+    .free-sidepromo-card.tardis .free-sidepromo-badge { background: rgba(17,24,39,.08); color:#9a3412; }
+    .free-sidepromo.left { width: 220px; }
+    .free-sidepromo-card.tardis { padding: 22px 18px; border-radius: 22px; box-shadow: 0 28px 56px -28px rgba(194,65,12,.38); }
+    .free-sidepromo-card.tardis .free-sidepromo-badge { font-size: 13px; padding: 7px 12px; }
+    .free-sidepromo-card.tardis h3 { font-size: 20px; line-height: 1.35; color:#7c2d12; }
+    .free-sidepromo-card.tardis p { font-size: 15px; line-height: 1.82; color:#7c2d12; }
+    .free-sidepromo-card.tardis .free-sidepromo-meta { font-size: 13px; line-height: 1.75; padding: 12px 13px; }
+    .free-sidepromo-card.tardis .free-sidepromo-cta { font-size: 14px; }
+    .free-sidepromo-card.tushare .free-sidepromo-badge { background: rgba(37,99,235,.10); color:#1d4ed8; }
+    .free-sidepromo-card.tushare { padding:20px 18px; border-radius:22px; box-shadow:0 24px 48px -24px rgba(29,78,216,.28); }
+    .free-sidepromo-card.tushare .free-sidepromo-badge { font-size:13px; padding:7px 12px; }
+    .free-sidepromo-card.tushare h3 { font-size:20px; line-height:1.32; margin-bottom:10px; color:#0f172a; }
+    .free-sidepromo-card.tushare p { font-size:15px; line-height:1.75; margin-bottom:12px; color:#334155; }
+    .free-sidepromo-card.tushare .free-sidepromo-meta { font-size:13px; line-height:1.72; padding:12px 13px; }
+    .free-sidepromo-card.tushare .free-sidepromo-cta { font-size:14px; }
+    .free-sidepromo-card.qr .free-sidepromo-badge { background: rgba(15,23,42,.08); color:#334155; }
+    .free-sidepromo-card.qr { padding:20px 18px; border-radius:22px; box-shadow:0 24px 48px -24px rgba(15,23,42,.28); }
+    .free-sidepromo-card.qr .free-sidepromo-badge { font-size:13px; padding:7px 12px; }
+    .free-sidepromo-card.qr h3 { font-size:22px; line-height:1.3; margin-bottom:10px; }
+    .free-sidepromo-card.qr p { font-size:15px; line-height:1.75; margin-bottom:14px; }
+    .free-sidepromo-card.qr .free-sidepromo-cta { margin-top:10px; font-size:14px; color:#1d4ed8; }
+    .free-sidepromo-card.qr .qr-link { display:block; text-decoration:none; }
+    .free-sidepromo-card h3 { font-size: 16px; line-height:1.45; margin-bottom:8px; }
+    .free-sidepromo-card p { font-size: 13px; line-height:1.75; margin-bottom:10px; }
+    .free-sidepromo-meta { font-size:12px; line-height:1.7; padding:10px 11px; border-radius:12px; background: rgba(255,255,255,.72); border:1px solid rgba(255,255,255,.65); margin-bottom:10px; }
+    .free-sidepromo-card.gangmei .free-sidepromo-meta { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.12); color:#e2e8f0; }
+    .free-sidepromo-cta { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; }
+    .free-sidepromo-card.qr img { display:block; width:100%; border-radius:14px; border:1px solid #e2e8f0; background:#fff; padding:8px; }
+    header { background: var(--bg); padding: 32px; border-radius: var(--radius); box-shadow: 0 6px 16px rgba(0,0,0,0.1); margin-bottom: 24px; text-align: center; }
+    h1 { font-size: 32px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .subtitle { font-size: 16px; color: var(--text-light); margin-bottom: 16px; }
+    .tags { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .tag { background: var(--primary); color: #fff; padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+    .hero-stats { display: flex; justify-content: center; gap: 40px; margin: 20px 0; flex-wrap: wrap; }
+    .stat-num { font-size: 28px; font-weight: 700; color: var(--primary); }
+    .stat-label { font-size: 13px; color: var(--text-light); }
+    .lang-switch { display: flex; justify-content: center; gap: 8px; margin-top: 16px; }
+    .lang-btn { background: var(--bg); border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; cursor: pointer; }
+    .lang-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .search-box input { width: 100%; max-width: 500px; padding: 14px 20px; font-size: 16px; border: 1px solid var(--border); border-radius: 30px; outline: none; }
+    .search-box input:focus { border-color: var(--primary); }
+    .tabs { display: flex; gap: 10px; margin: 20px 0; flex-wrap: wrap; justify-content: center; }
+    .tab { background: var(--bg); border: 1px solid var(--border); padding: 10px 20px; border-radius: 20px; cursor: pointer; color: var(--text-light); font-size: 14px; }
+    .tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .section { margin-bottom: 30px; }
+    .section-title { font-size: 22px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+    .card { background: var(--bg); border-radius: var(--radius); padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid var(--border); transition: all 0.2s; }
+    .card:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .card-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .card-title { font-size: 18px; font-weight: 600; }
+    .card-title a { color: var(--text); text-decoration: none; }
+    .card-title a:hover { color: var(--primary); }
+    .card-desc { color: var(--text-light); font-size: 14px; line-height: 1.6; margin-bottom: 12px; }
+    .card-detail { background: #f7f7f7; padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; color: var(--text-light); line-height: 1.7; }
+    .card-detail strong { color: var(--text); }
+    .card-detail code { background: #e0e0e0; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+    .promo-tag { display: inline-block; background: linear-gradient(90deg,#ff6b6b,#FF385C); color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-right: 6px; }
+    .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .tag-item { padding: 4px 10px; border-radius: 4px; font-size: 12px; }
+    .tag-free { background: #22c55e20; color: #22c55e; }
+    .tag-promo { background: #f59e0b20; color: #f59e0b; }
+    .tag-install { background: #0ea5e920; color: #0ea5e9; }
+    .tag-skill { background: #8b5cf620; color: #8b5cf6; }
+    .tag-event { background: #ec489920; color: #ec4899; }
+    .tag-cloud { background: #6366f120; color: #6366f1; }
+    .card-link { color: var(--primary); text-decoration: none; font-size: 14px; font-weight: 600; }
+    .cta-box { background: linear-gradient(135deg,var(--primary),#ff6b6b); color: #fff; padding: 30px; border-radius: var(--radius); text-align: center; margin: 30px 0; }
+    .cta-box h3 { font-size: 24px; margin-bottom: 12px; }
+    .cta-box p { font-size: 16px; opacity: 0.9; margin-bottom: 16px; }
+    .cta-box code { background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 6px; font-size: 14px; }
+    footer { text-align: center; padding: 24px; color: var(--text-light); font-size: 13px; border-top: 1px solid var(--border); margin-top: 30px; }
+    footer a { color: var(--primary); text-decoration: none; }
+    @media (max-width: 1260px) { .free-sidepromo { display:none; } }
+  </style>
+</head>
+<body>
+  <aside class="free-sidepromo left" aria-label="Tardis 与 Tushare Pro 宣传">
+    <a href="{% url 'quant_article_tardis' %}" class="free-sidepromo-card tardis">
+      <span class="free-sidepromo-badge">📈 Tardis 数据</span>
+      <h3>高频和历史数据低价拿</h3>
+      <p>现货、期货、期权数据都能拿，适合研究、回测、信号验证和生产补数。</p>
+      <div class="free-sidepromo-meta">
+        微信：15180066256<br>
+        单次下载 100 元起<br>
+        整月 API 1500 元/月
+      </div>
+      <span class="free-sidepromo-cta">查看数据指南 →</span>
+    </a>
+    <a href="https://m.tb.cn/h.igcmZ1Y?tk=TXkZUzbHkiB" target="_blank" rel="noopener noreferrer" class="free-sidepromo-card tushare">
+      <span class="free-sidepromo-badge">🧾 Tushare Pro</span>
+      <h3>199 甩卖：原价 8500 元的 Tushare Pro API</h3>
+      <p><strong>重点是 199。</strong> 发货 3 个 token。优先点击闲鱼链接直接打开；如果闲鱼链接失效，再联系微信。</p>
+      <div class="free-sidepromo-meta">
+        199 直接拿走<br>
+        3 个 token 可轮换<br>
+        微信：dreamsjtuai
+      </div>
+      <span class="free-sidepromo-cta">优先点击闲鱼链接 →</span>
+    </a>
+  </aside>
+  <aside class="free-sidepromo right" aria-label="港美掘金宣传">
+    <div class="free-sidepromo-card qr">
+      <span class="free-sidepromo-badge">💬 微信群聊二维码</span>
+      <h3>微信扫码进群</h3>
+      <p>直接用微信扫一扫。如果页面里看不清，点图可放大查看。</p>
+      <a href="/static/images/sidebar/ewm.jpg" target="_blank" rel="noopener noreferrer" class="qr-link">
+        <img src="/static/images/sidebar/ewm.jpg" alt="微信群聊二维码">
+      </a>
+      <span class="free-sidepromo-cta">点击图片放大 →</span>
+    </div>
+    <a href="https://t.zsxq.com/eQkvu" target="_blank" rel="noopener noreferrer" class="free-sidepromo-card gangmei">
+      <span class="free-sidepromo-badge">🔥 港美掘金</span>
+      <h3>实战派财富系统</h3>
+      <p>量化策略、投研情报、AI 工具基建和高价值课程资料都在这里，适合想把信息差变成长期优势的人。</p>
+      <div class="free-sidepromo-meta">
+        量化源码 + 数据接口<br>
+        AI 工具 + 资源库<br>
+        持续更新的高端社群
+      </div>
+      <span class="free-sidepromo-cta">立即加入 →</span>
+    </a>
+    <a href="https://m.tb.cn/h.igcmZ1Y?tk=TXkZUzbHkiB" target="_blank" rel="noopener noreferrer" class="free-sidepromo-card tushare">
+      <span class="free-sidepromo-badge">🧾 Tushare Pro</span>
+      <h3>199 甩卖：原价 8500 元的 Tushare Pro API</h3>
+      <p><strong>重点是 199。</strong> 发货 3 个 token。优先点击闲鱼链接直接打开；如果闲鱼链接失效，再联系微信。</p>
+      <div class="free-sidepromo-meta">
+        199 直接拿走<br>
+        3 个 token 可轮换<br>
+        微信：dreamsjtuai
+      </div>
+      <span class="free-sidepromo-cta">优先点击闲鱼链接 →</span>
+    </a>
+  </aside>
+  <div class="container">
+    <header>
+      <h1>🦞 免费AI资源大全</h1>
+      <p class="subtitle">一站式免费AI资源导航 · Skills技能 · 促销优惠 · 一键部署</p>
+      <div class="tags" style="margin-bottom: 14px;">
+        <span class="tag">累计 {{ column_stats.total_views|default:0 }} 浏览</span>
+        <span class="tag">今日 {{ column_stats.today_views|default:0 }} 浏览</span>
+      </div>
+      <div class="tags">
+        <span class="tag">🆓 免费</span>
+        <span class="tag">🎁 促销</span>
+        <span class="tag">🚀 部署</span>
+        <span class="tag">📅 活动</span>
+      </div>
+      <div class="hero-stats">
+        <div><div class="stat-num">100+</div><div class="stat-label">Skills技能</div></div>
+        <div><div class="stat-num">50+</div><div class="stat-label">插件平台</div></div>
+        <div><div class="stat-num">30+</div><div class="stat-label">优惠活动</div></div>
+        <div><div class="stat-num">20+</div><div class="stat-label">AI模型</div></div>
+      </div>
+      <div class="lang-switch">
+        <button onclick="setLang('zh')" class="lang-btn active" id="btn-zh">中文</button>
+        <button onclick="setLang('en')" class="lang-btn" id="btn-en">English</button>
+      </div>
+      <div class="search-box" style="margin-top:16px">
+        <input type="text" id="search" placeholder="搜索免费资源、优惠、部署...">
+      </div>
+    </header>
+    <div class="cta-box">
+      <h3>🚀 一键部署OpenClaw</h3>
+      <p>一行命令快速搭建你的AI助手</p>
+      <code>curl -fsSL https://openclaw.sh/install.sh | bash</code>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="filter('all', this)">📋 全部</div>
+      <div class="tab" onclick="filter('promo', this)">🎁 促销优惠</div>
+      <div class="tab" onclick="filter('free', this)">🆓 免费Token</div>
+      <div class="tab" onclick="filter('cloud', this)">☁️ 厂商优惠</div>
+      <div class="tab" onclick="filter('skill', this)">🧩 Skills</div>
+      <div class="tab" onclick="filter('install', this)">🚀 部署</div>
+      <div class="tab" onclick="filter('event', this)">📅 活动</div>
+    </div>
+
+    {% if missing_free_tools %}
+    <div class="section">
+      <h2 class="section-title">💎 站内漏掉但很值的免费资源</h2>
+      <p style="color:var(--text-light); line-height:1.8; margin:-4px 0 16px;">这些资源原来已经在站内工具库里，但之前没有进入这个免费资源专栏。现在把真正高价值、可直接用的免费项补到前面。</p>
+      <div class="grid">
+        {% for tool in missing_free_tools %}
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:#11182712;">🆓</div>
+            <div class="card-title">
+              <a href="{% url 'tool_detail' tool.slug %}">{{ tool.name }}</a>
+            </div>
+          </div>
+          <p class="card-desc">{{ tool.short_description }}</p>
+          <div class="card-detail">
+            <strong>站内详情页：</strong>可直接点进去看完整说明、使用方式和入口链接。<br>
+            <strong>分类：</strong>{{ tool.category.name }}
+          </div>
+          <div class="card-tags">
+            <span class="tag-item tag-free">免费</span>
+            <span class="tag-item tag-install">站内已收录</span>
+          </div>
+          <a href="{% url 'tool_detail' tool.slug %}" class="card-link">查看站内详情 →</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if free_resource_groups %}
+    <div class="section">
+      <h2 class="section-title">🗂️ 站内免费资源索引</h2>
+      <p style="color:var(--text-light); line-height:1.8; margin:-4px 0 16px;">把站内已经收录的免费资源按用途重新分组。这样不会只看到几个零散推荐，而是能按你的目标快速进入更窄的资源池。</p>
+      {% for group in free_resource_groups %}
+      <div style="margin-bottom:20px; background:#fff; border:1px solid var(--border); border-radius:12px; padding:18px;">
+        <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap; margin-bottom:14px;">
+          <div>
+            <h3 style="font-size:18px; margin-bottom:6px;">{{ group.title }}</h3>
+            <p style="color:var(--text-light); line-height:1.75; margin:0;">{{ group.description }}</p>
+          </div>
+          <span class="tag" style="padding:6px 14px; font-size:13px;">{{ group.tools|length }} 个入口</span>
+        </div>
+        <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+          {% for tool in group.tools %}
+          <div class="card" style="padding:18px;">
+            <div class="card-header" style="margin-bottom:10px;">
+              <div class="card-icon" style="background:#11182712;">🔎</div>
+              <div class="card-title" style="font-size:16px;">
+                <a href="{% url 'tool_detail' tool.slug %}">{{ tool.name }}</a>
+              </div>
+            </div>
+            <p class="card-desc">{{ tool.short_description }}</p>
+            <div class="card-tags">
+              <span class="tag-item tag-free">免费</span>
+              <span class="tag-item tag-install">{{ tool.category.name }}</span>
+            </div>
+            <a href="{% url 'tool_detail' tool.slug %}" class="card-link">查看站内详情 →</a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="section">
+      <h2 class="section-title" id="section-title">📋 全部资源</h2>
+      <div class="grid" id="grid"></div>
+    </div>
+
+    <div class="cta-box">
+      <h3>🧩 安装Skills技能</h3>
+      <p>海量预制Skills一键添加</p>
+      <p><a href="https://clawhub.com" style="color:#fff;text-decoration:underline" target="_blank" rel="noopener noreferrer">访问ClawHub技能市场 →</a></p>
+    </div>
+
+    {% include "tools/_tardis_promo.html" %}
+
+    {% include "tools/_tencent_cloud_promo.html" %}
+
+    <footer>
+      <p><a href="https://openclaw.ai" target="_blank" rel="noopener noreferrer">OpenClaw官网</a> · <a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener noreferrer">GitHub</a> · <a href="https://discord.com/invite/clawd" target="_blank" rel="noopener noreferrer">Discord</a></p>
+      <p style="margin-top:8px">⚠️ 免责声明: 资源来自互联网，使用前请核实</p>
+    </footer>
+  </div>
+
+  <script>
+    let currentLang = 'zh';
+    let currentFilter = 'all';
+
+    const resources = [
+      {id:1,title:'AgentPit 首充优惠',icon:'🎁',color:'#FF385C',desc:'新用户首充8折，充100送20，Gemini/Claude等模型任选',url:'https://agentpit.io',tags:['promo','free'],category:'promo',detail:'🎁 <strong>首充8折</strong> · 充100送20<br>✅ Gemini/Claude/ GPT-4<br>⏰ 限时活动'},
+      {id:2,title:'AnyRouter 公益站',icon:'🛰️',color:'#2563eb',desc:'目前能用的老牌公益站，支持自动签到和 Win 本地签到',url:'https://anyrouter.top/register?aff=0FzF',tags:['promo','free'],category:'promo',detail:'🆓 <strong>老牌公益站</strong><br>✅ 支持自动签到<br>🔧 可配 GitHub 开源签到'},
+      {id:3,title:'AgentRouter 公益站',icon:'🧠',color:'#7c3aed',desc:'老牌复活，目前可冲；注意这不是 AnyRouter',url:'https://agentrouter.org/register?aff=rLco',tags:['promo','free'],category:'promo',detail:'🎁 <strong>老牌复活</strong><br>✅ 目前能用<br>⚠️ 和 AnyRouter 不是同一个站'},
+      {id:4,title:'SiliconFlow 邀请返利',icon:'💎',color:'#f59e0b',desc:'邀请送20元，Plus会员8折，100+AI模型',url:'https://siliconflow.cn',tags:['promo','free'],category:'promo',detail:'🎁 <strong>邀请送20元</strong> · Plus 8折<br>✅ 100+模型<br>📱 每日签到'},
+      {id:5,title:'OpenRouter 免费额',icon:'🌐',color:'#8b5cf6',desc:'新用户$5免费额度，200+模型',url:'https://openrouter.ai',tags:['promo','free'],category:'promo',detail:'🎁 <strong>$5免费额度</strong><br>✅ 200+模型<br>⚠️ 需翻墙'},
+      {id:6,title:'DeepSeek 超低价',icon:'🔵',color:'#06b6d4',desc:'API价格全网最低，V3/R1性能强劲',url:'https://platform.deepseek.com',tags:['promo'],category:'promo',detail:'💰 <strong>价格最低</strong><br>✅ V3/R1双模型<br>📱 响应快速'},
+      {id:7,title:'阿里云免费试用',icon:'🐳',color:'#0d9488',desc:'DashScope免费额度，Qwen系列免费用',url:'https://dashscope.console.aliyun.com',tags:['promo','free'],category:'promo',detail:'🎁 <strong>免费额度</strong><br>✅ Qwen免费<br>☁️ 阿里云生态'},
+      {id:8,title:'腾讯云免费试用',icon:'🟢',color:'#12b7f5',desc:'腾讯混元API免费试用，额度丰厚',url:'https://cloud.tencent.com',tags:['promo','free'],category:'promo',detail:'🎁 <strong>免费试用</strong><br>✅ 混元大模型<br>☁️ 腾讯云生态'},
+      {id:9,title:'百度云免费试用',icon:'🔴',color:'#2932e1',desc:'文心一言API免费试用，ERNIE4.0',url:'https://login.bce.baidu.com',tags:['promo','free'],category:'promo',detail:'🎁 <strong>新用户免费</strong><br>✅ ERNIE免费<br>☁️ 百度云生态'},
+      {id:10,title:'讯飞星火优惠',icon:'🦋',color:'#0066ff',desc:'新用户优惠活动，语音能力行业领先',url:'https://xinghuo.xfyun.cn',tags:['promo'],category:'promo',detail:'🎁 <strong>新用户优惠</strong><br>✅ 语音能力突出<br>📊 办公优化'},
+
+      {id:10,title:'Kimi 免费使用',icon:'🌙',color:'#ec4899',desc:'月之暗面Kimi网页端免费，200万字超长上下文',url:'https://kimi.moonshot.cn',tags:['free'],category:'free',detail:'🆓 <strong>完全免费</strong><br>✅ 200万字上下文<br>🇨🇳 无需翻墙'},
+      {id:11,title:'ChatGPT Free',icon:'💬',color:'#10a37f',desc:'OpenAI官方免费版GPT-4o mini无限用',url:'https://chat.openai.com',tags:['free'],category:'free',detail:'🆓 <strong>免费使用</strong><br>✅ GPT-4o mini<br>🌐 需翻墙'},
+      {id:12,title:'Claude Free',icon:'📘',color:'#d97706',desc:'Anthropic官方免费Claude 3.5',url:'https://claude.ai',tags:['free'],category:'free',detail:'🆓 <strong>免费使用</strong><br>✅ Claude 3.5<br>📖 长文本最强'},
+      {id:13,title:'Google Gemini',icon:'🤖',color:'#4285f4',desc:'Google官方免费，100万token上下文',url:'https://gemini.google.com',tags:['free'],category:'free',detail:'🆓 <strong>免费使用</strong><br>✅ 100万token<br>☁️ Google生态'},
+      {id:14,title:'Perplexity Free',icon:'🔍',color:'#8b5cf6',desc:'AI搜索引擎每日免费额度',url:'https://perplexity.ai',tags:['free','trial'],category:'free',detail:'🎁 <strong>每日免费</strong><br>✅ AI搜索<br>📚 引用准确'},
+      {id:15,title:'通义千问免费',icon:'🐳',color:'#0d9488',desc:'阿里云Qwen免费使用',url:'https://tongyi.aliyun.com',tags:['free'],category:'free',detail:'🆓 <strong>免费使用</strong><br>✅ Qwen系列<br>☁️ 阿里生态'},
+      {id:16,title:'文心一言免费',icon:'🔴',color:'#2932e1',desc:'百度ERNIE免费使用',url:'https://yiyan.baidu.com',tags:['free'],category:'free',detail:'🆓 <strong>免费使用</strong><br>✅ ERNIE 3.5<br>📱 稳定可靠'},
+      {id:17,title:'Qwen3-TTS Space',icon:'🗣️',color:'#14b8a6',desc:'Hugging Face 上可直接体验的 Qwen3-TTS，免费文本转语音，生成速度较快',url:'https://huggingface.co/spaces/Qwen/Qwen3-TTS',tags:['free'],category:'free',detail:'🆓 <strong>免费体验</strong><br>✅ 文本生成语音<br>⚡ GPU 可用时生成较快'},
+
+      {id:20,title:'GemAI 公益 API',icon:'🧪',color:'#0f766e',desc:'目前能用的公益 API 注册入口，适合调试和工作流接入',url:'https://api.gemai.cc/register?aff=gTcX',tags:['cloud','free'],category:'cloud',detail:'🆓 <strong>公益 API</strong><br>✅ 目前能用<br>🔌 适合开发调试'},
+      {id:21,title:'阿里云AI产品优惠',icon:'🐳',color:'#0d9488',desc:'阿里云AI产品新用户优惠，DashScope折扣',url:'https://www.aliyun.com',tags:['cloud','promo'],category:'cloud',detail:'🎁 <strong>新用户专享</strong><br>✅ AI产品折扣<br>☁️ 阿里云生态'},
+      {id:22,title:'腾讯云AI优惠',icon:'🟢',color:'#12b7f5',desc:'腾讯云AI产品限时折扣，混元API优惠',url:'https://cloud.tencent.com',tags:['cloud','promo'],category:'cloud',detail:'🎁 <strong>限时折扣</strong><br>✅ 混元API优惠<br>☁️ 腾讯云生态'},
+      {id:23,title:'百度云AI优惠',icon:'🔴',color:'#2932e1',desc:'百度智能云AI产品优惠，文心API折扣',url:'https://login.bce.baidu.com',tags:['cloud','promo'],category:'cloud',detail:'🎁 <strong>新用户优惠</strong><br>✅ 文心API折扣<br>☁️ 百度云生态'},
+      {id:24,title:'讯飞星火API优惠',icon:'🦋',color:'#0066ff',desc:'讯飞星火API新用户优惠，语音能力突出',url:'https://xinghuo.xfyun.cn',tags:['cloud','promo'],category:'cloud',detail:'🎁 <strong>API优惠</strong><br>✅ 语音能力第一<br>📊 办公场景'},
+      {id:25,title:'MiniMax API优惠',icon:'🧠',color:'#8b5cf6',desc:'MiniMax大模型API新用户免费额度',url:'https://api.minimax.chat',tags:['cloud','free'],category:'cloud',detail:'🎁 <strong>新用户免费</strong><br>✅ MiniMax模型<br>📱 响应快速'},
+      {id:26,title:'智谱AI优惠',icon:'🧡',color:'#f97316',desc:'智谱GLM API新用户免费额度',url:'https://open.bigmodel.cn',tags:['cloud','free'],category:'cloud',detail:'🎁 <strong>新用户免费</strong><br>✅ GLM-4免费<br>🧠 学术合作多'},
+      {id:27,title:'字节豆包优惠',icon:'📦',color:'#fe6b00',desc:'字节跳动豆包API新用户优惠',url:'https://www.doubao.com',tags:['cloud','promo'],category:'cloud',detail:'🎁 <strong>新用户优惠</strong><br>✅ 豆包API<br>📱 字节生态'},
+
+      {id:30,title:'ClawHub技能市场',icon:'🧩',color:'#8b5cf6',desc:'OpenClaw官方100+Skills一键安装',url:'https://clawhub.com',tags:['skill','free'],category:'skill',detail:'🧩 <strong>100+Skills</strong><br>✅ 一键安装<br>✅ 持续更新'},
+      {id:31,title:'飞书文档Skills',icon:'📄',color:'#2e76e4',desc:'飞书云文档读写技能',url:'https://clawhub.com/skill/feishu-doc',tags:['skill','free'],category:'skill',detail:'📄 <strong>文档操作</strong><br>✅ 创建/编辑/读取<br>✅ 权限管理'},
+      {id:32,title:'飞书云空间Skills',icon:'📁',color:'#2e76e4',desc:'飞书文件管理技能',url:'https://clawhub.com/skill/feishu-drive',tags:['skill','free'],category:'skill',detail:'📁 <strong>文件管理</strong><br>✅ 上传/下载<br>✅ 批量处理'},
+      {id:33,title:'天气查询Skills',icon:'🌤️',color:'#06b6d4',desc:'天气查询无需API Key',url:'https://clawhub.com/skill/weather',tags:['skill','free'],category:'skill',detail:'🌤️ <strong>天气查询</strong><br>✅ 无需API<br>✅ 全球城市'},
+      {id:34,title:'安全检查Skills',icon:'🩺',color:'#22c55e',desc:'主机安全审计技能',url:'https://clawhub.com/skill/healthcheck',tags:['skill','free'],category:'skill',detail:'🩺 <strong>安全审计</strong><br>✅ SSH加固<br>✅ 防火墙'},
+      {id:35,title:'QQ定时提醒Skills',icon:'⏰',color:'#12b7f5',desc:'QQ机器人定时提醒',url:'https://clawhub.com/skill/qqbot-cron',tags:['skill','free'],category:'skill',detail:'⏰ <strong>定时提醒</strong><br>✅ 一次性/循环<br>✅ 自动降级'},
+      {id:36,title:'飞书权限Skills',icon:'🔐',color:'#2e76e4',desc:'飞书权限管理技能',url:'https://clawhub.com/skill/feishu-perm',tags:['skill','free'],category:'skill',detail:'🔐 <strong>权限管理</strong><br>✅ 分享设置<br>✅ 协作管理'},
+      {id:37,title:'飞书Wiki Skills',icon:'📚',color:'#2e76e4',desc:'飞书知识库管理',url:'https://clawhub.com/skill/feishu-wiki',tags:['skill','free'],category:'skill',detail:'📚 <strong>知识库</strong><br>✅ 内容管理<br>✅ 智能检索'},
+
+      {id:40,title:'OpenClaw一键安装',icon:'🚀',color:'#FF385C',desc:'一行命令部署OpenClaw',url:'https://openclaw.ai',tags:['install','free'],category:'install',detail:'🚀 <code>curl -fsSL https://openclaw.sh/install.sh | bash</code><br>✅ 完全免费'},
+      {id:401,title:'TrustMRR OpenClaw 收入榜',icon:'🦞',color:'#f59e0b',desc:'公开统计 OpenClaw 项目收入，适合龙虾族和创业者找方向',url:'https://trustmrr.com/special-category/openclaw',tags:['promo','install'],category:'promo',detail:'📊 <strong>132 个项目</strong><br>💰 近30天收入 <strong>$290K+</strong><br>✅ Stripe API 实时验证'},
+      {id:41,title:'OpenClaw Docker',icon:'🐳',color:'#0ea5e9',desc:'Docker快速部署',url:'https://github.com/openclaw/openclaw',tags:['install'],category:'install',detail:'🐳 <strong>Docker部署</strong><br>✅ 一键启动<br>✅ 适合开发'},
+      {id:42,title:'OpenWebUI',icon:'🌐',color:'#10a37f',desc:'开源ChatGPT界面',url:'https://github.com/open-webui/open-webui',tags:['install'],category:'install',detail:'🌐 <strong>Web界面</strong><br>✅ Docker部署<br>✅ 支持OpenClaw'},
+      {id:43,title:'Ollama本地LLM',icon:'🐱',color:'#f97316',desc:'本地运行大模型',url:'https://ollama.com',tags:['install','free'],category:'install',detail:'🐱 <strong>本地LLM</strong><br>✅ 隐私安全<br>✅ 免费使用'},
+      {id:44,title:'Jan本地AI',icon:'⚡',color:'#22c55e',desc:'开源ChatGPT替代',url:'https://jan.ai',tags:['install','free'],category:'install',detail:'⚡ <strong>本地AI</strong><br>✅ 完全免费<br>✅ 多平台'},
+
+      {id:50,title:'OpenClaw黑客松',icon:'🏆',color:'#FF385C',desc:'OpenClaw昆仑巢黑客松，奖金丰厚',url:'https://hackathon.clawclaw.tech',tags:['event'],category:'event',detail:'🏆 <strong>黑客松活动</strong><br>✅ 奖金丰厚<br>⏰ 报名中'},
+      {id:51,title:'AI开发者大会',icon:'🎤',color:'#8b5cf6',desc:'各大AI厂商开发者大会免费报名',url:'https://www.baidu.com',tags:['event'],category:'event',detail:'🎤 <strong>开发者大会</strong><br>✅ 免费报名<br>📅 持续更新'},
+      {id:52,title:'OpenAI DevDay',icon:'💬',color:'#10a37f',desc:'OpenAI开发者日活动',url:'https://devday.openai.com',tags:['event'],category:'event',detail:'💬 <strong>OpenAI活动</strong><br>✅ 最新资讯<br>🌐 需翻墙'},
+      {id:53,title:'Claude开发者活动',icon:'📘',color:'#d97706',desc:'Anthropic Claude活动资讯',url:'https://www.anthropic.com',tags:['event'],category:'event',detail:'📘 <strong>Claude活动</strong><br>✅ 最新资讯<br>🌐 需翻墙'},
+      {id:54,title:'AI产品发布会',icon:'📱',color:'#6366f1',desc:'各大厂AI产品发布免费观看',url:'https://www.google.com',tags:['event'],category:'event',detail:'📱 <strong>产品发布</strong><br>✅ 免费观看<br>📺 线上直播'}
+    ];
+
+    const sectionNames = {
+      all:{zh:'📋 全部资源',en:'📋 All',icon:'📋'},
+      promo:{zh:'🎁 促销优惠',en:'🎁 Promo',icon:'🎁'},
+      free:{zh:'🆓 免费Token',en:'🆓 Free Token',icon:'🆓'},
+      cloud:{zh:'☁️ 厂商优惠',en:'☁️ Cloud Promo',icon:'☁️'},
+      skill:{zh:'🧩 Skills技能',en:'🧩 Skills',icon:'🧩'},
+      install:{zh:'🚀 一键部署',en:'🚀 Deploy',icon:'🚀'},
+      event:{zh:'📅 活动资讯',en:'📅 Events',icon:'📅'}
+    };
+
+    function renderCards() {
+      const grid = document.getElementById('grid');
+      const title = document.getElementById('section-title');
+      const search = document.getElementById('search').value.toLowerCase();
+      const names = sectionNames[currentFilter] || sectionNames.all;
+      title.innerHTML = '<span>'+names.icon+'</span> <span>'+(currentLang==='zh'?names.zh:names.en)+'</span>';
+
+      let filtered = resources.filter(r => {
+        if (currentFilter!=='all' && r.category!==currentFilter) return false;
+        if (search) return r.title.toLowerCase().includes(search)||r.desc.toLowerCase().includes(search);
+        return true;
+      });
+
+      if (currentFilter==='all') {
+        filtered.sort((a,b)=>{const o={promo:1,free:2,cloud:3,skill:4,install:5,event:6};return (o[a.category]||99)-(o[b.category]||99);});
+      }
+
+      grid.innerHTML = filtered.map(r=>{
+        const tagLabels={free:'免费',promo:'促销',cloud:'厂商',skill:'技能',install:'部署',event:'活动'};
+        const tags = r.tags.map(t=>'<span class="tag-item tag-'+t+'">'+(tagLabels[t]||t)+'</span>').join('');
+        const badge = r.category==='promo'?'<span class="promo-tag">HOT</span>':'';
+        return '<div class="card"><div class="card-header"><div class="card-icon" style="background:'+r.color+'20;">'+r.icon+'</div><div class="card-title">'+badge+'<a href="'+r.url+'" target="_blank" rel="noopener noreferrer">'+r.title+'</a></div></div><p class="card-desc">'+r.desc+'</p><div class="card-detail">'+r.detail+'</div><div class="card-tags">'+tags+'</div><a href="'+r.url+'" class="card-link" target="_blank" rel="noopener noreferrer">'+(currentLang==='zh'?'查看→':'View→')+'</a></div>';
+      }).join('');
+    }
+
+    function setLang(lang) {
+      currentLang=lang;
+      document.getElementById('btn-zh').className='lang-btn '+(lang==='zh'?'active':'');
+      document.getElementById('btn-en').className='lang-btn '+(lang==='en'?'active':'');
+      document.getElementById('search').placeholder=lang==='zh'?'搜索...':'Search...';
+      renderCards();
+    }
+
+    function filter(cat, el) {
+      currentFilter=cat;
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      if (el) el.classList.add('active');
+      renderCards();
+    }
+
+    document.getElementById('search').addEventListener('input',renderCards);
+    renderCards();
+  </script>
+</body>
+</html>

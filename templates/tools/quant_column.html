@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+
+{% block title %}量化资源专栏 | 全民效率神器{% endblock %}
+{% block meta_description %}量化资源专栏：聚焦加密量化、数据接口、历史行情、交易所数据与研究工作流。{% endblock %}
+
+{% block content %}
+<section style="margin-bottom: 28px;">
+  <div style="background: linear-gradient(135deg,#07111f 0%,#0f3b5f 100%); border-radius: 16px; padding: 30px; color: #f8fafc;">
+    <h1 style="font-size: 2rem; margin-bottom: 10px;">📈 量化资源专栏</h1>
+    <p style="color: #dbeafe; line-height: 1.8; margin: 0;">围绕量化研究真正稀缺的资源组织内容：数据、接口、历史行情、下载链路和可复用工作流。优先解决“数据从哪来，怎么持续拿，成本怎么压”。</p>
+    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:18px;">
+      <span class="badge" style="background: rgba(255,255,255,.12); color:#f8fafc;">累计 {{ column_stats.total_views|default:0 }} 浏览</span>
+      <span class="badge" style="background: rgba(59,130,246,.18); color:#dbeafe;">今日 {{ column_stats.today_views|default:0 }} 浏览</span>
+    </div>
+  </div>
+</section>
+
+{% include "tools/_column_nav.html" %}
+
+<section style="margin-bottom: 20px;">
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a href="{% url 'quant_article_tardis' %}" class="filter-btn" style="text-decoration:none; border:1px solid #f59e0b; color:#b45309; background:#fffbeb;">🔥 TARDIS 数据</a>
+    <a href="{% url 'quant_article_tushare' %}" class="filter-btn" style="text-decoration:none; border:1px solid #bfdbfe; color:#1d4ed8; background:#eff6ff;">🧾 Tushare 权限</a>
+    <a href="https://arxiv.org/abs/2301.04020" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none; border:1px solid #bfdbfe; color:#1d4ed8; background:#eff6ff;">📄 Quant 4.0</a>
+    <a href="https://mp.weixin.qq.com/s/3hRsiRCOAvfPdz57uBdo6Q" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none; border:1px solid #bbf7d0; color:#166534; background:#f0fdf4;">🧠 Quant 5.0</a>
+    <a href="{% url 'tool_list' %}?category=数据api" class="filter-btn" style="text-decoration:none;">🗃️ 数据 API</a>
+    <a href="{% url 'topic_list' %}" class="filter-btn" style="text-decoration:none;">🧭 资源专题</a>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <h2 class="section-title"><span class="icon">📚</span> 专栏内容</h2>
+    <span style="color: var(--gray-500);">3 个入口</span>
+  </div>
+  <div class="tool-grid">
+    <article class="tool-card" style="border-left: 4px solid #f59e0b;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">数据资源</span>
+          <span class="badge" style="background: rgba(245,158,11,.12); color:#b45309;">TARDIS</span>
+        </div>
+      </div>
+      <h3>TARDIS 数据低价获取指南</h3>
+      <p class="description">整理 TARDIS 数据需求逻辑、套餐、Deribit 与 Binance 历史数据报价，以及微信二维码和联系方式。</p>
+      <div class="card-footer">
+        <a href="{% url 'quant_article_tardis' %}" class="card-link">阅读文章 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #3b82f6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">A 股数据</span>
+          <span class="badge" style="background: rgba(59,130,246,.12); color:#1d4ed8;">Tushare Pro</span>
+        </div>
+      </div>
+      <h3>Tushare Pro 可下载权限说明</h3>
+      <p class="description">集中看可下载数据范围、分钟频率限制、主连说明和 3 个 token 轮换方案。优先点击闲鱼链接，失效后再联系微信，不替代 TARDIS 的主位。</p>
+      <div class="card-footer">
+        <a href="{% url 'quant_article_tushare' %}" class="card-link">查看权限 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #10b981;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">研究论文</span>
+          <span class="badge" style="background: rgba(16,185,129,.12); color:#047857;">Arxiv</span>
+        </div>
+      </div>
+      <h3>Quant 4.0</h3>
+      <p class="description">补到量化专栏的基础研究入口，直接跳转到 arXiv 论文页面，适合做方法论追溯和原文收藏。</p>
+      <div class="card-footer">
+        <a href="https://arxiv.org/abs/2301.04020" target="_blank" rel="noopener noreferrer" class="card-link">打开论文 <span>→</span></a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #10b981;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">研究文章</span>
+          <span class="badge" style="background: rgba(16,185,129,.12); color:#047857;">公众号</span>
+        </div>
+      </div>
+      <h3>Quant 5.0</h3>
+      <p class="description">补到量化专栏的进阶阅读入口，直接跳转到微信文章，方便和 Quant 4.0 放在一起连续阅读。</p>
+      <div class="card-footer">
+        <a href="https://mp.weixin.qq.com/s/3hRsiRCOAvfPdz57uBdo6Q" target="_blank" rel="noopener noreferrer" class="card-link">打开文章 <span>→</span></a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section style="margin-top: 32px;">
+  <div class="section-header">
+    <h2 class="section-title"><span class="icon">🕸️</span> 量化信息采集</h2>
+    <span style="color: var(--gray-500);">网页端一键爬虫</span>
+  </div>
+  <div class="tool-grid">
+    <article class="tool-card" style="border-left: 4px solid #8b5cf6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">信息采集</span>
+          <span class="badge" style="background: rgba(139,92,246,.12); color:#6d28d9;">X / 知乎 / 小红书</span>
+        </div>
+      </div>
+      <h3>X Search Aggregator：网页端一键爬虫</h3>
+      <p class="description">这个项目最近补了知乎和小红书爬虫能力，并且有浏览器端控制台。可以在网页里直接发起关键词搜索、关注流采集、知乎问题回答抓取、知乎搜索前 500 条补全文，以及小红书博主全部笔记抓取。</p>
+      <div style="background:#f5f3ff; border:1px solid #ddd6fe; border-radius:12px; padding:14px 16px; margin-top:12px; color:#4c1d95; line-height:1.85;">
+        <p style="margin:0 0 8px;"><strong>核心亮点：</strong>本地前端控制台、异步任务、实时进度、任务恢复、JSON/CSV/Markdown/HTML 多格式输出。</p>
+        <p style="margin:0 0 8px;"><strong>新增能力：</strong>知乎问题回答全文、知乎搜索前 500 条两阶段抓取、小红书博主公开笔记卡片 + 正文 / 图片 / 评论补全。</p>
+        <p style="margin:0;"><strong>本地启动：</strong><code style="background:#fff; padding:2px 8px; border-radius:6px;">python web_app.py</code> 后打开 <code style="background:#fff; padding:2px 8px; border-radius:6px;">http://127.0.0.1:8080</code></p>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+        <a href="https://github.com/hhchhchhchhc/x_search_aggregator?tab=readme-ov-file" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">查看 GitHub 项目</a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section style="margin-top: 32px;">
+  <div class="section-header">
+    <h2 class="section-title"><span class="icon">🗂️</span> 量化资料下载</h2>
+    <span style="color: var(--gray-500);">因子日历 + 白皮书下载</span>
+  </div>
+  <div class="tool-grid">
+    <article class="tool-card" style="border-left: 4px solid #10b981;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">PDF 资料</span>
+          <span class="badge" style="background: rgba(16,185,129,.12); color:#047857;">因子日历</span>
+        </div>
+      </div>
+      <h3>因子日历 2022 / 2023 / 2024</h3>
+      <p class="description">适合做量化研究梳理与因子复盘。提供三个年份的 GitHub PDF 直链，便于直接下载或收藏。</p>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+        <a href="https://github.com/it-ebooks-0/it-ebooks-2024-2025/blob/master/%E5%9B%A0%E5%AD%90%E6%97%A5%E5%8E%862024.pdf" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">打开 因子日历2024.pdf</a>
+        <a href="https://github.com/it-ebooks-0/it-ebooks-2023/blob/master/%E5%9B%A0%E5%AD%90%E6%97%A5%E5%8E%862023.pdf" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">打开 因子日历2023.pdf</a>
+        <a href="https://github.com/it-ebooks-0/it-ebooks-2022/blob/master/%E5%9B%A0%E5%AD%90%E6%97%A5%E5%8E%862022.pdf" target="_blank" rel="noopener noreferrer" class="filter-btn" style="text-decoration:none;">打开 因子日历2022.pdf</a>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #f59e0b;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">网盘汇总</span>
+          <span class="badge" style="background: rgba(245,158,11,.12); color:#b45309;">2024-2025</span>
+        </div>
+      </div>
+      <h3>因子日历 2024-2025 百度网盘</h3>
+      <p class="description">如果你更习惯网盘下载，可以直接使用这个百度网盘入口获取因子日历 2024-2025 资料。</p>
+      <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:12px; padding:14px 16px; margin-top:12px; color:#78350f; line-height:1.8;">
+        <p style="margin:0 0 8px;"><strong>链接：</strong><a href="https://pan.baidu.com/s/1BNtdJmGJ2fzirJagGWpKuA?pwd=n6f5" target="_blank" rel="noopener noreferrer" style="color:#92400e;">https://pan.baidu.com/s/1BNtdJmGJ2fzirJagGWpKuA?pwd=n6f5</a></p>
+        <p style="margin:0;"><strong>提取码：</strong><code style="background:#fff; padding:2px 8px; border-radius:6px;">n6f5</code></p>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #3b82f6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">白皮书资料</span>
+          <span class="badge" style="background: rgba(59,130,246,.12); color:#1d4ed8;">2021-2025</span>
+        </div>
+      </div>
+      <h3>2021-2025 量化白皮书下载地址</h3>
+      <p class="description">适合系统补量化研究框架、行业趋势和方法论。这个入口更偏长期资料库，而不是单篇报告，适合集中收藏。</p>
+      <div class="card-footer">
+        <a href="https://www.finelite.cn/xiazaifenleiyi/" target="_blank" rel="noopener noreferrer" class="card-link">打开下载页 <span>→</span></a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section style="margin-top: 32px;">
+  <div class="section-header">
+    <h2 class="section-title"><span class="icon">📦</span> 超全量化资料库大合集</h2>
+    <span style="color: var(--gray-500);">T0交易 + 金工研报 + FOF/CTA/多因子</span>
+  </div>
+
+  <div class="tool-grid">
+    <article class="tool-card" style="border-left: 4px solid #dc2626;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">A股T0交易</span>
+          <span class="badge" style="background: rgba(220,38,38,.12); color:#b91c1c;">日内交易</span>
+        </div>
+      </div>
+      <h3>T0书籍资料与研究报告</h3>
+      <div style="color:#374151; line-height:1.9; font-size:0.9rem;">
+        <p style="margin:0 0 8px;"><strong>T0书籍资料、研究报告</strong></p>
+        <p style="margin:0 0 8px;">链接：<a href="https://pan.baidu.com/s/1cjGcWGmXlPFS4rPsNvogpw?pwd=rjtt" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1cjGcWGm</a> 提取码：<code>rjtt</code></p>
+        <p style="margin:0 0 8px;"><strong>短周期交易策略</strong></p>
+        <p style="margin:0 0 8px;">链接：<a href="https://pan.baidu.com/s/11LLKwkeV_iQysCtyB09b5w?pwd=rt5q" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/11LLKwkeV</a> 提取码：<code>rt5q</code></p>
+        <p style="margin:0 0 8px;"><strong>日内交易策略</strong></p>
+        <p style="margin:0 0 8px;">链接：<a href="https://pan.baidu.com/s/1mN01bv1yd4REKZrvOCeeSQ?pwd=n4qe" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1mN01bv1y</a> 提取码：<code>n4qe</code></p>
+        <p style="margin:0 0 8px;"><strong>A股T+0日内交易资料合集（进阶+基础）</strong></p>
+        <p style="margin:0;">链接：<a href="https://pan.baidu.com/s/1WT9ptMg3EGJrI-wk1i120A?pwd=xy3a" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1WT9ptMg3</a> 提取码：<code>xy3a</code></p>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #f59e0b;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">金工研报</span>
+          <span class="badge" style="background: rgba(245,158,11,.12); color:#b45309;">券商合集</span>
+        </div>
+      </div>
+      <h3>顶级金工团队研报集锦</h3>
+      <div style="color:#374151; line-height:1.9; font-size:0.9rem;">
+        <p style="margin:0 0 6px;"><strong>安信证券·中高频交易策略再出发：机器学习T0</strong> 链接：<a href="https://pan.baidu.com/s/16gATUUBvxqHh-9m8lPiFeg?pwd=e7yw" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/16gATUUBv</a> 提取码：<code>e7yw</code></p>
+        <p style="margin:0 0 6px;"><strong>招商证券金融工程团队·核心研究成果合集</strong> 链接：<a href="https://pan.baidu.com/s/1lt4OpsrCjBGBnEYPuIANCw?pwd=f64h" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1lt4OpsrC</a> 提取码：<code>f64h</code></p>
+        <p style="margin:0 0 6px;"><strong>招商金工·因子报告合集</strong> 链接：<a href="https://pan.baidu.com/s/1Z2CqCGKpE-eCkAM_s_31FQ?pwd=59in" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1Z2CqCGKp</a> 提取码：<code>59in</code></p>
+        <p style="margin:0 0 6px;"><strong>方正金工·路演PPT合集</strong> 链接：<a href="https://pan.baidu.com/s/1FXLWY-imF6mS1zWw-R7sLA?pwd=vute" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1FXLWY-im</a> 提取码：<code>vute</code></p>
+        <p style="margin:0 0 6px;"><strong>"聆听高频世界的声音"系列路演PPT</strong> 链接：<a href="https://pan.baidu.com/s/1M60OYxoF3SPKEOqf7umUnQ?pwd=zlvi" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1M60OYxoF</a> 提取码：<code>zlvi</code></p>
+        <p style="margin:0 0 6px;"><strong>新财富投正中金工</strong> 链接：<a href="https://pan.baidu.com/s/1q4f3EKGtiWVq3odQoQCX5w?pwd=csx5" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1q4f3EKGt</a> 提取码：<code>csx5</code></p>
+        <p style="margin:0 0 6px;"><strong>方正金工研究成果</strong> 链接：<a href="https://pan.baidu.com/s/1f779woGwKNt2o9nHczWo4Q?pwd=wws4" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1f779woGw</a> 提取码：<code>wws4</code></p>
+        <p style="margin:0 0 6px;"><strong>FP金工报告</strong> 链接：<a href="https://pan.baidu.com/s/1UMhVEsYatWEJty_N_qd9Tw?pwd=eepl" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1UMhVEsYa</a> 提取码：<code>eepl</code></p>
+        <p style="margin:0 0 6px;"><strong>华泰金工·深度报告合集</strong> 链接：<a href="https://pan.baidu.com/s/1u5xqu0sh_uEkfxRpgjMQmA?pwd=xof2" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1u5xqu0sh</a> 提取码：<code>xof2</code></p>
+        <p style="margin:0 0 6px;"><strong>海通证券金工报告</strong> 链接：<a href="https://pan.baidu.com/s/1Hy3NIwwdcobO9mRdYxxCkA?pwd=kz7f" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1Hy3NIwwd</a> 提取码：<code>kz7f</code></p>
+        <p style="margin:0 0 6px;"><strong>中信建投金融工程报告</strong> 链接：<a href="https://pan.baidu.com/s/1VSMPwxQ9v6-QojTmvGXS6A?pwd=lww9" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1VSMPwxQ9</a> 提取码：<code>lww9</code></p>
+        <p style="margin:0 0 6px;"><strong>兴业证券定量研究专题报告汇总</strong> 链接：<a href="https://pan.baidu.com/s/1dtOMLyFmWwMLQvR6iLCKMg?pwd=ox7c" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1dtOMLyFm</a> 提取码：<code>ox7c</code></p>
+        <p style="margin:0 0 6px;"><strong>开源金工报告合集</strong> 链接：<a href="https://pan.baidu.com/s/1o3qp2QiPJG0Tmk4VLC3OCw?pwd=qiun" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1o3qp2QiP</a> 提取码：<code>qiun</code></p>
+        <p style="margin:0;"><strong>长江金工研究框架</strong> 链接：<a href="https://pan.baidu.com/s/1zElaE19VlKdE3N5j_PF_BA?pwd=d7lm" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1zElaE19V</a> 提取码：<code>d7lm</code></p>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #10b981;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">策略专题</span>
+          <span class="badge" style="background: rgba(16,185,129,.12); color:#047857;">FOF/CTA/多因子</span>
+        </div>
+      </div>
+      <h3>基金FOF / 景气度 / 多因子 / 事件驱动</h3>
+      <div style="color:#374151; line-height:1.9; font-size:0.9rem;">
+        <p style="margin:0 0 6px;"><strong>FOF相关报告</strong> 链接：<a href="https://pan.baidu.com/s/1b4NBge_NOZ-y2nl3QwMqdw?pwd=lm6i" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1b4NBge_N</a> 提取码：<code>lm6i</code></p>
+        <p style="margin:0 0 6px;"><strong>"海量"专题</strong> 链接：<a href="https://pan.baidu.com/s/1UcaHEjqc1G1aKWnfmulTzA?pwd=bgev" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1UcaHEjqc</a> 提取码：<code>bgev</code></p>
+        <p style="margin:0 0 6px;"><strong>选股报告合集</strong> 链接：<a href="https://pan.baidu.com/s/1Lx_ruxxp3pAdhSHpRm8f9w?pwd=96av" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1Lx_ruxxp</a> 提取码：<code>96av</code></p>
+        <p style="margin:0 0 6px;"><strong>基本面量化</strong> 链接：<a href="https://pan.baidu.com/s/13LvQN2XPE4Z9hldGjlaHjA?pwd=fbyv" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/13LvQN2XP</a> 提取码：<code>fbyv</code></p>
+        <p style="margin:0 0 6px;"><strong>景气度模型</strong> 链接：<a href="https://pan.baidu.com/s/1APsr95ywunpjKQAhdwlBhg?pwd=vurz" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1APsr95yw</a> 提取码：<code>vurz</code></p>
+        <p style="margin:0 0 6px;"><strong>申万指标测试</strong> 链接：<a href="https://pan.baidu.com/s/17spEPGWomBx5J3kdfJS3bg?pwd=1hys" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/17spEPGWo</a> 提取码：<code>1hys</code></p>
+        <p style="margin:0 0 6px;"><strong>AQR系列</strong> 链接：<a href="https://pan.baidu.com/s/1UBkub9WPke_bJCyAq4B8mA?pwd=kefq" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1UBkub9WP</a> 提取码：<code>kefq</code></p>
+        <p style="margin:0 0 6px;"><strong>成长股研报</strong> 链接：<a href="https://pan.baidu.com/s/1h1ycTxlloEbn8q2INYRldQ?pwd=zxe2" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1h1ycTxll</a> 提取码：<code>zxe2</code></p>
+        <p style="margin:0 0 6px;"><strong>策略灵感</strong> 链接：<a href="https://pan.baidu.com/s/1V2PeTKDVPTe34CKvV_B3aA?pwd=e8lv" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1V2PeTKDV</a> 提取码：<code>e8lv</code></p>
+        <p style="margin:0 0 6px;"><strong>海通金工·事件驱动系列报告</strong> 链接：<a href="https://pan.baidu.com/s/1ASa8Sv-V_GgqeE_5AJYUhw?pwd=ijk1" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1ASa8Sv-V</a> 提取码：<code>ijk1</code></p>
+        <p style="margin:0 0 6px;"><strong>广发CTA策略</strong> 链接：<a href="https://pan.baidu.com/s/1ZOrQPRoVktby4cIgR6CeaA?pwd=nwf1" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1ZOrQPRoV</a> 提取码：<code>nwf1</code></p>
+        <p style="margin:0 0 6px;"><strong>量化择时系列</strong> 链接：<a href="https://pan.baidu.com/s/14nm03-Dz-rkTkHiZbiqvwg?pwd=6u74" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/14nm03-Dz</a> 提取码：<code>6u74</code></p>
+        <p style="margin:0 0 6px;"><strong>多因子资料</strong> 链接：<a href="https://pan.baidu.com/s/1PsOVXQACFCYRfzA4zSOLMA?pwd=0a5e" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1PsOVXQAC</a> 提取码：<code>0a5e</code></p>
+        <p style="margin:0;"><strong>多因子论文</strong> 链接：<a href="https://pan.baidu.com/s/1pGmaYlsQCN7N8APM5qVtrA?pwd=olm0" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1pGmaYlsQ</a> 提取码：<code>olm0</code></p>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #8b5cf6;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">策略源码</span>
+          <span class="badge" style="background: rgba(139,92,246,.12); color:#6d28d9;">面试题</span>
+        </div>
+      </div>
+      <h3>量化交易策略源码与面试题</h3>
+      <div style="color:#374151; line-height:1.9; font-size:0.9rem;">
+        <p style="margin:0 0 8px;"><strong>量化交易策略</strong></p>
+        <p style="margin:0 0 8px;">链接：<a href="https://pan.baidu.com/s/14cfMwH2UTfFNya0z0evj8Q?pwd=9v7u" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/14cfMwH2</a> 提取码：<code>9v7u</code></p>
+        <p style="margin:0 0 8px;"><strong>215份量化投资策略源码模型</strong></p>
+        <p style="margin:0 0 8px;">链接：<a href="https://pan.baidu.com/s/174j2_EgN6xqvWeOoF3hgAw?pwd=tavj" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/174j2_EgN</a> 提取码：<code>tavj</code></p>
+        <p style="margin:0;"><strong>Quant Interview Books（面试题）</strong></p>
+        <p style="margin:0;">链接：<a href="https://pan.baidu.com/s/1KrvytnWShG1k3aWNpZc2nA?pwd=o0vc" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1KrvytnWShG1k3aWNpZc2nA</a> 提取码：<code>o0vc</code></p>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #2563eb;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">金融机器学习</span>
+          <span class="badge" style="background: rgba(37,99,235,.12); color:#1d4ed8;">算法/框架</span>
+        </div>
+      </div>
+      <h3>金融机器学习与算法资料</h3>
+      <div style="color:#374151; line-height:1.9; font-size:0.9rem;">
+        <p style="margin:0 0 6px;"><strong>tick数据使用相关材料</strong> 链接：<a href="https://pan.baidu.com/s/15UyeTF9EkvxrL8aKHS_8RA?pwd=0y29" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/15UyeTF9E</a> 提取码：<code>0y29</code></p>
+        <p style="margin:0 0 6px;"><strong>Machine Learning for Finance 论文合集</strong> 链接：<a href="https://pan.baidu.com/s/1BV7B5n55BAoigyQ9r1BIcg?pwd=8s77" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1BV7B5n55</a> 提取码：<code>8s77</code></p>
+        <p style="margin:0 0 6px;"><strong>backtrader框架学习</strong> 链接：<a href="https://pan.baidu.com/s/1DCYDcunPaNka4X1odm-rdg?pwd=59wo" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1DCYDcunP</a> 提取码：<code>59wo</code></p>
+        <p style="margin:0;"><strong>遗传算法资料</strong> 链接：<a href="https://pan.baidu.com/s/1KDGJ1JGj_SfpNqBX6ez6vg?pwd=fe1j" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1KDGJ1JGj</a> 提取码：<code>fe1j</code></p>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #0f766e;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">研究方法</span>
+          <span class="badge" style="background: rgba(15,118,110,.12); color:#0f766e;">数据分析</span>
+        </div>
+      </div>
+      <h3>研究方法与数据分析</h3>
+      <div style="color:#374151; line-height:1.9; font-size:0.9rem;">
+        <p style="margin:0 0 6px;"><strong>研究方法</strong> 链接：<a href="https://pan.baidu.com/s/1iLwi-Zi0NpMzefvmJmTVOA?pwd=i3qi" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1iLwi-Zi0</a> 提取码：<code>i3qi</code></p>
+        <p style="margin:0 0 6px;"><strong>情报学（CIA+FBI全套50本书籍）</strong> 链接：<a href="https://pan.baidu.com/s/1JMhSjfbhuaU_QOKsdkVREA?pwd=ool8" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1JMhSjfbh</a> 提取码：<code>ool8</code></p>
+        <p style="margin:0;"><strong>部门培训</strong> 链接：<a href="https://pan.baidu.com/s/1Y12jtbybWUZYERrsn1TLfQ?pwd=b6lu" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1Y12jtbyb</a> 提取码：<code>b6lu</code></p>
+      </div>
+    </article>
+
+    <article class="tool-card" style="border-left: 4px solid #f97316;">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-category">书籍合集</span>
+          <span class="badge" style="background: rgba(249,115,22,.12); color:#c2410c;">精选汇总</span>
+        </div>
+      </div>
+      <h3>更多精选合集</h3>
+      <div style="color:#374151; line-height:1.9; font-size:0.9rem;">
+        <p style="margin:0 0 6px;"><strong>量化+FOF+机器学习书籍大全</strong> 链接：<a href="https://pan.baidu.com/s/19PJrvu5BEpctBNGCBsypqw?pwd=x66o" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/19PJrvu5B</a> 提取码：<code>x66o</code></p>
+        <p style="margin:0 0 6px;"><strong>极客时间专栏合集</strong> 链接：<a href="https://pan.baidu.com/s/1jgfq8lrP1eQtAj5JR7A5iA?pwd=810s" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1jgfq8lrP</a> 提取码：<code>810s</code></p>
+        <p style="margin:0 0 6px;"><strong>对冲基金策略</strong> 链接：<a href="https://pan.baidu.com/s/1v2R-Q26Ij4EPHhtkGgL0hg?pwd=w5jo" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1v2R-Q26I</a> 提取码：<code>w5jo</code></p>
+        <p style="margin:0 0 6px;"><strong>对冲基金研究</strong> 链接：<a href="https://pan.baidu.com/s/16EQo7YKdAQIZRC9Cglsr8w?pwd=i39e" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/16EQo7YKd</a> 提取码：<code>i39e</code></p>
+        <p style="margin:0;"><strong>海通金工金牌研究小助手</strong> 链接：<a href="https://pan.baidu.com/s/1oQkIfYNyU7m6l79BmoglEg?pwd=u83x" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;">pan.baidu.com/s/1oQkIfYNy</a> 提取码：<code>u83x</code></p>
+      </div>
+    </article>
+  </div>
+</section>
+{% endblock %}
