@@ -16,10 +16,14 @@ from urllib.parse import urlsplit, urlencode
 import markdown
 import requests
 import akshare as ak
+import pandas as pd
+import boto3
 from decimal import Decimal, InvalidOperation
 from base64 import b64encode
 from io import BytesIO
 from pathlib import Path
+from botocore.client import Config as BotoConfig
+from botocore.exceptions import BotoCoreError, ClientError
 
 from django.contrib.auth.hashers import check_password
 from django.shortcuts import render, get_object_or_404, redirect
@@ -34,6 +38,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_POST
 from datetime import date, datetime, time, timedelta, timezone as dt_timezone
+from zoneinfo import ZoneInfo
 from .forms import (
     TTSOrderForm,
     TTSOrderLookupForm,
@@ -46,7 +51,7 @@ from .forms import (
     EdgeInferenceRequestForm,
     CodexBriefingForm,
 )
-from .models import Category, Tool, TopicPage, ColumnPage, ColumnDailyView, ToolDailyView, TTSOrder, TTSCreditAccount, TTSCreditRechargeOrder, TTSCreditLedger, ApiRelayService, UserApiRelayAccess, TushareNewsCache, TushareReplayLease, TardisRagEntry, TushareRagEntry, SocialRadarTask, CodexBriefingTask, EdgeInferenceOffer, EdgeInferenceRequest
+from .models import Category, Tool, TopicPage, ColumnPage, ColumnDailyView, ToolDailyView, TTSOrder, TTSCreditAccount, TTSCreditRechargeOrder, TTSCreditLedger, ApiRelayService, UserApiRelayAccess, TushareNewsCache, TushareReplayLease, MassiveReplayCache, MassiveReplayLease, TardisRagEntry, TushareRagEntry, SocialRadarTask, CodexBriefingTask, EdgeInferenceOffer, EdgeInferenceRequest
 from .tts_config import get_tts_runtime_rules, estimate_total_chunks
 from .tts import VOICE_PRESET_CONFIG, build_quote, build_turnaround, build_recharge_amount, DEFAULT_RECHARGE_PACKS
 from .tts_jobs import stop_tts_worker, trigger_tts_generation
@@ -72,6 +77,11 @@ MANUAL_PAYMENT_NOTICE = (
     '并提供咱们 TTS section 注册的邮箱，本人收到后会更改该邮箱的额度。有了额度就可以自动生成 TTS。'
 )
 TUSHARE_RELAY_BASE_URL = os.getenv('TUSHARE_RELAY_BASE_URL', 'http://127.0.0.1:8001').rstrip('/')
+MASSIVE_S3_ENDPOINT = os.getenv('MASSIVE_S3_ENDPOINT', 'https://files.massive.com').rstrip('/')
+MASSIVE_S3_BUCKET = (os.getenv('MASSIVE_S3_BUCKET', 'flatfiles') or 'flatfiles').strip()
+MASSIVE_S3_REGION = (os.getenv('MASSIVE_S3_REGION', 'us-east-1') or 'us-east-1').strip()
+MASSIVE_S3_ACCESS_KEY_ID = os.getenv('MASSIVE_S3_ACCESS_KEY_ID', '').strip()
+MASSIVE_S3_SECRET_ACCESS_KEY = os.getenv('MASSIVE_S3_SECRET_ACCESS_KEY', '').strip()
 TARDIS_SUPERADMIN_SESSION_KEY = 'tardis_superadmin_authed'
 TARDIS_SUPERADMIN_USERNAME = os.getenv('TARDIS_SUPERADMIN_USERNAME', 'zhanyuting')
 TARDIS_SUPERADMIN_PASSWORD = os.getenv('TARDIS_SUPERADMIN_PASSWORD', 'zhanyuting')
@@ -94,6 +104,12 @@ TUSHARE_IRM_QA_CACHE_TTL = timedelta(hours=12)
 TUSHARE_IRM_QA_CACHE_PURGE_TTL = timedelta(days=7)
 TUSHARE_EXPRESS_NEWS_CACHE_TTL = timedelta(minutes=15)
 TUSHARE_EXPRESS_NEWS_CACHE_PURGE_TTL = timedelta(days=2)
+TUSHARE_CJZC_CACHE_TTL = timedelta(hours=12)
+TUSHARE_CJZC_CACHE_PURGE_TTL = timedelta(days=14)
+TUSHARE_INDEX_LATEST_CACHE_TTL = timedelta(minutes=5)
+TUSHARE_INDEX_LATEST_CACHE_PURGE_TTL = timedelta(days=1)
+TUSHARE_INDEX_BASIC_CACHE_TTL = timedelta(days=1)
+TUSHARE_INDEX_BASIC_CACHE_PURGE_TTL = timedelta(days=7)
 TUSHARE_ANALYST_RANK_CACHE_TTL = timedelta(days=1)
 TUSHARE_ANALYST_RANK_CACHE_PURGE_TTL = timedelta(days=7)
 TUSHARE_ANALYST_DETAIL_CACHE_TTL = timedelta(hours=12)
@@ -112,6 +128,8 @@ TUSHARE_GENERIC_HISTORY_CACHE_TTL = timedelta(days=7)
 TUSHARE_GENERIC_HISTORY_CACHE_PURGE_TTL = timedelta(days=30)
 TUSHARE_DAILY_LATEST_CACHE_TTL = timedelta(minutes=30)
 TUSHARE_DAILY_LATEST_CACHE_PURGE_TTL = timedelta(days=7)
+TUSHARE_ERROR_CACHE_TTL = timedelta(seconds=15)
+TUSHARE_ERROR_CACHE_PURGE_TTL = timedelta(minutes=10)
 TUSHARE_REPLAY_CACHE_SWEEP_INTERVAL = timedelta(minutes=10)
 TUSHARE_REPLAY_CACHE_FALLBACK_PURGE_TTL = timedelta(days=30)
 TUSHARE_REPLAY_LEASE_TTL = timedelta(seconds=45)
@@ -119,6 +137,47 @@ TUSHARE_REPLAY_FOLLOWER_WAIT_TIMEOUT = timedelta(seconds=50)
 TUSHARE_REPLAY_FOLLOWER_POLL_INTERVAL_SECONDS = 0.2
 TUSHARE_REPLAY_LOCK_DIR = Path(tempfile.gettempdir()) / 'tushare_replay_cache_locks'
 TUSHARE_REPLAY_SWEEP_MARKER = TUSHARE_REPLAY_LOCK_DIR / '.global_cleanup_at'
+MASSIVE_REPLAY_CACHE_ROOT = settings.BASE_DIR / 'relay_cache' / 'massive'
+MASSIVE_REPLAY_LOCK_DIR = Path(tempfile.gettempdir()) / 'massive_replay_locks'
+MASSIVE_REPLAY_SWEEP_MARKER = MASSIVE_REPLAY_LOCK_DIR / '.global_cleanup_at'
+MASSIVE_REPLAY_CACHE_SWEEP_INTERVAL = timedelta(minutes=10)
+MASSIVE_REPLAY_LEASE_TTL = timedelta(minutes=2)
+MASSIVE_REPLAY_FOLLOWER_WAIT_TIMEOUT = timedelta(minutes=2, seconds=10)
+MASSIVE_REPLAY_FOLLOWER_POLL_INTERVAL_SECONDS = 0.25
+MASSIVE_REPLAY_BUCKET_LIMITS = {
+    'health': 16,
+    'list': 512,
+    'head_recent': 1024,
+    'head_history': 4096,
+    'object_recent': 256,
+    'object_history': 2048,
+    'object_generic': 512,
+    'missing_object': 2048,
+    'error': 512,
+}
+MASSIVE_DATE_KEY_RE = re.compile(r'/(?P<year>\d{4})/(?P<month>\d{2})/(?P<date>\d{4}-\d{2}-\d{2})\.[^/]+$')
+TUSHARE_CACHE_BUCKET_LIMITS = {
+    'status': 32,
+    'catalog': 32,
+    'news': 512,
+    'major_news': 512,
+    'express_news': 256,
+    'cjzc': 256,
+    'index_latest': 512,
+    'index_basic': 1024,
+    'irm_qa': 1024,
+    'analyst_rank': 256,
+    'analyst_detail': 512,
+    'analyst_history': 512,
+    'research_report': 512,
+    'fund_announcement': 512,
+    'daily_latest': 2048,
+    'minute_latest': 4096,
+    'history': 4096,
+    'current': 2048,
+    'default': 512,
+    'error': 512,
+}
 TEMP_TUSHARE_API_KEY = '20260323'
 TEMP_TUSHARE_API_KEY_DATE = date(2026, 3, 23)
 TEMP_TUSHARE_API_KEY_CUTOFF = time(18, 0)
@@ -296,6 +355,23 @@ def _get_api_relay_service(service_slug: str):
             description='Tushare 数据中继服务。网页登录拿权限的方式已取消，改为由超级管理员发放 API Key。',
             example_paths='/health\n/daily/news\n/daily/000002.SZ/latest',
             note='默认的 Tushare 数据转接服务',
+        )
+    if service_slug == 'massive' and service is None:
+        service = ApiRelayService.objects.create(
+            slug='massive',
+            name='Massive Flat Files Replay',
+            base_url=MASSIVE_S3_ENDPOINT,
+            is_active=True,
+            require_api_key=True,
+            require_login=False,
+            require_manual_approval=True,
+            allowed_methods='GET',
+            timeout_seconds=180,
+            public_path='/massive/',
+            apply_url='/api-relay/',
+            description='Massive flat files 的服务端签名 replay。下游只拿本站 API Key，不暴露 Massive 上游 Access Key / Secret。',
+            example_paths='/health\n/list?prefix=us_stocks_sip/minute_aggs_v1/2023/01/\n/file/us_stocks_sip/minute_aggs_v1/2023/01/2023-01-03.csv.gz',
+            note='Massive S3 compatible flat files replay service',
         )
     return service
 
@@ -502,40 +578,100 @@ def _has_tushare_historical_query_params(params) -> bool:
     )
 
 
-def _get_tushare_cache_policy(relay_path: str, params=None) -> tuple[timedelta, timedelta]:
+def _get_tushare_cache_bucket(relay_path: str, params=None) -> str:
     normalized_path = (relay_path or '').strip('/')
     if normalized_path in {'health', 'status', 'symbols'}:
-        return TUSHARE_STATUS_CACHE_TTL, TUSHARE_STATUS_CACHE_PURGE_TTL
+        return 'status'
     if normalized_path == 'pro/catalog':
-        return TUSHARE_CATALOG_CACHE_TTL, TUSHARE_CATALOG_CACHE_PURGE_TTL
+        return 'catalog'
+    if normalized_path.startswith('index/') and normalized_path.endswith('/latest'):
+        return 'index_latest'
     if normalized_path == 'pro/news':
-        return TUSHARE_NEWS_CACHE_TTL, TUSHARE_NEWS_CACHE_PURGE_TTL
+        return 'news'
+    if normalized_path == 'pro/express_news' and _has_tushare_historical_query_params(params or {}):
+        return 'history'
     if normalized_path == 'pro/express_news':
-        return TUSHARE_EXPRESS_NEWS_CACHE_TTL, TUSHARE_EXPRESS_NEWS_CACHE_PURGE_TTL
+        return 'express_news'
+    if normalized_path == 'pro/index_basic':
+        return 'index_basic'
+    if normalized_path == 'pro/cjzc' and _has_tushare_historical_query_params(params or {}):
+        return 'history'
+    if normalized_path == 'pro/cjzc':
+        return 'cjzc'
     if normalized_path == 'pro/analyst_rank':
-        return TUSHARE_ANALYST_RANK_CACHE_TTL, TUSHARE_ANALYST_RANK_CACHE_PURGE_TTL
+        return 'analyst_rank'
     if normalized_path == 'pro/analyst_detail':
-        return TUSHARE_ANALYST_DETAIL_CACHE_TTL, TUSHARE_ANALYST_DETAIL_CACHE_PURGE_TTL
+        return 'analyst_detail'
     if normalized_path == 'pro/analyst_history':
-        return TUSHARE_ANALYST_HISTORY_CACHE_TTL, TUSHARE_ANALYST_HISTORY_CACHE_PURGE_TTL
-    if normalized_path == 'pro/research_report':
-        return TUSHARE_RESEARCH_REPORT_CACHE_TTL, TUSHARE_RESEARCH_REPORT_CACHE_PURGE_TTL
+        return 'analyst_history'
+    if normalized_path in {'pro/research_report', 'pro/stock_research_report_em'}:
+        return 'research_report'
+    if normalized_path == 'pro/fund_announcement_report_em':
+        return 'fund_announcement'
     if normalized_path == 'pro/major_news':
-        return TUSHARE_MAJOR_NEWS_CACHE_TTL, TUSHARE_MAJOR_NEWS_CACHE_PURGE_TTL
+        return 'major_news'
     if normalized_path in {'pro/irm_qa_sh', 'pro/irm_qa_sz'}:
-        return TUSHARE_IRM_QA_CACHE_TTL, TUSHARE_IRM_QA_CACHE_PURGE_TTL
+        return 'irm_qa'
     if normalized_path.startswith('daily/') and normalized_path.endswith('/latest'):
-        return TUSHARE_DAILY_LATEST_CACHE_TTL, TUSHARE_DAILY_LATEST_CACHE_PURGE_TTL
+        return 'daily_latest'
+    if normalized_path.startswith('minute/') and normalized_path.endswith('/latest'):
+        return 'minute_latest'
     if _has_tushare_historical_query_params(params or {}):
-        return TUSHARE_GENERIC_HISTORY_CACHE_TTL, TUSHARE_GENERIC_HISTORY_CACHE_PURGE_TTL
+        return 'history'
     if normalized_path.startswith('pro/') or normalized_path.startswith('daily/'):
+        return 'current'
+    return 'default'
+
+
+def _get_tushare_cache_policy(relay_path: str, params=None, status_code: int = 200) -> tuple[timedelta, timedelta]:
+    if status_code == 429 or status_code >= 500:
+        return TUSHARE_ERROR_CACHE_TTL, TUSHARE_ERROR_CACHE_PURGE_TTL
+    bucket = _get_tushare_cache_bucket(relay_path, params)
+    if bucket == 'status':
+        return TUSHARE_STATUS_CACHE_TTL, TUSHARE_STATUS_CACHE_PURGE_TTL
+    if bucket == 'catalog':
+        return TUSHARE_CATALOG_CACHE_TTL, TUSHARE_CATALOG_CACHE_PURGE_TTL
+    if bucket == 'news':
+        return TUSHARE_NEWS_CACHE_TTL, TUSHARE_NEWS_CACHE_PURGE_TTL
+    if bucket == 'express_news':
+        return TUSHARE_EXPRESS_NEWS_CACHE_TTL, TUSHARE_EXPRESS_NEWS_CACHE_PURGE_TTL
+    if bucket == 'index_latest':
+        return TUSHARE_INDEX_LATEST_CACHE_TTL, TUSHARE_INDEX_LATEST_CACHE_PURGE_TTL
+    if bucket == 'index_basic':
+        return TUSHARE_INDEX_BASIC_CACHE_TTL, TUSHARE_INDEX_BASIC_CACHE_PURGE_TTL
+    if bucket == 'cjzc':
+        return TUSHARE_CJZC_CACHE_TTL, TUSHARE_CJZC_CACHE_PURGE_TTL
+    if bucket == 'analyst_rank':
+        return TUSHARE_ANALYST_RANK_CACHE_TTL, TUSHARE_ANALYST_RANK_CACHE_PURGE_TTL
+    if bucket == 'analyst_detail':
+        return TUSHARE_ANALYST_DETAIL_CACHE_TTL, TUSHARE_ANALYST_DETAIL_CACHE_PURGE_TTL
+    if bucket == 'analyst_history':
+        return TUSHARE_ANALYST_HISTORY_CACHE_TTL, TUSHARE_ANALYST_HISTORY_CACHE_PURGE_TTL
+    if bucket == 'research_report':
+        return TUSHARE_RESEARCH_REPORT_CACHE_TTL, TUSHARE_RESEARCH_REPORT_CACHE_PURGE_TTL
+    if bucket == 'fund_announcement':
+        return TUSHARE_GENERIC_CURRENT_CACHE_TTL, TUSHARE_GENERIC_HISTORY_CACHE_PURGE_TTL
+    if bucket == 'major_news':
+        return TUSHARE_MAJOR_NEWS_CACHE_TTL, TUSHARE_MAJOR_NEWS_CACHE_PURGE_TTL
+    if bucket == 'irm_qa':
+        return TUSHARE_IRM_QA_CACHE_TTL, TUSHARE_IRM_QA_CACHE_PURGE_TTL
+    if bucket == 'daily_latest':
+        return TUSHARE_DAILY_LATEST_CACHE_TTL, TUSHARE_DAILY_LATEST_CACHE_PURGE_TTL
+    if bucket == 'history':
+        return TUSHARE_GENERIC_HISTORY_CACHE_TTL, TUSHARE_GENERIC_HISTORY_CACHE_PURGE_TTL
+    if bucket == 'current':
         return TUSHARE_GENERIC_CURRENT_CACHE_TTL, TUSHARE_GENERIC_CURRENT_CACHE_PURGE_TTL
+    if bucket == 'minute_latest':
+        return timedelta(minutes=2), timedelta(days=2)
     return TUSHARE_NEWS_CACHE_TTL, TUSHARE_NEWS_CACHE_PURGE_TTL
 
 
-def _get_tushare_replay_cache_windows(relay_path: str, params=None, response_payload: dict | None = None):
+def _get_tushare_replay_cache_windows(relay_path: str, params=None, response_payload: dict | None = None, status_code: int = 200):
     now = timezone.now()
     normalized_path = (relay_path or '').strip('/')
+    if status_code == 429 or status_code >= 500:
+        active_ttl, purge_ttl = _get_tushare_cache_policy(relay_path, params, status_code=status_code)
+        return now + active_ttl, now + purge_ttl
     if normalized_path.startswith('minute/') and normalized_path.endswith('/latest') and response_payload:
         data = response_payload.get('data') or {}
         period_end_text = str(data.get('period_end') or '').strip()
@@ -567,7 +703,25 @@ def _delete_expired_tushare_replay_cache(now=None, relay_path: str = '') -> int:
         Q(purge_after__lt=now) |
         Q(purge_after__isnull=True, updated_at__lt=now - purge_fallback_ttl)
     ).delete()
+    if not normalized_path:
+        deleted += _trim_tushare_replay_cache_buckets()
     return deleted
+
+
+def _trim_tushare_replay_cache_buckets() -> int:
+    deleted_total = 0
+    for bucket, limit in TUSHARE_CACHE_BUCKET_LIMITS.items():
+        stale_ids = list(
+            TushareNewsCache.objects
+            .filter(cache_bucket=bucket)
+            .order_by('-updated_at', '-id')
+            .values_list('id', flat=True)[limit:]
+        )
+        if not stale_ids:
+            continue
+        deleted, _ = TushareNewsCache.objects.filter(id__in=stale_ids).delete()
+        deleted_total += deleted
+    return deleted_total
 
 
 def _delete_expired_tushare_replay_leases(now=None) -> int:
@@ -710,8 +864,13 @@ def _build_cached_tushare_news_response(entry: TushareNewsCache, upstream_base: 
     response['X-Api-Relay-Service'] = 'tushare'
     response['X-Api-Relay-Upstream'] = upstream_base
     response['X-Api-Relay-Cache'] = 'HIT'
+    response['X-Tushare-Cache-Bucket'] = entry.cache_bucket
     response['X-Tushare-News-Cache-Updated-At'] = timezone.localtime(entry.updated_at).strftime('%Y-%m-%d %H:%M:%S')
     return response
+
+
+def _is_cacheable_tushare_status(status_code: int) -> bool:
+    return status_code == 200 or status_code == 429 or status_code >= 500
 
 
 def _store_tushare_replay_cache(
@@ -725,10 +884,17 @@ def _store_tushare_replay_cache(
     params=None,
     response_payload: dict | None = None,
 ):
-    fresh_until, purge_after = _get_tushare_replay_cache_windows(relay_path, params=params, response_payload=response_payload)
+    cache_bucket = 'error' if status_code == 429 or status_code >= 500 else _get_tushare_cache_bucket(relay_path, params)
+    fresh_until, purge_after = _get_tushare_replay_cache_windows(
+        relay_path,
+        params=params,
+        response_payload=response_payload,
+        status_code=status_code,
+    )
     TushareNewsCache.objects.update_or_create(
         cache_key=cache_key,
         defaults={
+            'cache_bucket': cache_bucket,
             'relay_path': (relay_path or '').strip('/'),
             'query_string': query_string,
             'response_body': response_body,
@@ -743,22 +909,40 @@ def _store_tushare_replay_cache(
 def _is_tushare_local_proxy(relay_path: str) -> bool:
     return (relay_path or '').strip('/') in {
         'pro/express_news',
+        'pro/cjzc',
+        'pro/news_cctv',
+        'pro/news_economic_baidu',
+        'pro/news_report_time_baidu',
+        'pro/news_trade_notify_dividend_baidu',
+        'pro/news_trade_notify_suspend_baidu',
+        'pro/stock_notice_report',
+        'pro/stock_zh_a_disclosure_report_cninfo',
+        'pro/fund_announcement_report_em',
+        'pro/index_basic',
+        'pro/index_daily',
+        'pro/index_weekly',
+        'pro/index_monthly',
         'pro/analyst_rank',
         'pro/analyst_detail',
         'pro/analyst_history',
         'pro/research_report',
+        'pro/stock_research_report_em',
     }
 
 
 def _is_tushare_local_news_proxy(relay_path: str) -> bool:
-    return (relay_path or '').strip('/') == 'pro/express_news'
+    return (relay_path or '').strip('/') in {'pro/express_news', 'pro/cjzc'}
 
 
-def _is_tushare_express_news_realtime_only(relay_path: str, params: dict) -> bool:
-    """express_news 统一走本地分支；历史查询当前直接返回明确错误说明。"""
+def _is_tushare_local_news_handled_internally(relay_path: str, params: dict) -> bool:
+    """站内自建新闻接口统一走本地分支；实时与历史都由站内实现。"""
     if not _is_tushare_local_news_proxy(relay_path):
         return False
     return True
+
+
+class TushareLocalProxyPassThrough(Exception):
+    """当前站内本地代理无法稳定覆盖时，回落到原生 Tushare 上游。"""
 
 
 def _normalize_tushare_express_news_scope(scope: str) -> str:
@@ -783,6 +967,195 @@ def _parse_tushare_fields(fields: str, default_fields: list[str]) -> list[str]:
 
 def _serialize_tushare_express_news_item(item: dict, fields: list[str]) -> dict:
     return {field: item.get(field, '') for field in fields}
+
+
+def _normalize_tushare_text(value) -> str:
+    normalized = _normalize_tushare_scalar(value)
+    return '' if normalized == '' else str(normalized).strip()
+
+
+def _parse_tushare_datetime_text(value) -> tuple[str, datetime | None]:
+    text = _normalize_tushare_text(value)
+    if not text:
+        return '', None
+    normalized = text.replace('T', ' ').replace('/', '-')
+    for fmt in ('%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d'):
+        try:
+            parsed = datetime.strptime(normalized, fmt).replace(tzinfo=ZoneInfo('Asia/Shanghai'))
+        except ValueError:
+            continue
+        if fmt == '%Y-%m-%d':
+            return parsed.strftime('%Y-%m-%d'), parsed
+        return parsed.strftime('%Y-%m-%d %H:%M:%S'), parsed
+    return normalized, None
+
+
+def _parse_tushare_datetime_bound(raw_value, *, is_end: bool) -> datetime | None:
+    text = str(raw_value or '').strip()
+    if not text:
+        return None
+    parsed = None
+    for fmt in ('%Y-%m-%d %H:%M:%S', '%Y-%m-%d', '%Y%m%d'):
+        try:
+            parsed = datetime.strptime(text, fmt)
+            break
+        except ValueError:
+            continue
+    if parsed is None:
+        raise ValueError('start_date / end_date 只支持 YYYY-MM-DD、YYYY-MM-DD HH:MM:SS 或 YYYYMMDD')
+    if len(text) <= 10 or (len(text) == 8 and text.isdigit()):
+        parsed = parsed.replace(hour=23, minute=59, second=59) if is_end else parsed.replace(hour=0, minute=0, second=0)
+    return parsed.replace(tzinfo=ZoneInfo('Asia/Shanghai'))
+
+
+def _normalize_tushare_compact_date(raw_value, *, default_today: bool = False, field_name: str = 'date') -> str:
+    text = str(raw_value or '').strip()
+    if not text:
+        if default_today:
+            return timezone.localdate().strftime('%Y%m%d')
+        raise ValueError(f'缺少 {field_name} 参数')
+    normalized = text.replace('-', '').replace('/', '')
+    if not re.fullmatch(r'\d{8}', normalized):
+        raise ValueError(f'{field_name} 需要 YYYYMMDD 或 YYYY-MM-DD 格式')
+    return normalized
+
+
+def _normalize_tushare_stock_digits(value, *, field_name: str = 'symbol') -> str:
+    digits = re.sub(r'[^0-9]', '', str(value or '').strip())
+    if len(digits) != 6:
+        raise ValueError(f'{field_name} 或 ts_code 需要 6 位代码')
+    return digits
+
+
+def _parse_tushare_limit(params: dict, default: int, maximum: int) -> int:
+    raw = str(params.get('limit') or '').strip()
+    if not raw:
+        return default
+    try:
+        limit = int(raw)
+    except (TypeError, ValueError):
+        raise ValueError('limit 必须是整数')
+    return max(1, min(limit, maximum))
+
+
+def _build_tushare_express_news_item_from_cls(row: dict) -> dict:
+    dt_value = datetime.fromtimestamp(int(row.get('ctime') or 0), tz=dt_timezone.utc).astimezone(ZoneInfo('Asia/Shanghai'))
+    return {
+        'title': str(row.get('title') or '').strip(),
+        'content': str(row.get('content') or '').strip(),
+        'datetime': dt_value.strftime('%Y-%m-%d %H:%M:%S'),
+        'src': 'cls',
+        '_dt': dt_value,
+        '_id': str(row.get('id') or ''),
+        '_level': str(row.get('level') or ''),
+    }
+
+
+def _fetch_tushare_express_news_history(params: dict, requested_fields: list[str], normalized_scope: str) -> dict:
+    start_dt = _parse_tushare_datetime_bound(params.get('start_date'), is_end=False)
+    end_dt = _parse_tushare_datetime_bound(params.get('end_date'), is_end=True)
+    if start_dt is None and end_dt is None:
+        raise ValueError('历史 express_news 至少需要传 start_date 或 end_date')
+    if start_dt is None and end_dt is not None:
+        start_dt = end_dt.replace(hour=0, minute=0, second=0)
+    if end_dt is None and start_dt is not None:
+        end_dt = start_dt.replace(hour=23, minute=59, second=59)
+    if start_dt is None or end_dt is None:
+        raise ValueError('start_date / end_date 解析失败')
+    if end_dt < start_dt:
+        raise ValueError('end_date 不能早于 start_date')
+
+    try:
+        limit = int(params.get('limit')) if str(params.get('limit') or '').strip() else None
+    except (TypeError, ValueError):
+        raise ValueError('limit 必须是整数')
+    if limit is not None:
+        limit = max(1, min(limit, 1000))
+
+    headers = {
+        'User-Agent': (
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36'
+        ),
+        'Referer': 'https://www.cls.cn/telegraph',
+        'Accept': 'application/json, text/plain, */*',
+    }
+    level_whitelist = {'A', 'B'} if normalized_scope == '重点' else None
+    cursor = None
+    seen_ids = set()
+    records = []
+    max_pages = 200
+    endpoint = 'https://www.cls.cn/nodeapi/telegraphList'
+    sh_tz = ZoneInfo('Asia/Shanghai')
+
+    for _ in range(max_pages):
+        query = {
+            'app': 'CailianpressWeb',
+            'os': 'web',
+            'refresh_type': '1',
+            'rn': '40',
+            'sv': '8.4.6',
+        }
+        if cursor is not None:
+            query['last_time'] = str(cursor)
+            query['lastTime'] = str(cursor)
+        response = TUSHARE_DIRECT_HTTP_SESSION.get(
+            endpoint,
+            params=query,
+            headers=headers,
+            timeout=(5, 20),
+        )
+        response.raise_for_status()
+        page_rows = response.json().get('data', {}).get('roll_data', [])
+        if not page_rows:
+            break
+
+        oldest_dt = None
+        advanced = False
+        for row in page_rows:
+            item = _build_tushare_express_news_item_from_cls(row)
+            item_dt = item['_dt'].astimezone(sh_tz)
+            oldest_dt = item_dt if oldest_dt is None or item_dt < oldest_dt else oldest_dt
+            item_id = item['_id']
+            dedupe_key = item_id or f"{item['datetime']}|{item['title']}"
+            if dedupe_key in seen_ids:
+                continue
+            seen_ids.add(dedupe_key)
+            if level_whitelist is not None and item['_level'] not in level_whitelist:
+                continue
+            if item_dt < start_dt.astimezone(sh_tz) or item_dt > end_dt.astimezone(sh_tz):
+                continue
+            records.append(_serialize_tushare_express_news_item(item, requested_fields))
+            if limit is not None and len(records) >= limit:
+                break
+
+        if limit is not None and len(records) >= limit:
+            break
+        next_cursor = min(int(row.get('ctime') or 0) for row in page_rows)
+        advanced = cursor != next_cursor
+        cursor = next_cursor
+        if oldest_dt is not None and oldest_dt < start_dt.astimezone(sh_tz):
+            break
+        if not advanced:
+            break
+
+    records.sort(key=lambda item: str(item.get('datetime') or ''))
+    if not records:
+        raise TushareLocalProxyPassThrough('historical_express_news_not_available_locally')
+    return {
+        'api_name': 'express_news',
+        'code': 0,
+        'msg': 'ok',
+        'params': {
+            'scope': 'important' if normalized_scope == '重点' else 'all',
+            'start_date': start_dt.astimezone(sh_tz).strftime('%Y-%m-%d %H:%M:%S'),
+            'end_date': end_dt.astimezone(sh_tz).strftime('%Y-%m-%d %H:%M:%S'),
+            'fields': ','.join(requested_fields),
+            **({'limit': limit} if limit is not None else {}),
+        },
+        'count': len(records),
+        'data': records,
+    }
 
 
 def _normalize_tushare_scalar(value):
@@ -817,16 +1190,19 @@ def _serialize_tushare_df_records(df, fields: list[str] | None = None) -> list[d
 
 
 def _fetch_tushare_express_news(params: dict) -> dict:
+    normalized_scope = _normalize_tushare_express_news_scope(params.get('scope') or '')
+    requested_fields = _parse_tushare_fields(
+        params.get('fields') or '',
+        ['title', 'content', 'datetime', 'src'],
+    )
+    if params.get('start_date') or params.get('end_date'):
+        return _fetch_tushare_express_news_history(params, requested_fields, normalized_scope)
     try:
         limit = int(params.get('limit') or 50)
     except (TypeError, ValueError):
         limit = 50
     limit = max(1, min(limit, 100))
-    requested_fields = _parse_tushare_fields(
-        params.get('fields') or '',
-        ['title', 'content', 'datetime', 'src'],
-    )
-    news_df = ak.stock_info_global_cls(symbol=scope)
+    news_df = ak.stock_info_global_cls(symbol=normalized_scope)
     records = []
     for row in news_df.to_dict('records')[:limit]:
         pub_date = row.get('发布日期')
@@ -850,13 +1226,460 @@ def _fetch_tushare_express_news(params: dict) -> dict:
         'code': 0,
         'msg': 'ok',
         'params': {
-            'scope': 'important' if scope == '重点' else 'all',
+            'scope': 'important' if normalized_scope == '重点' else 'all',
             'limit': limit,
             'fields': ','.join(requested_fields),
         },
         'count': len(records),
         'data': records,
     }
+
+
+def _build_tushare_cjzc_item(row: dict) -> dict:
+    pub_time_text, pub_time_dt = _parse_tushare_datetime_text(row.get('发布时间'))
+    summary = _normalize_tushare_text(row.get('摘要'))
+    return {
+        'title': _normalize_tushare_text(row.get('标题')),
+        'summary': summary,
+        'content': summary,
+        'pub_time': pub_time_text,
+        'datetime': pub_time_text,
+        'url': _normalize_tushare_text(row.get('链接')),
+        'src': 'cjzc',
+        '_dt': pub_time_dt,
+    }
+
+
+def _fetch_tushare_cjzc(params: dict) -> dict:
+    requested_fields = _parse_tushare_fields(
+        params.get('fields') or '',
+        ['title', 'summary', 'pub_time', 'url', 'src'],
+    )
+    start_dt = _parse_tushare_datetime_bound(params.get('start_date'), is_end=False)
+    end_dt = _parse_tushare_datetime_bound(params.get('end_date'), is_end=True)
+    if start_dt is None and end_dt is not None:
+        start_dt = end_dt.replace(hour=0, minute=0, second=0)
+    if end_dt is None and start_dt is not None:
+        end_dt = start_dt.replace(hour=23, minute=59, second=59)
+    if start_dt is not None and end_dt is not None and end_dt < start_dt:
+        raise ValueError('end_date 不能早于 start_date')
+
+    limit_default = 20 if start_dt is None and end_dt is None else 0
+    try:
+        limit = int(params.get('limit') or limit_default) if str(params.get('limit') or '').strip() else limit_default
+    except (TypeError, ValueError):
+        raise ValueError('limit 必须是整数')
+    max_limit = 100 if start_dt is None and end_dt is None else 1000
+    if limit:
+        limit = max(1, min(limit, max_limit))
+
+    sh_tz = ZoneInfo('Asia/Shanghai')
+    records = []
+    news_df = ak.stock_info_cjzc_em()
+    for row in news_df.to_dict('records'):
+        item = _build_tushare_cjzc_item(row)
+        item_dt = item.get('_dt')
+        if start_dt is not None or end_dt is not None:
+            if item_dt is None:
+                continue
+            if item_dt < start_dt.astimezone(sh_tz) or item_dt > end_dt.astimezone(sh_tz):
+                continue
+        records.append(item)
+
+    records.sort(
+        key=lambda item: (
+            item.get('_dt') or datetime.min.replace(tzinfo=sh_tz),
+            item.get('title') or '',
+        ),
+        reverse=start_dt is None and end_dt is None,
+    )
+    if limit:
+        records = records[:limit]
+    serialized_records = [_serialize_tushare_express_news_item(item, requested_fields) for item in records]
+
+    payload_params = {'fields': ','.join(requested_fields)}
+    if limit:
+        payload_params['limit'] = limit
+    if start_dt is not None:
+        payload_params['start_date'] = start_dt.astimezone(sh_tz).strftime('%Y-%m-%d %H:%M:%S')
+    if end_dt is not None:
+        payload_params['end_date'] = end_dt.astimezone(sh_tz).strftime('%Y-%m-%d %H:%M:%S')
+
+    return {
+        'api_name': 'cjzc',
+        'code': 0,
+        'msg': 'ok',
+        'params': payload_params,
+        'count': len(serialized_records),
+        'data': serialized_records,
+    }
+
+
+def _normalize_tushare_index_latest_symbol(symbol: str) -> tuple[str, str]:
+    raw = str(symbol or '').strip()
+    if not raw:
+        raise ValueError('缺少 symbol 或 ts_code 参数')
+    upper = raw.upper()
+    if re.fullmatch(r'\d{6}\.(SH|SZ)', upper):
+        return 'CN', upper
+    if re.fullmatch(r'(SH|SZ)\d{6}', upper):
+        return 'CN', f'{upper[2:]}.{upper[:2]}'
+    if re.fullmatch(r'[A-Z][A-Z0-9._-]{1,31}', upper):
+        if upper.endswith('.HK'):
+            return 'HK', upper[:-3]
+        return 'MAYBE_GLOBAL_OR_HK', upper
+    raise TushareLocalProxyPassThrough('unsupported_index_symbol')
+
+
+def _normalize_tushare_index_basic_market(market: str) -> str:
+    raw = str(market or '').strip().upper()
+    if raw in {'', 'ALL', 'ANY'}:
+        return 'ALL'
+    if raw in {'CN', 'A', 'A_SHARE', 'A-SHARE', 'MAINLAND'}:
+        return 'CN'
+    if raw in {'HK', 'HKG', 'HONGKONG', 'HONG_KONG'}:
+        return 'HK'
+    if raw in {'GLOBAL', 'WORLD', 'INTL', 'INTERNATIONAL'}:
+        return 'GLOBAL'
+    raise TushareLocalProxyPassThrough('unsupported_index_market')
+
+
+def _format_tushare_trade_date(value) -> str:
+    text, parsed = _parse_tushare_datetime_text(value)
+    if parsed is not None:
+        return parsed.strftime('%Y%m%d')
+    return text.replace('-', '')[:8]
+
+
+def _safe_numeric(value):
+    normalized = _normalize_tushare_scalar(value)
+    if normalized == '':
+        return ''
+    try:
+        return float(normalized)
+    except (TypeError, ValueError):
+        return normalized
+
+
+def _build_tushare_index_basic_records() -> list[dict]:
+    records = []
+    cn_spot_df = ak.stock_zh_index_spot_sina()
+    cn_spot_rows = cn_spot_df.to_dict('records')
+    cn_market_map = {}
+    for row in cn_spot_rows:
+        code = str(row.get('代码') or '').strip().lower()
+        if not re.fullmatch(r'(sh|sz)\d{6}', code):
+            continue
+        ts_code = f'{code[2:]}.{code[:2].upper()}'
+        cn_market_map[ts_code.split('.')[0]] = (ts_code, _normalize_tushare_text(row.get('名称')))
+    for row in ak.index_stock_info().to_dict('records'):
+        digits = str(row.get('index_code') or '').strip()
+        if not re.fullmatch(r'\d{6}', digits):
+            continue
+        mapped_ts = cn_market_map.get(digits, (f'{digits}.SH', _normalize_tushare_text(row.get('display_name'))))
+        ts_code, fallback_name = mapped_ts
+        list_date = _format_tushare_trade_date(row.get('publish_date'))
+        records.append(
+            {
+                'ts_code': ts_code,
+                'name': fallback_name or _normalize_tushare_text(row.get('display_name')),
+                'fullname': fallback_name or _normalize_tushare_text(row.get('display_name')),
+                'market': 'CN',
+                'category': 'stock_index',
+                'publisher': '',
+                'base_date': list_date,
+                'list_date': list_date,
+                'src': 'index_basic',
+            }
+        )
+
+    for row in ak.stock_hk_index_spot_em().to_dict('records'):
+        code = str(row.get('代码') or '').strip().upper()
+        if not code:
+            continue
+        records.append(
+            {
+                'ts_code': f'{code}.HK',
+                'name': _normalize_tushare_text(row.get('名称')),
+                'fullname': _normalize_tushare_text(row.get('名称')),
+                'market': 'HK',
+                'category': 'hk_index',
+                'publisher': '',
+                'base_date': '',
+                'list_date': '',
+                'src': 'index_basic',
+            }
+        )
+
+    for row in ak.index_global_spot_em().to_dict('records'):
+        code = str(row.get('代码') or '').strip().upper()
+        if not code:
+            continue
+        records.append(
+            {
+                'ts_code': code,
+                'name': _normalize_tushare_text(row.get('名称')),
+                'fullname': _normalize_tushare_text(row.get('名称')),
+                'market': 'GLOBAL',
+                'category': 'global_index',
+                'publisher': '',
+                'base_date': '',
+                'list_date': '',
+                'src': 'index_basic',
+            }
+        )
+
+    deduped = {}
+    for item in records:
+        deduped[item['ts_code']] = item
+    return sorted(deduped.values(), key=lambda item: (item.get('market') or '', item.get('ts_code') or ''))
+
+
+def _fetch_tushare_index_basic(params: dict) -> dict:
+    unsupported_filter_keys = {'publisher', 'src', 'exchange'}
+    if unsupported_filter_keys.intersection({str(key).strip().lower() for key in params.keys()}):
+        raise TushareLocalProxyPassThrough('unsupported_index_basic_filter')
+    market = _normalize_tushare_index_basic_market(params.get('market') or '')
+    requested_fields = _parse_tushare_fields(
+        params.get('fields') or '',
+        ['ts_code', 'name', 'market', 'category', 'list_date'],
+    )
+    try:
+        limit = int(params.get('limit') or 1000)
+    except (TypeError, ValueError):
+        raise ValueError('limit 必须是整数')
+    limit = max(1, min(limit, 5000))
+
+    ts_code_filter = str(params.get('ts_code') or '').strip().upper()
+    name_filter = str(params.get('name') or '').strip().lower()
+    category_filter = str(params.get('category') or '').strip().lower()
+
+    records = []
+    for item in _build_tushare_index_basic_records():
+        if market != 'ALL' and item.get('market') != market:
+            continue
+        if ts_code_filter and str(item.get('ts_code') or '').upper() != ts_code_filter:
+            continue
+        if name_filter and name_filter not in str(item.get('name') or '').lower():
+            continue
+        if category_filter and category_filter != str(item.get('category') or '').lower():
+            continue
+        records.append({field: item.get(field, '') for field in requested_fields})
+
+    return {
+        'api_name': 'index_basic',
+        'code': 0,
+        'msg': 'ok',
+        'params': {
+            **({'market': market} if market != 'ALL' else {}),
+            **({'ts_code': ts_code_filter} if ts_code_filter else {}),
+            **({'name': str(params.get('name') or '').strip()} if name_filter else {}),
+            **({'category': str(params.get('category') or '').strip()} if category_filter else {}),
+            'limit': limit,
+            'fields': ','.join(requested_fields),
+        },
+        'count': min(len(records), limit),
+        'data': records[:limit],
+    }
+
+
+def _load_tushare_index_history_df(ts_code: str):
+    market, normalized_symbol = _normalize_tushare_index_latest_symbol(ts_code)
+    if market == 'CN':
+        ak_symbol = normalized_symbol.split('.')[1].lower() + normalized_symbol.split('.')[0]
+        df = ak.stock_zh_index_daily(symbol=ak_symbol).copy()
+        df['date'] = pd.to_datetime(df['date'])
+        df['close'] = pd.to_numeric(df['close'], errors='coerce')
+        df['open'] = pd.to_numeric(df['open'], errors='coerce')
+        df['high'] = pd.to_numeric(df['high'], errors='coerce')
+        df['low'] = pd.to_numeric(df['low'], errors='coerce')
+        df['volume'] = pd.to_numeric(df.get('volume'), errors='coerce')
+        df['amount'] = pd.NA
+        return 'CN', normalized_symbol, df
+    candidate = normalized_symbol
+    hk_spot = ak.stock_hk_index_spot_em()
+    hk_match = hk_spot[hk_spot['代码'].astype(str).str.upper() == candidate]
+    if not hk_match.empty:
+        df = ak.stock_hk_index_daily_em(symbol=candidate).copy()
+        df['date'] = pd.to_datetime(df['date'])
+        df['close'] = pd.to_numeric(df['latest'], errors='coerce')
+        df['open'] = pd.to_numeric(df['open'], errors='coerce')
+        df['high'] = pd.to_numeric(df['high'], errors='coerce')
+        df['low'] = pd.to_numeric(df['low'], errors='coerce')
+        df['volume'] = pd.NA
+        df['amount'] = pd.NA
+        return 'HK', f'{candidate}.HK', df
+    global_spot = ak.index_global_spot_em()
+    global_match = global_spot[
+        (global_spot['代码'].astype(str).str.upper() == candidate)
+        | (global_spot['名称'].astype(str).str.upper() == candidate)
+    ]
+    if not global_match.empty:
+        global_name = str(global_match.iloc[0]['名称'])
+        global_code = str(global_match.iloc[0]['代码']).upper()
+        df = ak.index_global_hist_em(symbol=global_name).copy()
+        df['date'] = pd.to_datetime(df['日期'])
+        df['close'] = pd.to_numeric(df['最新价'], errors='coerce')
+        df['open'] = pd.to_numeric(df['今开'], errors='coerce')
+        df['high'] = pd.to_numeric(df['最高'], errors='coerce')
+        df['low'] = pd.to_numeric(df['最低'], errors='coerce')
+        df['volume'] = pd.NA
+        df['amount'] = pd.NA
+        return 'GLOBAL', global_code, df
+    raise TushareLocalProxyPassThrough('unsupported_index_history_symbol')
+
+
+def _resample_tushare_index_history_df(df, period: str):
+    working = df.sort_values('date').copy()
+    if period == 'daily':
+        return working
+    rule = 'W-FRI' if period == 'weekly' else 'ME'
+    aggregated = (
+        working.set_index('date')
+        .resample(rule)
+        .agg({'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum', 'amount': 'sum'})
+        .dropna(subset=['close'])
+        .reset_index()
+    )
+    return aggregated
+
+
+def _fetch_tushare_index_history(params: dict, period: str) -> dict:
+    ts_code = str(params.get('ts_code') or params.get('symbol') or '').strip()
+    if not ts_code:
+        raise ValueError('缺少 ts_code 或 symbol 参数')
+    if str(params.get('trade_date') or '').strip():
+        trade_date = str(params.get('trade_date') or '').strip()
+        params = dict(params)
+        params['start_date'] = trade_date
+        params['end_date'] = trade_date
+    start_dt = _parse_tushare_datetime_bound(params.get('start_date'), is_end=False)
+    end_dt = _parse_tushare_datetime_bound(params.get('end_date'), is_end=True)
+    try:
+        limit = int(params.get('limit') or 1000)
+    except (TypeError, ValueError):
+        raise ValueError('limit 必须是整数')
+    limit = max(1, min(limit, 5000))
+    requested_fields = _parse_tushare_fields(
+        params.get('fields') or '',
+        ['ts_code', 'trade_date', 'open', 'high', 'low', 'close', 'pre_close', 'change', 'pct_chg', 'vol', 'amount'],
+    )
+
+    _, normalized_ts_code, df = _load_tushare_index_history_df(ts_code)
+    df = _resample_tushare_index_history_df(df, period)
+    df = df.sort_values('date').reset_index(drop=True)
+    df['pre_close'] = df['close'].shift(1)
+    df['change'] = df['close'] - df['pre_close']
+    df['pct_chg'] = (df['change'] / df['pre_close']) * 100
+
+    if start_dt is not None:
+        df = df[df['date'] >= pd.Timestamp(start_dt.date())]
+    if end_dt is not None:
+        df = df[df['date'] <= pd.Timestamp(end_dt.date())]
+    df = df.sort_values('date', ascending=False).head(limit)
+
+    records = []
+    for row in df.to_dict('records'):
+        item = {
+            'ts_code': normalized_ts_code,
+            'trade_date': pd.Timestamp(row['date']).strftime('%Y%m%d'),
+            'open': _safe_numeric(row.get('open')),
+            'high': _safe_numeric(row.get('high')),
+            'low': _safe_numeric(row.get('low')),
+            'close': _safe_numeric(row.get('close')),
+            'pre_close': _safe_numeric(row.get('pre_close')),
+            'change': _safe_numeric(row.get('change')),
+            'pct_chg': _safe_numeric(row.get('pct_chg')),
+            'vol': _safe_numeric(row.get('volume')),
+            'amount': _safe_numeric(row.get('amount')),
+        }
+        records.append({field: item.get(field, '') for field in requested_fields})
+
+    payload_params = {'ts_code': normalized_ts_code, 'limit': limit, 'fields': ','.join(requested_fields)}
+    if start_dt is not None:
+        payload_params['start_date'] = start_dt.strftime('%Y-%m-%d %H:%M:%S')
+    if end_dt is not None:
+        payload_params['end_date'] = end_dt.strftime('%Y-%m-%d %H:%M:%S')
+    return {
+        'api_name': f'index_{period}',
+        'code': 0,
+        'msg': 'ok',
+        'params': payload_params,
+        'count': len(records),
+        'data': records,
+    }
+
+
+def _fetch_tushare_index_latest(symbol: str) -> dict:
+    market, normalized_symbol = _normalize_tushare_index_latest_symbol(symbol)
+    if market == 'CN':
+        target = normalized_symbol.split('.')[1].lower() + normalized_symbol.split('.')[0]
+        spot_df = ak.stock_zh_index_spot_sina()
+        matched = spot_df[spot_df['代码'].astype(str).str.lower() == target.lower()]
+        if matched.empty:
+            raise TushareLocalProxyPassThrough('unsupported_index_latest_symbol')
+        row = matched.iloc[0].to_dict()
+        return {
+            'market': 'CN',
+            'ts_code': normalized_symbol,
+            'symbol': normalized_symbol,
+            'name': _normalize_tushare_text(row.get('名称')),
+            'datetime': timezone.localtime().strftime('%Y-%m-%d %H:%M:%S'),
+            'open': _safe_numeric(row.get('今开')),
+            'high': _safe_numeric(row.get('最高')),
+            'low': _safe_numeric(row.get('最低')),
+            'close': _safe_numeric(row.get('最新价')),
+            'pre_close': _safe_numeric(row.get('昨收')),
+            'change': _safe_numeric(row.get('涨跌额')),
+            'pct_chg': _safe_numeric(row.get('涨跌幅')),
+            'volume': _safe_numeric(row.get('成交量')),
+            'amount': _safe_numeric(row.get('成交额')),
+        }
+    candidate = normalized_symbol
+    hk_spot = ak.stock_hk_index_spot_em()
+    hk_match = hk_spot[hk_spot['代码'].astype(str).str.upper() == candidate]
+    if not hk_match.empty:
+        row = hk_match.iloc[0].to_dict()
+        return {
+            'market': 'HK',
+            'ts_code': f'{candidate}.HK',
+            'symbol': candidate,
+            'name': _normalize_tushare_text(row.get('名称')),
+            'datetime': timezone.localtime().strftime('%Y-%m-%d %H:%M:%S'),
+            'open': _safe_numeric(row.get('今开')),
+            'high': _safe_numeric(row.get('最高')),
+            'low': _safe_numeric(row.get('最低')),
+            'close': _safe_numeric(row.get('最新价')),
+            'pre_close': _safe_numeric(row.get('昨收')),
+            'change': _safe_numeric(row.get('涨跌额')),
+            'pct_chg': _safe_numeric(row.get('涨跌幅')),
+            'volume': _safe_numeric(row.get('成交量')),
+            'amount': _safe_numeric(row.get('成交额')),
+        }
+    global_spot = ak.index_global_spot_em()
+    global_match = global_spot[
+        (global_spot['代码'].astype(str).str.upper() == candidate)
+        | (global_spot['名称'].astype(str).str.upper() == candidate)
+    ]
+    if not global_match.empty:
+        row = global_match.iloc[0].to_dict()
+        return {
+            'market': 'GLOBAL',
+            'ts_code': str(row.get('代码') or '').upper(),
+            'symbol': str(row.get('代码') or '').upper(),
+            'name': _normalize_tushare_text(row.get('名称')),
+            'datetime': _normalize_tushare_text(row.get('最新行情时间')) or timezone.localtime().strftime('%Y-%m-%d %H:%M:%S'),
+            'open': _safe_numeric(row.get('开盘价')),
+            'high': _safe_numeric(row.get('最高价')),
+            'low': _safe_numeric(row.get('最低价')),
+            'close': _safe_numeric(row.get('最新价')),
+            'pre_close': _safe_numeric(row.get('昨收价')),
+            'change': _safe_numeric(row.get('涨跌额')),
+            'pct_chg': _safe_numeric(row.get('涨跌幅')),
+            'volume': '',
+            'amount': '',
+        }
+    raise TushareLocalProxyPassThrough('unsupported_index_latest_symbol')
 
 
 def _fetch_tushare_analyst_rank(params: dict) -> dict:
@@ -900,7 +1723,16 @@ def _fetch_tushare_analyst_detail(params: dict) -> dict:
     except (TypeError, ValueError):
         limit = 50
     limit = max(1, min(limit, 200))
-    df = ak.stock_analyst_detail_em(analyst_id=analyst_id, indicator=indicator)
+    try:
+        df = ak.stock_analyst_detail_em(analyst_id=analyst_id, indicator=indicator)
+    except TypeError as exc:
+        # Eastmoney occasionally returns result=null for current holdings; treat it as an empty set
+        # so the relay stays stable and the public example still runs.
+        if 'NoneType' not in str(exc):
+            raise
+        df = pd.DataFrame(columns=[
+            '股票代码', '股票名称', '调入日期', '最新评级日期', '当前评级名称', '成交价格(前复权)', '最新价格', '阶段涨跌幅',
+        ])
     records = _serialize_tushare_df_records(df.head(limit), requested_fields)
     return {
         'api_name': 'analyst_detail',
@@ -959,7 +1791,7 @@ def _fetch_tushare_analyst_history(params: dict) -> dict:
     }
 
 
-def _fetch_tushare_research_report(params: dict) -> dict:
+def _fetch_tushare_research_report(params: dict, *, api_name: str = 'research_report') -> dict:
     symbol = str(params.get('symbol') or params.get('ts_code') or '').strip()
     if not symbol:
         raise ValueError('缺少 symbol 或 ts_code 参数')
@@ -978,7 +1810,7 @@ def _fetch_tushare_research_report(params: dict) -> dict:
     df = ak.stock_research_report_em(symbol=digits)
     records = _serialize_tushare_df_records(df.head(limit), requested_fields)
     return {
-        'api_name': 'research_report',
+        'api_name': api_name,
         'code': 0,
         'msg': 'ok',
         'params': {
@@ -991,10 +1823,172 @@ def _fetch_tushare_research_report(params: dict) -> dict:
     }
 
 
+def _fetch_tushare_news_cctv(params: dict) -> dict:
+    query_date = _normalize_tushare_compact_date(params.get('date'), default_today=True)
+    requested_fields = _parse_tushare_fields(params.get('fields') or '', ['date', 'title', 'content'])
+    limit = _parse_tushare_limit(params, default=100, maximum=500)
+    df = ak.news_cctv(date=query_date)
+    records = _serialize_tushare_df_records(df.head(limit), requested_fields)
+    return {
+        'api_name': 'news_cctv',
+        'code': 0,
+        'msg': 'ok',
+        'params': {'date': query_date, 'limit': limit, 'fields': ','.join(requested_fields)},
+        'count': len(records),
+        'data': records,
+    }
+
+
+def _fetch_tushare_stock_notice_report(params: dict) -> dict:
+    symbol = str(params.get('symbol') or '全部').strip() or '全部'
+    query_date = _normalize_tushare_compact_date(params.get('date'), default_today=True)
+    requested_fields = _parse_tushare_fields(
+        params.get('fields') or '',
+        ['代码', '名称', '公告标题', '公告类型', '公告日期', '网址'],
+    )
+    limit = _parse_tushare_limit(params, default=100, maximum=1000)
+    df = ak.stock_notice_report(symbol=symbol, date=query_date)
+    records = _serialize_tushare_df_records(df.head(limit), requested_fields)
+    return {
+        'api_name': 'stock_notice_report',
+        'code': 0,
+        'msg': 'ok',
+        'params': {'symbol': symbol, 'date': query_date, 'limit': limit, 'fields': ','.join(requested_fields)},
+        'count': len(records),
+        'data': records,
+    }
+
+
+def _fetch_tushare_disclosure_report_cninfo(params: dict) -> dict:
+    symbol = _normalize_tushare_stock_digits(params.get('symbol') or params.get('ts_code'), field_name='symbol')
+    market = str(params.get('market') or '沪深京').strip() or '沪深京'
+    keyword = str(params.get('keyword') or '').strip()
+    category = str(params.get('category') or '').strip()
+    start_date = _normalize_tushare_compact_date(params.get('start_date'), default_today=False, field_name='start_date')
+    end_date = _normalize_tushare_compact_date(params.get('end_date'), default_today=False, field_name='end_date')
+    if end_date < start_date:
+        raise ValueError('end_date 不能早于 start_date')
+    requested_fields = _parse_tushare_fields(
+        params.get('fields') or '',
+        ['代码', '简称', '公告标题', '公告时间', '公告链接'],
+    )
+    limit = _parse_tushare_limit(params, default=100, maximum=1000)
+    df = ak.stock_zh_a_disclosure_report_cninfo(
+        symbol=symbol,
+        market=market,
+        keyword=keyword,
+        category=category,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    records = _serialize_tushare_df_records(df.head(limit), requested_fields)
+    payload_params = {
+        'symbol': symbol,
+        'market': market,
+        'start_date': start_date,
+        'end_date': end_date,
+        'limit': limit,
+        'fields': ','.join(requested_fields),
+    }
+    if keyword:
+        payload_params['keyword'] = keyword
+    if category:
+        payload_params['category'] = category
+    return {
+        'api_name': 'stock_zh_a_disclosure_report_cninfo',
+        'code': 0,
+        'msg': 'ok',
+        'params': payload_params,
+        'count': len(records),
+        'data': records,
+    }
+
+
+def _fetch_tushare_baidu_date_dataframe(api_name: str, params: dict, fetcher, default_fields: list[str]) -> dict:
+    query_date = _normalize_tushare_compact_date(params.get('date'), default_today=True)
+    requested_fields = _parse_tushare_fields(params.get('fields') or '', default_fields)
+    limit = _parse_tushare_limit(params, default=100, maximum=1000)
+    df = fetcher(date=query_date)
+    records = _serialize_tushare_df_records(df.head(limit), requested_fields)
+    return {
+        'api_name': api_name,
+        'code': 0,
+        'msg': 'ok',
+        'params': {'date': query_date, 'limit': limit, 'fields': ','.join(requested_fields)},
+        'count': len(records),
+        'data': records,
+    }
+
+
+def _fetch_tushare_fund_announcement_report(params: dict) -> dict:
+    symbol = _normalize_tushare_stock_digits(params.get('symbol') or params.get('ts_code'), field_name='symbol')
+    requested_fields = _parse_tushare_fields(
+        params.get('fields') or '',
+        ['基金代码', '基金名称', '公告标题', '公告日期', '报告ID'],
+    )
+    limit = _parse_tushare_limit(params, default=100, maximum=1000)
+    df = ak.fund_announcement_report_em(symbol=symbol)
+    records = _serialize_tushare_df_records(df.head(limit), requested_fields)
+    return {
+        'api_name': 'fund_announcement_report_em',
+        'code': 0,
+        'msg': 'ok',
+        'params': {'symbol': symbol, 'limit': limit, 'fields': ','.join(requested_fields)},
+        'count': len(records),
+        'data': records,
+    }
+
+
 def _fetch_tushare_local_proxy_payload(relay_path: str, params: dict) -> dict:
     normalized_path = (relay_path or '').strip('/')
     if normalized_path == 'pro/express_news':
         return _fetch_tushare_express_news(params)
+    if normalized_path == 'pro/cjzc':
+        return _fetch_tushare_cjzc(params)
+    if normalized_path == 'pro/news_cctv':
+        return _fetch_tushare_news_cctv(params)
+    if normalized_path == 'pro/news_economic_baidu':
+        return _fetch_tushare_baidu_date_dataframe(
+            'news_economic_baidu',
+            params,
+            ak.news_economic_baidu,
+            ['日期', '时间', '地区', '事件', '公布', '预期', '前值', '重要性'],
+        )
+    if normalized_path == 'pro/news_report_time_baidu':
+        return _fetch_tushare_baidu_date_dataframe(
+            'news_report_time_baidu',
+            params,
+            ak.news_report_time_baidu,
+            ['股票代码', '股票简称', '交易所', '财报类型', '发布时间', '市值', '发布日期'],
+        )
+    if normalized_path == 'pro/news_trade_notify_dividend_baidu':
+        return _fetch_tushare_baidu_date_dataframe(
+            'news_trade_notify_dividend_baidu',
+            params,
+            ak.news_trade_notify_dividend_baidu,
+            ['股票代码', '股票简称', '交易所', '除权日', '分红', '送股', '转增', '实物', '报告期'],
+        )
+    if normalized_path == 'pro/news_trade_notify_suspend_baidu':
+        return _fetch_tushare_baidu_date_dataframe(
+            'news_trade_notify_suspend_baidu',
+            params,
+            ak.news_trade_notify_suspend_baidu,
+            ['股票代码', '股票简称', '交易所代码', '停牌时间', '复牌时间', '停牌事项说明', '市值', '公告日期', '公告时间', '证券类型', '市场类型', '是否跳过'],
+        )
+    if normalized_path == 'pro/stock_notice_report':
+        return _fetch_tushare_stock_notice_report(params)
+    if normalized_path == 'pro/stock_zh_a_disclosure_report_cninfo':
+        return _fetch_tushare_disclosure_report_cninfo(params)
+    if normalized_path == 'pro/fund_announcement_report_em':
+        return _fetch_tushare_fund_announcement_report(params)
+    if normalized_path == 'pro/index_basic':
+        return _fetch_tushare_index_basic(params)
+    if normalized_path == 'pro/index_daily':
+        return _fetch_tushare_index_history(params, 'daily')
+    if normalized_path == 'pro/index_weekly':
+        return _fetch_tushare_index_history(params, 'weekly')
+    if normalized_path == 'pro/index_monthly':
+        return _fetch_tushare_index_history(params, 'monthly')
     if normalized_path == 'pro/analyst_rank':
         return _fetch_tushare_analyst_rank(params)
     if normalized_path == 'pro/analyst_detail':
@@ -1003,6 +1997,8 @@ def _fetch_tushare_local_proxy_payload(relay_path: str, params: dict) -> dict:
         return _fetch_tushare_analyst_history(params)
     if normalized_path == 'pro/research_report':
         return _fetch_tushare_research_report(params)
+    if normalized_path == 'pro/stock_research_report_em':
+        return _fetch_tushare_research_report(params, api_name='stock_research_report_em')
     raise ValueError('unsupported local tushare proxy path')
 
 
@@ -1026,12 +2022,576 @@ def _build_tushare_local_news_response(payload: dict, service, cache_key: str = 
     return response
 
 
+def _build_tushare_json_response(
+    payload: dict,
+    *,
+    service,
+    status: int,
+    cache_key: str = '',
+    cache_query_string: str = '',
+    relay_path: str = '',
+    params=None,
+    response_payload: dict | None = None,
+    relay_mode: str = '',
+):
+    response = JsonResponse(payload, status=status, json_dumps_params={'ensure_ascii': False})
+    response['X-Api-Relay-Service'] = service.slug
+    response['X-Api-Relay-Cache'] = 'MISS'
+    if relay_mode:
+        response['X-Tushare-Relay-Mode'] = relay_mode
+    if cache_key and _is_cacheable_tushare_status(status):
+        _store_tushare_replay_cache(
+            cache_key=cache_key,
+            relay_path=relay_path,
+            query_string=cache_query_string,
+            response_body=json.dumps(payload, ensure_ascii=False),
+            status_code=status,
+            content_type='application/json',
+            params=params,
+            response_payload=response_payload,
+        )
+    return response
+
+
 def _should_use_tushare_news_cache(service, request, relay_path: str) -> bool:
     return (
         service.slug == 'tushare'
         and request.method.upper() == 'GET'
         and bool((relay_path or '').strip('/'))
     )
+
+
+@lru_cache(maxsize=1)
+def _get_massive_s3_client():
+    if not MASSIVE_S3_ACCESS_KEY_ID or not MASSIVE_S3_SECRET_ACCESS_KEY:
+        raise RuntimeError('massive replay 未配置上游 Access Key / Secret')
+    session = boto3.session.Session()
+    return session.client(
+        's3',
+        aws_access_key_id=MASSIVE_S3_ACCESS_KEY_ID,
+        aws_secret_access_key=MASSIVE_S3_SECRET_ACCESS_KEY,
+        endpoint_url=MASSIVE_S3_ENDPOINT,
+        region_name=MASSIVE_S3_REGION,
+        config=BotoConfig(
+            signature_version='s3v4',
+            retries={'max_attempts': 10, 'mode': 'standard'},
+            s3={'addressing_style': 'path'},
+        ),
+    )
+
+
+def _canonicalize_relay_params(params) -> list[tuple[str, str]]:
+    return _canonicalize_query_params(params)
+
+
+def _build_massive_cache_key(relay_path: str, params) -> tuple[str, str]:
+    normalized_path = (relay_path or '').strip('/')
+    canonical_pairs = _canonicalize_relay_params(params)
+    query_string = urlencode(canonical_pairs, doseq=True)
+    digest = hashlib.sha256(f'{normalized_path}?{query_string}'.encode('utf-8')).hexdigest()
+    return digest, query_string
+
+
+def _massive_response_cache_path(cache_key: str) -> Path:
+    return MASSIVE_REPLAY_CACHE_ROOT / cache_key[:2] / cache_key[2:4] / f'{cache_key}.bin'
+
+
+def _get_massive_cache_bucket(relay_path: str, status_code: int = 200) -> str:
+    normalized_path = (relay_path or '').strip('/')
+    if status_code == 404 and (normalized_path.startswith('file/') or normalized_path.startswith('head/')):
+        return 'missing_object'
+    if status_code == 429 or status_code >= 500:
+        return 'error'
+    if normalized_path == 'health':
+        return 'health'
+    if normalized_path == 'list':
+        return 'list'
+    if normalized_path.startswith('head/'):
+        match = MASSIVE_DATE_KEY_RE.search(normalized_path)
+        if match:
+            object_date = datetime.strptime(match.group('date'), '%Y-%m-%d').date()
+            if timezone.localdate() - object_date > timedelta(days=7):
+                return 'head_history'
+        return 'head_recent'
+    if normalized_path.startswith('file/'):
+        match = MASSIVE_DATE_KEY_RE.search(normalized_path)
+        if match:
+            object_date = datetime.strptime(match.group('date'), '%Y-%m-%d').date()
+            if timezone.localdate() - object_date > timedelta(days=7):
+                return 'object_history'
+            return 'object_recent'
+        return 'object_generic'
+    return 'list'
+
+
+def _get_massive_cache_policy(relay_path: str, status_code: int = 200) -> tuple[timedelta, timedelta]:
+    bucket = _get_massive_cache_bucket(relay_path, status_code=status_code)
+    if bucket == 'health':
+        return timedelta(minutes=1), timedelta(days=1)
+    if bucket == 'list':
+        return timedelta(hours=6), timedelta(days=7)
+    if bucket == 'head_recent':
+        return timedelta(hours=6), timedelta(days=14)
+    if bucket == 'head_history':
+        return timedelta(days=30), timedelta(days=120)
+    if bucket == 'object_recent':
+        return timedelta(hours=6), timedelta(days=21)
+    if bucket == 'object_history':
+        return timedelta(days=30), timedelta(days=120)
+    if bucket == 'object_generic':
+        return timedelta(hours=12), timedelta(days=30)
+    if bucket == 'missing_object':
+        return timedelta(days=1), timedelta(days=30)
+    return timedelta(seconds=15), timedelta(minutes=10)
+
+
+def _is_cacheable_massive_status(status_code: int) -> bool:
+    return status_code == 200 or status_code == 404 or status_code == 429 or status_code >= 500
+
+
+def _delete_massive_cache_file(body_path: str):
+    if not body_path:
+        return
+    try:
+        Path(body_path).unlink(missing_ok=True)
+    except Exception:
+        return
+
+
+def _persist_massive_cache_bytes(cache_key: str, payload: bytes) -> tuple[str, int]:
+    target_path = _massive_response_cache_path(cache_key)
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(prefix=f'{cache_key}-', dir=str(target_path.parent))
+    try:
+        with os.fdopen(fd, 'wb') as handle:
+            handle.write(payload)
+        os.replace(tmp_path, target_path)
+    finally:
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+    return str(target_path), target_path.stat().st_size
+
+
+def _persist_massive_cache_stream(cache_key: str, stream) -> tuple[str, int]:
+    target_path = _massive_response_cache_path(cache_key)
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(prefix=f'{cache_key}-', dir=str(target_path.parent))
+    size = 0
+    try:
+        with os.fdopen(fd, 'wb') as handle:
+            while True:
+                chunk = stream.read(1024 * 1024)
+                if not chunk:
+                    break
+                handle.write(chunk)
+                size += len(chunk)
+        os.replace(tmp_path, target_path)
+    finally:
+        close_method = getattr(stream, 'close', None)
+        if callable(close_method):
+            close_method()
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+    return str(target_path), size
+
+
+def _store_massive_replay_cache(
+    *,
+    cache_key: str,
+    relay_path: str,
+    query_string: str,
+    body_path: str,
+    body_size: int,
+    status_code: int,
+    content_type: str,
+    content_encoding: str = '',
+    etag: str = '',
+):
+    cache_bucket = _get_massive_cache_bucket(relay_path, status_code=status_code)
+    fresh_ttl, purge_ttl = _get_massive_cache_policy(relay_path, status_code=status_code)
+    stale_entry = MassiveReplayCache.objects.filter(cache_key=cache_key).first()
+    if stale_entry and stale_entry.body_path and stale_entry.body_path != body_path:
+        _delete_massive_cache_file(stale_entry.body_path)
+    MassiveReplayCache.objects.update_or_create(
+        cache_key=cache_key,
+        defaults={
+            'cache_bucket': cache_bucket,
+            'relay_path': (relay_path or '').strip('/'),
+            'query_string': query_string,
+            'body_path': body_path,
+            'body_size': body_size,
+            'status_code': status_code,
+            'content_type': (content_type or 'application/octet-stream')[:120],
+            'content_encoding': (content_encoding or '')[:80],
+            'etag': (etag or '')[:120],
+            'fresh_until': timezone.now() + fresh_ttl,
+            'purge_after': timezone.now() + purge_ttl,
+        },
+    )
+
+
+def _delete_expired_massive_replay_cache(now=None) -> int:
+    now = now or timezone.now()
+    expired_entries = list(
+        MassiveReplayCache.objects.filter(
+            Q(purge_after__lt=now) |
+            Q(purge_after__isnull=True, updated_at__lt=now - timedelta(days=30))
+        )
+    )
+    deleted = 0
+    for entry in expired_entries:
+        _delete_massive_cache_file(entry.body_path)
+    if expired_entries:
+        deleted, _ = MassiveReplayCache.objects.filter(id__in=[item.id for item in expired_entries]).delete()
+    deleted += _trim_massive_replay_cache_buckets()
+    return deleted
+
+
+def _trim_massive_replay_cache_buckets() -> int:
+    deleted_total = 0
+    for bucket, limit in MASSIVE_REPLAY_BUCKET_LIMITS.items():
+        stale_entries = list(
+            MassiveReplayCache.objects
+            .filter(cache_bucket=bucket)
+            .order_by('-updated_at', '-id')[limit:]
+        )
+        if not stale_entries:
+            continue
+        for entry in stale_entries:
+            _delete_massive_cache_file(entry.body_path)
+        deleted, _ = MassiveReplayCache.objects.filter(id__in=[item.id for item in stale_entries]).delete()
+        deleted_total += deleted
+    return deleted_total
+
+
+def _delete_expired_massive_replay_leases(now=None) -> int:
+    now = now or timezone.now()
+    try:
+        deleted, _ = MassiveReplayLease.objects.filter(lease_until__lt=now).delete()
+        return deleted
+    except (DBOperationalError, ProgrammingError):
+        return 0
+
+
+def _maybe_cleanup_massive_replay_cache(now=None, force: bool = False):
+    now = now or timezone.now()
+    MASSIVE_REPLAY_LOCK_DIR.mkdir(parents=True, exist_ok=True)
+    marker_path = MASSIVE_REPLAY_SWEEP_MARKER
+    if not force and marker_path.exists():
+        marker_mtime = datetime.fromtimestamp(marker_path.stat().st_mtime, tz=dt_timezone.utc)
+        if now - marker_mtime < MASSIVE_REPLAY_CACHE_SWEEP_INTERVAL:
+            return
+    lock_path = MASSIVE_REPLAY_LOCK_DIR / '.global_cleanup.lock'
+    with open(lock_path, 'w') as lock_file:
+        try:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return
+        try:
+            if not force and marker_path.exists():
+                marker_mtime = datetime.fromtimestamp(marker_path.stat().st_mtime, tz=dt_timezone.utc)
+                if now - marker_mtime < MASSIVE_REPLAY_CACHE_SWEEP_INTERVAL:
+                    return
+            _delete_expired_massive_replay_cache(now=now)
+            _delete_expired_massive_replay_leases(now=now)
+            marker_path.touch()
+        finally:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+
+
+def _get_massive_cache_entry(relay_path: str, params) -> tuple[MassiveReplayCache | None, str, str]:
+    cache_key, query_string = _build_massive_cache_key(relay_path, params)
+    now = timezone.now()
+    _maybe_cleanup_massive_replay_cache(now=now)
+    entry = (
+        MassiveReplayCache.objects
+        .filter(cache_key=cache_key)
+        .filter(
+            Q(fresh_until__gte=now) |
+            Q(fresh_until__isnull=True, updated_at__gte=now - _get_massive_cache_policy(relay_path)[0])
+        )
+        .first()
+    )
+    if entry and entry.body_path and not Path(entry.body_path).exists():
+        MassiveReplayCache.objects.filter(pk=entry.pk).delete()
+        entry = None
+    return entry, cache_key, query_string
+
+
+def _claim_massive_replay_lease(cache_key: str, relay_path: str, query_string: str, now=None) -> tuple[bool, str]:
+    now = now or timezone.now()
+    lease_until = now + MASSIVE_REPLAY_LEASE_TTL
+    owner_token = secrets.token_hex(16)
+    normalized_path = (relay_path or '').strip('/')
+    for _ in range(3):
+        try:
+            with transaction.atomic():
+                lease = MassiveReplayLease.objects.select_for_update().filter(cache_key=cache_key).first()
+                if lease is None:
+                    MassiveReplayLease.objects.create(
+                        cache_key=cache_key,
+                        relay_path=normalized_path,
+                        query_string=query_string,
+                        owner_token=owner_token,
+                        lease_until=lease_until,
+                    )
+                    return True, owner_token
+                if lease.lease_until >= now:
+                    return False, lease.owner_token
+                lease.relay_path = normalized_path
+                lease.query_string = query_string
+                lease.owner_token = owner_token
+                lease.lease_until = lease_until
+                lease.save(update_fields=['relay_path', 'query_string', 'owner_token', 'lease_until', 'updated_at'])
+                return True, owner_token
+        except IntegrityError:
+            continue
+        except (DBOperationalError, ProgrammingError):
+            return True, ''
+    return False, ''
+
+
+def _release_massive_replay_lease(cache_key: str, owner_token: str):
+    if not cache_key or not owner_token:
+        return
+    try:
+        MassiveReplayLease.objects.filter(cache_key=cache_key, owner_token=owner_token).delete()
+    except (DBOperationalError, ProgrammingError):
+        return
+
+
+def _wait_for_massive_replay_cache_fill(relay_path: str, params, cache_key: str):
+    deadline = timezone.now() + MASSIVE_REPLAY_FOLLOWER_WAIT_TIMEOUT
+    while timezone.now() < deadline:
+        cache_entry, _, _ = _get_massive_cache_entry(relay_path, params)
+        if cache_entry is not None:
+            return cache_entry
+        try:
+            lease = MassiveReplayLease.objects.filter(cache_key=cache_key).first()
+        except (DBOperationalError, ProgrammingError):
+            return None
+        if lease is None or lease.lease_until < timezone.now():
+            return None
+        time_module.sleep(MASSIVE_REPLAY_FOLLOWER_POLL_INTERVAL_SECONDS)
+    return None
+
+
+def _build_cached_massive_response(entry: MassiveReplayCache):
+    file_handle = open(entry.body_path, 'rb')
+    response = FileResponse(file_handle, status=entry.status_code, content_type=entry.content_type or 'application/octet-stream')
+    response['X-Api-Relay-Service'] = 'massive'
+    response['X-Api-Relay-Cache'] = 'HIT'
+    response['X-Massive-Cache-Bucket'] = entry.cache_bucket
+    if entry.content_encoding:
+        response['Content-Encoding'] = entry.content_encoding
+    if entry.etag:
+        response['ETag'] = entry.etag
+    if entry.body_size:
+        response['Content-Length'] = str(entry.body_size)
+    return response
+
+
+def _massive_error_response(service, relay_path: str, cache_key: str, cache_query_string: str, status: int, payload: dict):
+    body_path, body_size = _persist_massive_cache_bytes(cache_key, json.dumps(payload, ensure_ascii=False).encode('utf-8'))
+    _store_massive_replay_cache(
+        cache_key=cache_key,
+        relay_path=relay_path,
+        query_string=cache_query_string,
+        body_path=body_path,
+        body_size=body_size,
+        status_code=status,
+        content_type='application/json',
+    )
+    response = JsonResponse(payload, status=status, json_dumps_params={'ensure_ascii': False})
+    response['X-Api-Relay-Service'] = service.slug
+    response['X-Api-Relay-Cache'] = 'MISS'
+    return response
+
+
+def _massive_health_response(service):
+    configured = bool(MASSIVE_S3_ACCESS_KEY_ID and MASSIVE_S3_SECRET_ACCESS_KEY)
+    payload = {
+        'ok': configured,
+        'service': service.slug,
+        'bucket': MASSIVE_S3_BUCKET,
+        'endpoint': MASSIVE_S3_ENDPOINT,
+        'auth_mode': 'server_side_s3_signature',
+        'message': 'Massive replay 已启用服务端签名转接。' if configured else 'Massive replay 尚未配置上游 Access Key / Secret。',
+    }
+    return JsonResponse(payload, status=200 if configured else 503, json_dumps_params={'ensure_ascii': False})
+
+
+def _normalize_massive_object_key(relay_path: str) -> str:
+    normalized_path = (relay_path or '').strip('/')
+    if normalized_path.startswith('file/'):
+        key = normalized_path[5:]
+    elif normalized_path.startswith('head/'):
+        key = normalized_path[5:]
+    else:
+        key = ''
+    key = key.lstrip('/')
+    if not key or '..' in key or key.startswith('.'):
+        raise ValueError('invalid massive object key')
+    return key
+
+
+def _massive_proxy(request, service, relay_path: str):
+    normalized = (relay_path or '').strip('/')
+    if request.method != 'GET':
+        return JsonResponse({'ok': False, 'error': 'method_not_allowed', 'message': 'Massive replay 当前只支持 GET。'}, status=405)
+    _, _, auth_error = _authorize_api_relay_request(request, service)
+    if auth_error is not None:
+        return auth_error
+    if normalized in {'', 'health'}:
+        return _massive_health_response(service)
+
+    params = dict(request.GET.items())
+    cache_entry, cache_key, cache_query_string = _get_massive_cache_entry(relay_path, params)
+    if cache_entry is not None:
+        return _build_cached_massive_response(cache_entry)
+    is_leader, lease_token = _claim_massive_replay_lease(cache_key, relay_path, cache_query_string)
+    if not is_leader:
+        cache_entry = _wait_for_massive_replay_cache_fill(relay_path, params, cache_key)
+        if cache_entry is not None:
+            return _build_cached_massive_response(cache_entry)
+        return JsonResponse({'ok': False, 'error': 'relay_busy', 'message': 'Massive replay 正在刷新同一份对象，请稍后重试。'}, status=503)
+
+    try:
+        try:
+            client = _get_massive_s3_client()
+        except Exception as exc:
+            return JsonResponse({'ok': False, 'error': 'relay_unavailable', 'message': f'Massive replay 配置异常: {exc}'}, status=503)
+
+        try:
+            if normalized == 'list':
+                prefix = str(params.get('prefix') or '').strip().lstrip('/')
+                if '..' in prefix:
+                    raise ValueError('prefix 非法')
+                try:
+                    limit = int(params.get('limit') or 100)
+                except (TypeError, ValueError):
+                    raise ValueError('limit 必须是整数')
+                limit = max(1, min(limit, 1000))
+                list_kwargs = {
+                    'Bucket': MASSIVE_S3_BUCKET,
+                    'Prefix': prefix,
+                    'MaxKeys': limit,
+                }
+                continuation_token = str(params.get('continuation_token') or '').strip()
+                if continuation_token:
+                    list_kwargs['ContinuationToken'] = continuation_token
+                response_payload = client.list_objects_v2(**list_kwargs)
+                contents = response_payload.get('Contents') or []
+                payload = {
+                    'ok': True,
+                    'bucket': MASSIVE_S3_BUCKET,
+                    'prefix': prefix,
+                    'count': len(contents),
+                    'items': [
+                        {
+                            'key': item.get('Key', ''),
+                            'size': int(item.get('Size') or 0),
+                            'etag': str(item.get('ETag') or '').strip('"'),
+                            'last_modified': item.get('LastModified').astimezone(ZoneInfo('UTC')).isoformat() if item.get('LastModified') else '',
+                        }
+                        for item in contents
+                    ],
+                    'is_truncated': bool(response_payload.get('IsTruncated')),
+                    'next_continuation_token': response_payload.get('NextContinuationToken') or '',
+                }
+                body_path, body_size = _persist_massive_cache_bytes(cache_key, json.dumps(payload, ensure_ascii=False).encode('utf-8'))
+                _store_massive_replay_cache(
+                    cache_key=cache_key,
+                    relay_path=relay_path,
+                    query_string=cache_query_string,
+                    body_path=body_path,
+                    body_size=body_size,
+                    status_code=200,
+                    content_type='application/json',
+                )
+                response = JsonResponse(payload, json_dumps_params={'ensure_ascii': False})
+                response['X-Api-Relay-Service'] = service.slug
+                response['X-Api-Relay-Cache'] = 'MISS'
+                return response
+
+            if normalized.startswith('head/'):
+                object_key = _normalize_massive_object_key(relay_path)
+                head = client.head_object(Bucket=MASSIVE_S3_BUCKET, Key=object_key)
+                payload = {
+                    'ok': True,
+                    'bucket': MASSIVE_S3_BUCKET,
+                    'key': object_key,
+                    'size': int(head.get('ContentLength') or 0),
+                    'etag': str(head.get('ETag') or '').strip('"'),
+                    'content_type': head.get('ContentType') or 'application/octet-stream',
+                    'content_encoding': head.get('ContentEncoding') or '',
+                    'last_modified': head.get('LastModified').astimezone(ZoneInfo('UTC')).isoformat() if head.get('LastModified') else '',
+                }
+                body_path, body_size = _persist_massive_cache_bytes(cache_key, json.dumps(payload, ensure_ascii=False).encode('utf-8'))
+                _store_massive_replay_cache(
+                    cache_key=cache_key,
+                    relay_path=relay_path,
+                    query_string=cache_query_string,
+                    body_path=body_path,
+                    body_size=body_size,
+                    status_code=200,
+                    content_type='application/json',
+                    content_encoding='',
+                    etag=payload['etag'],
+                )
+                response = JsonResponse(payload, json_dumps_params={'ensure_ascii': False})
+                response['X-Api-Relay-Service'] = service.slug
+                response['X-Api-Relay-Cache'] = 'MISS'
+                return response
+
+            if normalized.startswith('file/'):
+                object_key = _normalize_massive_object_key(relay_path)
+                upstream = client.get_object(Bucket=MASSIVE_S3_BUCKET, Key=object_key)
+                body_path, body_size = _persist_massive_cache_stream(cache_key, upstream['Body'])
+                _store_massive_replay_cache(
+                    cache_key=cache_key,
+                    relay_path=relay_path,
+                    query_string=cache_query_string,
+                    body_path=body_path,
+                    body_size=body_size,
+                    status_code=200,
+                    content_type=upstream.get('ContentType') or 'application/octet-stream',
+                    content_encoding=upstream.get('ContentEncoding') or '',
+                    etag=str(upstream.get('ETag') or '').strip('"'),
+                )
+                response = FileResponse(open(body_path, 'rb'), content_type=upstream.get('ContentType') or 'application/octet-stream')
+                response['X-Api-Relay-Service'] = service.slug
+                response['X-Api-Relay-Cache'] = 'MISS'
+                response['Content-Length'] = str(body_size)
+                if upstream.get('ContentEncoding'):
+                    response['Content-Encoding'] = upstream['ContentEncoding']
+                if upstream.get('ETag'):
+                    response['ETag'] = str(upstream['ETag']).strip('"')
+                return response
+
+            return JsonResponse(
+                {
+                    'ok': False,
+                    'error': 'path_not_supported',
+                    'message': 'Massive replay 当前支持 `/massive/health`、`/massive/list`、`/massive/head/<object_key>`、`/massive/file/<object_key>`。',
+                },
+                status=400,
+            )
+        except ValueError as exc:
+            return JsonResponse({'ok': False, 'error': 'invalid_params', 'message': str(exc)}, status=400)
+        except ClientError as exc:
+            error_code = str(exc.response.get('Error', {}).get('Code') or '')
+            status_code = int(exc.response.get('ResponseMetadata', {}).get('HTTPStatusCode') or 503)
+            if error_code in {'NoSuchKey', '404', 'NotFound'} or status_code == 404:
+                payload = {'ok': False, 'error': 'not_found', 'message': 'Massive flat file 不存在。'}
+                return _massive_error_response(service, relay_path, cache_key, cache_query_string, 404, payload)
+            payload = {'ok': False, 'error': 'relay_unavailable', 'message': f'Massive 上游暂时不可用: {error_code or exc}'}
+            return _massive_error_response(service, relay_path, cache_key, cache_query_string, max(status_code, 503), payload)
+        except BotoCoreError as exc:
+            payload = {'ok': False, 'error': 'relay_unavailable', 'message': f'Massive 上游暂时不可用: {exc}'}
+            return _massive_error_response(service, relay_path, cache_key, cache_query_string, 503, payload)
+    finally:
+        _release_massive_replay_lease(cache_key, lease_token)
 
 
 def _build_tushare_rt_min_record(payload: dict) -> dict:
@@ -1345,6 +2905,7 @@ def _tushare_minute_proxy(request, service, relay_path: str):
 
     try:
         if TUSHARE_A_SHARE_TS_CODE_RE.match(symbol):
+            relay_mode = f'a-share-{freq.lower()}-latest-completed'
             if freq not in TUSHARE_A_SHARE_MIN_ALLOWED_FREQS:
                 return JsonResponse(
                     {
@@ -1357,18 +2918,30 @@ def _tushare_minute_proxy(request, service, relay_path: str):
             try:
                 record = _fetch_tushare_a_share_minute_latest(symbol, freq)
             except (requests.RequestException, ValueError, json.JSONDecodeError) as exc:
-                return JsonResponse(
+                return _build_tushare_json_response(
                     {'code': 503, 'msg': f'分钟 replay 上游暂时不可用: {exc}'},
+                    service=service,
                     status=503,
+                    cache_key=cache_key,
+                    cache_query_string=cache_query_string,
+                    relay_path=relay_path,
+                    params=upstream_params,
+                    relay_mode=relay_mode,
                 )
             if not record:
-                return JsonResponse(
+                return _build_tushare_json_response(
                     {'code': 503, 'msg': '分钟 replay 上游暂时无可用数据。'},
+                    service=service,
                     status=503,
+                    cache_key=cache_key,
+                    cache_query_string=cache_query_string,
+                    relay_path=relay_path,
+                    params=upstream_params,
+                    relay_mode=relay_mode,
                 )
             period_meta = _get_a_share_minute_period_meta(record, freq)
             if record and not period_meta.get('is_complete'):
-                response = JsonResponse(
+                return _build_tushare_json_response(
                     {
                         'code': 503,
                         'msg': '当前周期尚未闭合，replay 默认只返回最近一根已闭合周期结果。',
@@ -1379,11 +2952,14 @@ def _tushare_minute_proxy(request, service, relay_path: str):
                             **period_meta,
                         },
                     },
+                    service=service,
                     status=503,
+                    cache_key=cache_key,
+                    cache_query_string=cache_query_string,
+                    relay_path=relay_path,
+                    params=upstream_params,
+                    relay_mode=relay_mode,
                 )
-                response['X-Api-Relay-Service'] = service.slug
-                response['X-Tushare-Relay-Mode'] = f'a-share-{freq.lower()}-latest-completed'
-                return response
             response_payload = {
                 'code': 0,
                 'msg': '',
@@ -1398,7 +2974,7 @@ def _tushare_minute_proxy(request, service, relay_path: str):
             response = JsonResponse(response_payload, status=200)
             response['X-Api-Relay-Service'] = service.slug
             response['X-Api-Relay-Cache'] = 'MISS'
-            response['X-Tushare-Relay-Mode'] = f'a-share-{freq.lower()}-latest-completed'
+            response['X-Tushare-Relay-Mode'] = relay_mode
             _store_tushare_replay_cache(
                 cache_key=cache_key,
                 relay_path=relay_path,
@@ -1412,6 +2988,7 @@ def _tushare_minute_proxy(request, service, relay_path: str):
             return response
 
         normalized_futures_symbol = _normalize_futures_minute_symbol(symbol)
+        relay_mode = f'futures-{freq.lower()}-latest-completed'
         if not normalized_futures_symbol:
             response = JsonResponse(
                 {
@@ -1435,14 +3012,26 @@ def _tushare_minute_proxy(request, service, relay_path: str):
         try:
             record = _fetch_tushare_futures_minute_latest(normalized_futures_symbol, freq)
         except (requests.RequestException, ValueError, json.JSONDecodeError) as exc:
-            return JsonResponse(
+            return _build_tushare_json_response(
                 {'code': 503, 'msg': f'分钟 replay 上游暂时不可用: {exc}'},
+                service=service,
                 status=503,
+                cache_key=cache_key,
+                cache_query_string=cache_query_string,
+                relay_path=relay_path,
+                params=upstream_params,
+                relay_mode=relay_mode,
             )
         if not record:
-            return JsonResponse(
+            return _build_tushare_json_response(
                 {'code': 503, 'msg': '分钟 replay 上游暂时无可用数据。'},
+                service=service,
                 status=503,
+                cache_key=cache_key,
+                cache_query_string=cache_query_string,
+                relay_path=relay_path,
+                params=upstream_params,
+                relay_mode=relay_mode,
             )
         record['symbol'] = symbol
         period_meta = _get_futures_minute_period_meta(record, freq)
@@ -1460,7 +3049,7 @@ def _tushare_minute_proxy(request, service, relay_path: str):
         response = JsonResponse(response_payload, status=200)
         response['X-Api-Relay-Service'] = service.slug
         response['X-Api-Relay-Cache'] = 'MISS'
-        response['X-Tushare-Relay-Mode'] = f'futures-{freq.lower()}-latest-completed'
+        response['X-Tushare-Relay-Mode'] = relay_mode
         _store_tushare_replay_cache(
             cache_key=cache_key,
             relay_path=relay_path,
@@ -1476,7 +3065,88 @@ def _tushare_minute_proxy(request, service, relay_path: str):
         _release_tushare_replay_lease(cache_key, lease_token)
 
 
+def _tushare_index_proxy(request, service, relay_path: str):
+    normalized = (relay_path or '').strip('/')
+    if request.method != 'GET':
+        return JsonResponse(
+            {'ok': False, 'error': 'method_not_allowed', 'message': '指数 replay 目前只支持 GET。'},
+            status=405,
+        )
+    parts = normalized.split('/')
+    if len(parts) != 3 or parts[0] != 'index' or parts[2] != 'latest':
+        return JsonResponse(
+            {
+                'ok': False,
+                'error': 'path_not_supported',
+                'message': '指数 replay 目前只支持 `/tushare/index/<symbol>/latest`。',
+            },
+            status=400,
+        )
+    _, _, auth_error = _authorize_api_relay_request(request, service)
+    if auth_error is not None:
+        return auth_error
+
+    symbol = parts[1]
+    upstream_base = service.base_url.rstrip('/')
+    upstream_params = {}
+    cache_entry, cache_key, cache_query_string = _get_tushare_news_cache_entry(relay_path, upstream_params)
+    if cache_entry is not None:
+        return _build_cached_tushare_news_response(cache_entry, upstream_base)
+    is_leader, lease_token = _claim_tushare_replay_lease(cache_key, relay_path, cache_query_string)
+    if not is_leader:
+        cache_entry = _wait_for_tushare_replay_cache_fill(relay_path, upstream_params, cache_key)
+        if cache_entry is not None:
+            return _build_cached_tushare_news_response(cache_entry, upstream_base)
+        return JsonResponse({'code': 503, 'msg': '指数 replay 正在刷新中，请稍后重试。'}, status=503)
+
+    try:
+        try:
+            record = _fetch_tushare_index_latest(symbol)
+        except TushareLocalProxyPassThrough:
+            return JsonResponse(
+                {
+                    'ok': False,
+                    'error': 'symbol_not_supported',
+                    'message': '当前指数 replay 只支持 AK 可直连的 A 股、港股和全球指数代码或名称。',
+                },
+                status=400,
+            )
+        except ValueError as exc:
+            return JsonResponse({'ok': False, 'error': 'invalid_params', 'message': str(exc)}, status=400)
+        except Exception as exc:
+            return JsonResponse({'ok': False, 'error': 'relay_unavailable', 'message': f'{service.name} 不可用: {exc}'}, status=503)
+
+        payload = {
+            'code': 0,
+            'msg': '',
+            'data': {
+                **record,
+                'path': f'/tushare/index/{symbol}/latest',
+            },
+        }
+        response = JsonResponse(payload, json_dumps_params={'ensure_ascii': False})
+        response['X-Api-Relay-Service'] = service.slug
+        response['X-Api-Relay-Upstream'] = upstream_base
+        response['X-Api-Relay-Cache'] = 'MISS'
+        response['X-Tushare-Relay-Mode'] = 'index-latest'
+        _store_tushare_replay_cache(
+            cache_key=cache_key,
+            relay_path=relay_path,
+            query_string=cache_query_string,
+            response_body=json.dumps(payload, ensure_ascii=False),
+            status_code=200,
+            content_type='application/json',
+            params=upstream_params,
+            response_payload=payload,
+        )
+        return response
+    finally:
+        _release_tushare_replay_lease(cache_key, lease_token)
+
+
 def _build_api_relay_service_cards(request):
+    _get_api_relay_service('tushare')
+    _get_api_relay_service('massive')
     services = list(ApiRelayService.objects.filter(is_active=True).order_by('name', 'slug'))
     access_map = {}
     if request.user.is_authenticated:
@@ -1946,12 +3616,21 @@ def quant_article_tushare(request):
             {'scope': 'all', 'limit': '50'},
             'title,content,datetime,src',
         ),
+        'tushare_cjzc_example_python': _build_tushare_python_example(
+            'cjzc',
+            '/pro/cjzc?limit=20',
+            {'limit': '20'},
+            'title,summary,pub_time,url,src',
+        ),
         'tushare_major_news_example_python': _build_tushare_python_example(
             'major_news',
             '/pro/major_news?src=sina&start_date=2026-03-20%2000:00:00',
             {'src': 'sina', 'start_date': '2026-03-20 00:00:00'},
             'title,content,pub_time,src',
         ),
+        'tushare_index_latest_example_url': '/tushare/index/000001.SH/latest',
+        'tushare_index_latest_example_curl': 'curl -H "X-API-Key: <your-api-key>" https://ai-tool.indevs.in/tushare/index/000001.SH/latest',
+        'tushare_index_latest_example_python': _build_tushare_latest_python_example('/index/000001.SH/latest'),
         'tushare_minute_example_url': '/tushare/minute/000001.SZ/latest?freq=5MIN',
         'tushare_minute_example_curl': 'curl -G -H "X-API-Key: <your-api-key>" --data-urlencode "freq=5MIN" https://ai-tool.indevs.in/tushare/minute/000001.SZ/latest',
         'tushare_minute_60_example_url': '/tushare/minute/000001.SZ/latest?freq=60MIN',
@@ -2108,18 +3787,29 @@ def _get_tushare_catalog_payload():
     catalog_data = _ensure_tushare_catalog_defaults(catalog_data)
     examples = catalog_data.get('examples')
     if isinstance(examples, dict):
-        for _, items in examples.items():
+        for category_name, items in list(examples.items()):
             if not isinstance(items, list):
                 continue
+            normalized_items = []
+            seen_example_keys = set()
             for item in items:
                 if not isinstance(item, dict):
+                    continue
+                item = _normalize_tushare_catalog_example_item(category_name, dict(item))
+                if item is None:
                     continue
                 _enrich_tushare_catalog_item(item)
                 example_url = str(item.get('example_url') or '')
                 params = item.get('params') if isinstance(item.get('params'), dict) else {}
                 api_name = str(item.get('api_name') or '')
                 fields = str(item.get('fields') or '').strip()
+                dedupe_key = (api_name, example_url)
+                if dedupe_key in seen_example_keys:
+                    continue
+                seen_example_keys.add(dedupe_key)
                 item['python_example'] = _build_tushare_python_example(api_name, example_url, params, fields)
+                normalized_items.append(item)
+            examples[category_name] = normalized_items
     return catalog_data, catalog_error
 
 
@@ -2137,35 +3827,92 @@ def _ensure_tushare_catalog_defaults(catalog_data: dict) -> dict:
     default_entries = {
         '新闻数据': [
             {
-                'api_name': 'news',
-                'params': {'src': 'sina'},
-                'fields': 'title,content,datetime,src',
-                'example_url': '/pro/news?src=sina',
-            },
-            {
-                'api_name': 'major_news',
-                'params': {'src': 'sina', 'start_date': '2026-03-20 00:00:00'},
-                'fields': 'title,content,pub_time,src',
-                'example_url': '/pro/major_news?src=sina&start_date=2026-03-20%2000:00:00',
-            },
-            {
                 'api_name': 'express_news',
                 'params': {'scope': 'all', 'limit': '50'},
                 'fields': 'title,content,datetime,src',
                 'example_url': '/pro/express_news?scope=all&limit=50',
             },
-        ],
-        '公告数据（也算新闻数据）': [
             {
-                'api_name': 'anns_d',
-                'params': {'ann_date': '20260327', 'ts_code': '000001.SZ'},
-                'fields': 'ts_code,name,title,ann_date,url',
-                'example_url': '/pro/anns_d?ann_date=20260327&ts_code=000001.SZ',
-                'retention_policy': {
-                    'label': '通常按公告日维度保留 3 到 7 天，历史查询可更久',
-                    'recommended_refresh': '盘后到晚间公告集中披露阶段优先刷新',
-                    'reason': '公告数据常在交易日盘后和晚间集中更新，按公告日查询最稳定。',
-                },
+                'api_name': 'express_news',
+                'params': {'scope': 'all', 'start_date': '2026-03-26', 'end_date': '2026-03-27'},
+                'fields': 'title,content,datetime,src',
+                'example_url': '/pro/express_news?scope=all&start_date=2026-03-26&end_date=2026-03-27',
+            },
+            {
+                'api_name': 'cjzc',
+                'params': {'limit': '20'},
+                'fields': 'title,summary,pub_time,url,src',
+                'example_url': '/pro/cjzc?limit=20',
+            },
+            {
+                'api_name': 'cjzc',
+                'params': {'start_date': '2026-03-20', 'end_date': '2026-03-27'},
+                'fields': 'title,summary,pub_time,url,src',
+                'example_url': '/pro/cjzc?start_date=2026-03-20&end_date=2026-03-27',
+            },
+            {
+                'api_name': 'news_cctv',
+                'params': {'date': '2026-03-26', 'limit': '20'},
+                'fields': 'date,title,content',
+                'example_url': '/pro/news_cctv?date=2026-03-26&limit=20',
+            },
+            {
+                'api_name': 'news_economic_baidu',
+                'params': {'date': '2026-03-26', 'limit': '50'},
+                'fields': '日期,时间,地区,事件,公布,预期,前值,重要性',
+                'example_url': '/pro/news_economic_baidu?date=2026-03-26&limit=50',
+            },
+            {
+                'api_name': 'news_report_time_baidu',
+                'params': {'date': '2026-03-26', 'limit': '50'},
+                'fields': '股票代码,股票简称,交易所,财报类型,发布时间,市值,发布日期',
+                'example_url': '/pro/news_report_time_baidu?date=2026-03-26&limit=50',
+            },
+            {
+                'api_name': 'news_trade_notify_dividend_baidu',
+                'params': {'date': '2026-03-26', 'limit': '50'},
+                'fields': '股票代码,股票简称,交易所,除权日,分红,送股,转增,实物,报告期',
+                'example_url': '/pro/news_trade_notify_dividend_baidu?date=2026-03-26&limit=50',
+            },
+            {
+                'api_name': 'news_trade_notify_suspend_baidu',
+                'params': {'date': '2026-03-26', 'limit': '50'},
+                'fields': '股票代码,股票简称,交易所代码,停牌时间,复牌时间,停牌事项说明,市值,公告日期,公告时间,证券类型,市场类型,是否跳过',
+                'example_url': '/pro/news_trade_notify_suspend_baidu?date=2026-03-26&limit=50',
+            },
+        ],
+        '公告与研报': [
+            {
+                'api_name': 'stock_notice_report',
+                'params': {'symbol': '全部', 'date': '2026-03-26', 'limit': '50'},
+                'fields': '代码,名称,公告标题,公告类型,公告日期,网址',
+                'example_url': '/pro/stock_notice_report?symbol=%E5%85%A8%E9%83%A8&date=2026-03-26&limit=50',
+            },
+            {
+                'api_name': 'stock_zh_a_disclosure_report_cninfo',
+                'params': {'symbol': '000001', 'market': '沪深京', 'start_date': '2026-03-20', 'end_date': '2026-03-26', 'limit': '50'},
+                'fields': '代码,简称,公告标题,公告时间,公告链接',
+                'example_url': '/pro/stock_zh_a_disclosure_report_cninfo?symbol=000001&market=%E6%B2%AA%E6%B7%B1%E4%BA%AC&start_date=2026-03-20&end_date=2026-03-26&limit=50',
+            },
+            {
+                'api_name': 'research_report',
+                'params': {'symbol': '000001', 'limit': '20'},
+                'fields': '股票代码,股票简称,报告名称,东财评级,机构,日期,报告PDF链接',
+                'example_url': '/pro/research_report?symbol=000001&limit=20',
+            },
+            {
+                'api_name': 'stock_research_report_em',
+                'params': {'symbol': '000001', 'limit': '20'},
+                'fields': '股票代码,股票简称,报告名称,东财评级,机构,日期,报告PDF链接',
+                'example_url': '/pro/stock_research_report_em?symbol=000001&limit=20',
+            },
+        ],
+        '基金数据': [
+            {
+                'api_name': 'fund_announcement_report_em',
+                'params': {'symbol': '000001', 'limit': '50'},
+                'fields': '基金代码,基金名称,公告标题,公告日期,报告ID',
+                'example_url': '/pro/fund_announcement_report_em?symbol=000001&limit=50',
             },
         ],
         '分析师数据': [
@@ -2177,9 +3924,9 @@ def _ensure_tushare_catalog_defaults(catalog_data: dict) -> dict:
             },
             {
                 'api_name': 'analyst_detail',
-                'params': {'analyst_id': '11000213851', 'indicator': '最新跟踪成分股', 'limit': '50'},
+                'params': {'analyst_id': '11000455635', 'indicator': '最新跟踪成分股', 'limit': '50'},
                 'fields': '股票代码,股票名称,调入日期,最新评级日期,当前评级名称,最新价格,阶段涨跌幅',
-                'example_url': '/pro/analyst_detail?analyst_id=11000213851&indicator=%E6%9C%80%E6%96%B0%E8%B7%9F%E8%B8%AA%E6%88%90%E5%88%86%E8%82%A1&limit=50',
+                'example_url': '/pro/analyst_detail?analyst_id=11000455635&indicator=%E6%9C%80%E6%96%B0%E8%B7%9F%E8%B8%AA%E6%88%90%E5%88%86%E8%82%A1&limit=50',
             },
             {
                 'api_name': 'analyst_history',
@@ -2193,11 +3940,31 @@ def _ensure_tushare_catalog_defaults(catalog_data: dict) -> dict:
                 'fields': 'date,value',
                 'example_url': '/pro/analyst_history?analyst_id=11000213851&indicator=%E5%8E%86%E5%8F%B2%E6%8C%87%E6%95%B0&limit=240',
             },
+        ],
+        '指数数据': [
             {
-                'api_name': 'research_report',
-                'params': {'symbol': '000001', 'limit': '20'},
-                'fields': '股票代码,股票简称,报告名称,东财评级,机构,日期,报告PDF链接',
-                'example_url': '/pro/research_report?symbol=000001&limit=20',
+                'api_name': 'index_basic',
+                'params': {'market': 'CN', 'limit': '200'},
+                'fields': 'ts_code,name,market,category,list_date',
+                'example_url': '/pro/index_basic?market=CN&limit=200',
+            },
+            {
+                'api_name': 'index_daily',
+                'params': {'ts_code': '000001.SH', 'start_date': '2026-03-01', 'end_date': '2026-03-27'},
+                'fields': 'ts_code,trade_date,open,high,low,close,pre_close,change,pct_chg,vol,amount',
+                'example_url': '/pro/index_daily?ts_code=000001.SH&start_date=2026-03-01&end_date=2026-03-27',
+            },
+            {
+                'api_name': 'index_weekly',
+                'params': {'ts_code': '000001.SH', 'start_date': '2024-01-01', 'end_date': '2026-03-27'},
+                'fields': 'ts_code,trade_date,open,high,low,close,pre_close,change,pct_chg,vol,amount',
+                'example_url': '/pro/index_weekly?ts_code=000001.SH&start_date=2024-01-01&end_date=2026-03-27',
+            },
+            {
+                'api_name': 'index_monthly',
+                'params': {'ts_code': '000001.SH', 'start_date': '2018-01-01', 'end_date': '2026-03-27'},
+                'fields': 'ts_code,trade_date,open,high,low,close,pre_close,change,pct_chg,vol,amount',
+                'example_url': '/pro/index_monthly?ts_code=000001.SH&start_date=2018-01-01&end_date=2026-03-27',
             },
         ],
     }
@@ -2227,6 +3994,69 @@ def _ensure_tushare_catalog_defaults(catalog_data: dict) -> dict:
     return data
 
 
+def _normalize_tushare_catalog_example_item(category_name: str, item: dict) -> dict | None:
+    api_name = str(item.get('api_name') or '').strip()
+    hidden_api_names = {'news', 'major_news', 'anns_d'}
+    if api_name in hidden_api_names:
+        return None
+    if api_name == 'concept_detail':
+        item['params'] = {'ts_code': '000002.SZ'}
+        item['fields'] = 'id,concept_name,ts_code,name,in_date,out_date'
+        item['example_url'] = '/pro/concept_detail?ts_code=000002.SZ'
+        return item
+    if api_name == 'index_weight':
+        item['params'] = {'index_code': '000001.SH'}
+        item['fields'] = 'index_code,trade_date,con_code,weight'
+        item['example_url'] = '/pro/index_weight?index_code=000001.SH'
+        return item
+    if api_name == 'index_basic':
+        item['params'] = {'market': 'CN', 'limit': '200'}
+        item['fields'] = 'ts_code,name,market,category,list_date'
+        item['example_url'] = '/pro/index_basic?market=CN&limit=200'
+        return item
+    if api_name == 'index_daily':
+        item['params'] = {'ts_code': '000001.SH', 'start_date': '2026-03-01', 'end_date': '2026-03-27'}
+        item['fields'] = 'ts_code,trade_date,open,high,low,close,pre_close,change,pct_chg,vol,amount'
+        item['example_url'] = '/pro/index_daily?ts_code=000001.SH&start_date=2026-03-01&end_date=2026-03-27'
+        return item
+    if api_name == 'index_weekly':
+        item['params'] = {'ts_code': '000001.SH', 'start_date': '2024-01-01', 'end_date': '2026-03-27'}
+        item['fields'] = 'ts_code,trade_date,open,high,low,close,pre_close,change,pct_chg,vol,amount'
+        item['example_url'] = '/pro/index_weekly?ts_code=000001.SH&start_date=2024-01-01&end_date=2026-03-27'
+        return item
+    if api_name == 'index_monthly':
+        item['params'] = {'ts_code': '000001.SH', 'start_date': '2018-01-01', 'end_date': '2026-03-27'}
+        item['fields'] = 'ts_code,trade_date,open,high,low,close,pre_close,change,pct_chg,vol,amount'
+        item['example_url'] = '/pro/index_monthly?ts_code=000001.SH&start_date=2018-01-01&end_date=2026-03-27'
+        return item
+    if api_name == 'fut_settle':
+        item['params'] = {'trade_date': '20250115'}
+        item['fields'] = 'trade_date,ts_code,settle,pre_settle,vol,oi'
+        item['example_url'] = '/pro/fut_settle?trade_date=20250115'
+        return item
+    if api_name == 'us_basic':
+        item['params'] = {'ts_code': 'AAPL'}
+        item['fields'] = 'ts_code,name,exchange,list_status,list_date'
+        item['example_url'] = '/pro/us_basic?ts_code=AAPL'
+        return item
+    if api_name == 'us_daily':
+        item['params'] = {'ts_code': 'AAPL'}
+        item['fields'] = 'ts_code,trade_date,open,high,low,close,vol,amount'
+        item['example_url'] = '/pro/us_daily?ts_code=AAPL'
+        return item
+    if api_name == 'us_tradecal':
+        item['params'] = {'exchange': 'NYSE', 'start_date': '20250101', 'end_date': '20250131'}
+        item['fields'] = 'exchange,cal_date,is_open,pretrade_date'
+        item['example_url'] = '/pro/us_tradecal?exchange=NYSE&start_date=20250101&end_date=20250131'
+        return item
+    if api_name == 'analyst_detail':
+        item['params'] = {'analyst_id': '11000455635', 'indicator': '最新跟踪成分股', 'limit': '50'}
+        item['fields'] = '股票代码,股票名称,调入日期,最新评级日期,当前评级名称,最新价格,阶段涨跌幅'
+        item['example_url'] = '/pro/analyst_detail?analyst_id=11000455635&indicator=%E6%9C%80%E6%96%B0%E8%B7%9F%E8%B8%AA%E6%88%90%E5%88%86%E8%82%A1&limit=50'
+        return item
+    return item
+
+
 def _enrich_tushare_catalog_item(item: dict) -> dict:
     api_name = str(item.get('api_name') or '').strip()
     params = item.get('params') if isinstance(item.get('params'), dict) else {}
@@ -2243,9 +4073,9 @@ def _enrich_tushare_catalog_item(item: dict) -> dict:
             item.setdefault(
                 'retention_policy',
                 {
-                    'label': '历史查询直接透传上游，不过本地缓存，不占用磁盘',
+                    'label': '历史查询走站内回放并进入历史缓存，不额外透传 Tushare 上游',
                     'recommended_refresh': '需要历史快讯时按需调用，无需主动刷新',
-                    'reason': '历史数据由上游 Tushare 原生接口提供，站内心跳 akshare 实时流是另一条路径。',
+                    'reason': '历史快讯统一从财联社电报源分页回放，和实时 akshare 快讯保持同一新闻口径。',
                 },
             )
         else:
@@ -2262,6 +4092,70 @@ def _enrich_tushare_catalog_item(item: dict) -> dict:
                     'reason': '快讯流更新速度快，短缓存能抑制重复请求，但不适合像 major_news 一样跨天长保留。',
                 },
             )
+    is_historical_cjzc = api_name == 'cjzc' and (
+        params.get('start_date') or params.get('end_date')
+    )
+    if api_name == 'cjzc':
+        if is_historical_cjzc:
+            item.setdefault('variant_label', '历史区间')
+            item.setdefault(
+                'intro',
+                '按发布时间过滤东方财富财经早餐历史记录，适合回补某段时间窗口内的晨报摘要。',
+            )
+            item.setdefault(
+                'retention_policy',
+                {
+                    'label': '历史查询按需缓存，通常保留 7 天，适合做回放与补抓',
+                    'recommended_refresh': '需要历史晨报时按日期区间调用即可，无需高频刷新',
+                    'reason': '财经早餐单次即可拉回完整历史列表，站内按发布时间切片后再缓存更稳妥。',
+                },
+            )
+        else:
+            item.setdefault('variant_label', '最新晨报')
+            item.setdefault(
+                'intro',
+                '站内补充东方财富财经早餐口径，适合在普通新闻、快讯之外补一条日度晨报入口。',
+            )
+            item.setdefault(
+                'retention_policy',
+                {
+                    'label': '当前缓存 12 小时，陈旧缓存 14 天内清理',
+                    'recommended_refresh': '早盘前后或晨会前拉一次通常就够；需要确认是否更新时可主动回源',
+                    'reason': '财经早餐以日更为主，没有必要像快讯那样高频刷新，但仍需要保留当天最新版本。',
+                },
+            )
+    if api_name == 'index_basic':
+        item.setdefault(
+            'intro',
+            '指数基础资料优先走站内免费源重组，拿不到的更细字段或特殊市场参数再回落到原生 Tushare 上游。',
+        )
+        item.setdefault(
+            'retention_policy',
+            {
+                'label': '当前缓存 1 天，陈旧缓存 7 天内清理',
+                'recommended_refresh': '基础资料通常日内不会频繁变化，隔天刷新即可',
+                'reason': '指数列表和基础元数据更新频率低，优先复用站内整理结果可以减少上游消耗。',
+            },
+        )
+    if api_name in {'index_daily', 'index_weekly', 'index_monthly'}:
+        variant_map = {
+            'index_daily': '历史日线',
+            'index_weekly': '历史周线',
+            'index_monthly': '历史月线',
+        }
+        item.setdefault('variant_label', variant_map.get(api_name, '历史指数'))
+        item.setdefault(
+            'intro',
+            '指数历史 K 线优先走站内免费源回放，A 股、港股和全球指数能本地满足时直接返回；其余缺口继续回落到原生 Tushare 上游。',
+        )
+        item.setdefault(
+            'retention_policy',
+            {
+                'label': '历史查询通常保留 7 天，陈旧缓存 30 天内清理',
+                'recommended_refresh': '历史区间按需调用即可；需要补齐最近交易日时可主动刷新',
+                'reason': '指数历史序列天然适合缓存，本地免费源可覆盖大部分常见指数，剩余缺口保留原生上游兜底。',
+            },
+        )
     if api_name in {'irm_qa_sh', 'irm_qa_sz'}:
         item.setdefault(
             'intro',
@@ -2327,6 +4221,61 @@ def _enrich_tushare_catalog_item(item: dict) -> dict:
                 'label': '当前缓存 12 小时，陈旧缓存 7 天内清理',
                 'recommended_refresh': '盘前、盘后或重大事件后刷新最有意义',
                 'reason': '研报披露频率通常是日级到小时级，12 小时缓存既能控频，也不会把新研报压太久。',
+            },
+        )
+    if api_name == 'stock_research_report_em':
+        item.setdefault('variant_label', 'AKShare 同名接口')
+        item.setdefault(
+            'intro',
+            '和 `research_report` 返回同一批个股研报数据，保留 AKShare 原函数名，便于按现成脚本迁移。',
+        )
+        item.setdefault(
+            'retention_policy',
+            {
+                'label': '当前缓存 12 小时，陈旧缓存 7 天内清理',
+                'recommended_refresh': '盘前、盘后或重大事件后刷新最有意义',
+                'reason': '与 research_report 共用同一份东财研报数据与缓存策略。',
+            },
+        )
+    if api_name == 'fund_announcement_report_em':
+        item.setdefault(
+            'intro',
+            '站内补充基金公告列表，适合按基金代码回放历史公告、定期报告与临时公告。',
+        )
+        item.setdefault(
+            'retention_policy',
+            {
+                'label': '当前缓存 6 小时，陈旧缓存 30 天内清理',
+                'recommended_refresh': '历史公告列表通常按需调用，日内重复查询可直接复用缓存',
+                'reason': '基金公告相对稳定，短期缓存足以降低重复抓取，同时保留较长的历史查询命中窗口。',
+            },
+        )
+    if api_name in {'news_cctv', 'news_economic_baidu', 'news_report_time_baidu', 'news_trade_notify_dividend_baidu', 'news_trade_notify_suspend_baidu'}:
+        item.setdefault('variant_label', '按日期回放')
+        item.setdefault(
+            'intro',
+            '按日期从 AKShare 可回溯源抓取单日数据，既可传历史日期回放，也可省略日期取当日最新可见结果。',
+        )
+        item.setdefault(
+            'retention_policy',
+            {
+                'label': '带日期请求走历史缓存；未传日期时按当前数据缓存',
+                'recommended_refresh': '回放历史时按需查询；查询当日数据时可在事件更新后再次刷新',
+                'reason': '这些接口天然是单日视图，缓存策略按是否显式指定日期切分更符合 replay 语义。',
+            },
+        )
+    if api_name in {'stock_notice_report', 'stock_zh_a_disclosure_report_cninfo'}:
+        item.setdefault('variant_label', '公告回放')
+        item.setdefault(
+            'intro',
+            '站内补充 A 股公告回放接口，分别覆盖东财公告大全与巨潮公告检索两种口径。',
+        )
+        item.setdefault(
+            'retention_policy',
+            {
+                'label': '显式日期或区间查询走历史缓存',
+                'recommended_refresh': '盘后公告密集时按日期重拉；历史区间回放通常无需高频刷新',
+                'reason': '公告数据以日级或区间查询为主，历史缓存可以显著减少重复抓取。',
             },
         )
     return item
@@ -3368,8 +5317,12 @@ def api_relay_proxy(request, service_slug: str, relay_path: str = ''):
     service = _get_api_relay_service(service_slug)
     if service is None:
         raise Http404('Relay service not found')
+    if service.slug == 'massive':
+        return _massive_proxy(request, service, relay_path)
     if service.slug == 'tushare' and (relay_path or '').strip('/').startswith('minute/'):
         return _tushare_minute_proxy(request, service, relay_path)
+    if service.slug == 'tushare' and (relay_path or '').strip('/').startswith('index/'):
+        return _tushare_index_proxy(request, service, relay_path)
     allowed, deny_message = _relay_path_allowed_for_service(service, relay_path)
     if not allowed:
         return JsonResponse(
@@ -3401,7 +5354,7 @@ def api_relay_proxy(request, service_slug: str, relay_path: str = ''):
     ):
         upstream_params = dict(request.GET.items())
         upstream_params.update(_parse_json_mapping(service.upstream_query_params))
-        if _is_tushare_local_news_proxy(relay_path) and not _is_tushare_express_news_realtime_only(relay_path, upstream_params):
+        if _is_tushare_local_news_proxy(relay_path) and not _is_tushare_local_news_handled_internally(relay_path, upstream_params):
             # 历史日期查询：直接透传上游，不过 DB 缓存，不落盘
             upstream_url = f'{upstream_base}/{relay_path.lstrip("/")}'
             cache_lock = nullcontext()
@@ -3424,8 +5377,11 @@ def api_relay_proxy(request, service_slug: str, relay_path: str = ''):
                     status=503,
                 )
             try:
+                should_passthrough = False
                 try:
                     payload = _fetch_tushare_local_proxy_payload(relay_path, upstream_params)
+                except TushareLocalProxyPassThrough:
+                    should_passthrough = True
                 except ValueError as exc:
                     return JsonResponse(
                         {
@@ -3444,14 +5400,17 @@ def api_relay_proxy(request, service_slug: str, relay_path: str = ''):
                         },
                         status=503,
                     )
-                return _build_tushare_local_news_response(
-                    payload,
-                    service,
-                    cache_key=cache_key,
-                    cache_query_string=cache_query_string,
-                    relay_path=relay_path,
-                    cached=False,
-                )
+                if should_passthrough:
+                    pass
+                else:
+                    return _build_tushare_local_news_response(
+                        payload,
+                        service,
+                        cache_key=cache_key,
+                        cache_query_string=cache_query_string,
+                        relay_path=relay_path,
+                        cached=False,
+                    )
             finally:
                 _release_tushare_replay_lease(cache_key, lease_token)
     upstream_url = f'{upstream_base}/{relay_path.lstrip("/")}' if relay_path else f'{upstream_base}/'
@@ -3533,7 +5492,7 @@ def api_relay_proxy(request, service_slug: str, relay_path: str = ''):
             response['X-Api-Relay-Upstream'] = upstream_base
             if cache_enabled:
                 response['X-Api-Relay-Cache'] = 'MISS'
-                if upstream.status_code == 200:
+                if _is_cacheable_tushare_status(upstream.status_code):
                     response_text = getattr(upstream, 'text', '')
                     if not response_text and getattr(upstream, 'content', None) is not None:
                         try:
@@ -3562,6 +5521,10 @@ def tushare_proxy(request, relay_path: str = ''):
     if normalized == 'pro/catalog' and wants_html:
         return quant_tushare_catalog(request)
     return api_relay_proxy(request, 'tushare', relay_path)
+
+
+def massive_proxy(request, relay_path: str = ''):
+    return api_relay_proxy(request, 'massive', relay_path)
 
 
 def tts_cancel_order(request, order_no):
